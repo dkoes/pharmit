@@ -110,7 +110,7 @@ const vector<Pharma> defaultPharmaVec = assign::list_of
 		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
 		(Pharma(3, "PositiveIon", positive_ion, 7, .75,0.1))
 		(Pharma(4, "NegativeIon", negative_ion, 8, .75,0.1))
-		(Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 1.0))
+		(Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0))
 		;
 
 
@@ -422,6 +422,25 @@ struct Coord
     }
 
 
+//sort an indexing array into points by distance to index point
+class DistanceSorter
+{
+	unsigned index;
+	const vector<PharmaPoint>& points;
+public:
+	DistanceSorter(unsigned i, const vector<PharmaPoint>& pts) :
+		index(i), points(pts)
+	{
+	}
+
+	bool operator()(unsigned i, unsigned j) const
+	{
+		double d1 = PharmaPoint::pharmaDist(points[index], points[i]);
+		double d2 = PharmaPoint::pharmaDist(points[index], points[j]);
+		return d1 < d2;
+	}
+
+};
 
 // greedily create clusters of points that are all separated by dist
 //and replace with the cluster centers
@@ -453,9 +472,11 @@ static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, con
 		}
 	}
 
+	unsigned order[n];
 	//add all zero degree points
 	for(unsigned i = 0; i < n; i++)
 	{
+		order[i] = i;
 		if(degrees[i] == 0)
 			npts.push_back(points[i]);
 	}
@@ -467,9 +488,12 @@ static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, con
 		cluster.push_back(maxi);
 		degrees[maxi] = 0;
 
+		DistanceSorter sorter(maxi, points);
+		sort(order,order+n,sorter);
 		//add points that are within threshold of all member of the cluster
-		for(unsigned i = 0; i < n; i++)
+		for(unsigned o = 0; o < n; o++)
 		{
+			unsigned i = order[o];
 			if(degrees[i] > 0)
 			{
 				unsigned j = 0;
