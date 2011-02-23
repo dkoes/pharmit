@@ -44,35 +44,48 @@ using namespace boost;
 cl::opt<bool> DKoesTest("dkoes");
 
 //default pharmacophore definitions
-//These are due to Lidio Meireles.
+//The original definitions are due to Lidio Meireles and have been subsequently modified by me (dkoes)
 const char *aromatic[] =
 { "a1aaaaa1", "a1aaaa1", NULL };
 
 const char * hydrogen_donor[] =
-{ "[#7!H0]", "[#8!H0&!$([OH][C,S,P]=O)]", "[#16!H0]", NULL };
+{ "[#7!H0&!$(N-[SX4](=O)(=O)[CX4](F)(F)F)]", "[#8!H0&!$([OH][C,S,P]=O)]", "[#16!H0]", NULL };
 
 const char
 		* hydrogen_acceptor[] =
 		{
-				"[#7&!$([nX3])&!$([NX3]-*=[!#6])&!$([NX3]-[a])&!$([NX4])&!$([NX3H2][CX4])&!$([NX3H1]([CX4])[CX4])&!$([NX3H0]([CX4])([CX4])[CX4])&!$(N=C([C,N])N)]",
-				"[$([O])&!$([OX2](C)C=O)&!$(*(~a)~a)]", "[Cl]", NULL };
+				"[#7&!$([nX3])&!$([NX3]-*=[!#6])&!$([NX3]-[a])&!$([NX4])&!$(N=C([C,N])N)]",
+				"[$([O])&!$([OX2](C)C=O)&!$(*(~a)~a)]", NULL };
 
 const char * positive_ion[] =
-{ "[$([NX3H2,NX4H3][CX4])]", "[$([NX3H1,NX4H2]([CX4])[CX4])]",
-		"[$([NX3H0,NX4H1]([CX4])([CX4])[CX4])]", "[$(CC)](=N)N",
-		"[$(C(N)(N)=N)]", "[$(n1cc[nH]c1)]", NULL };
+{
+		"[+,+2,+3,+4]",
+		//amidine
+		"[$(CC)](=N)N",
+		//guanidine
+		"[$(C(N)(N)=N)]",
+		"[$(n1cc[nH]c1)]",
+		NULL };
 
 const char * negative_ion[] =
-{ "C(=O)[O-,OH,OX1]", "[$([S,P](=O)[O-,OH,OX1])]", "c1[nH1]nnn1",
-		"c1nn[nH1]n1", "[$([S-,SH,SX1]c)]", "[$([O-,OH,OX1]NC(=O))]", NULL };
+{ 		"[-,-2,-3,-4]",
+		"C(=O)[O-,OH,OX1]",
+		"[$([S,P](=O)[O-,OH,OX1])]",
+		"c1[nH1]nnn1",
+		"c1nn[nH1]n1",
+		"C(=O)N[OH1,O-,OX1]",
+		"C(=O)N[OH1,O-]",
+		"CO(=N[OH1,O-])",
+		//trifluoromethyl sulfonamide
+		"[$(N-[SX4](=O)(=O)[CX4](F)(F)F)]",
+		NULL };
 
 const char
 		*hydrophobic[] =
 		{
 				"a1aaaaa1",
 				"a1aaaa1",
-				//		"[$([cH0X3]);$(c[C,Cl,Br,I,F])]", //match branching carbons in rings
-				//"c1ccccc1","c1cccc1",
+				//branched terminals as one point
 				"[$([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])&!$(**[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])]",
 				"[$(*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])&!$(*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])]([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]",
 				"*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]",
@@ -89,17 +102,14 @@ const char
 				"[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])])]",
 				// sulfur (apparently)
 				"[$([S]~[#6])&!$(S~[!#6])]",
-			//	"[$([$([CH2X4,CH1X3,CH0X2])])&!$(*(~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])]~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])]~[$([$([CH2X4,CH1X3,CH0X2])])&!$(*(~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])]",
-				//"[$([$([CH2X4,CH1X3,CH0X2])])&!$(*(~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])]~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])]~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])]~[$([$([CH2X4,CH1X3,CH0X2])])&!$(*(~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])]",
-				//"[$([$([CH2X4,CH1X3,CH0X2])])&!$(*(~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])]~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])]~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])]~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])]~[$([$([CH2X4,CH1X3,CH0X2])])&!$(*(~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])~[$([CH2X4,CH1X3,CH0X2])&!$(C~[!#6;!#1])])]",
 				NULL };
 
 const vector<Pharma> defaultPharmaVec = assign::list_of
-		(Pharma(0, "Aromatic", aromatic, 18, 1.1))
-		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5))
-		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5))
-		(Pharma(3, "PositiveIon", positive_ion, 7, .75))
-		(Pharma(4, "NegativeIon", negative_ion, 8, .75))
+		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
+		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
+		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
+		(Pharma(3, "PositiveIon", positive_ion, 7, .75,0.1))
+		(Pharma(4, "NegativeIon", negative_ion, 8, .75,0.1))
 		(Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 1.0))
 		;
 
