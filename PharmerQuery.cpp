@@ -589,6 +589,9 @@ void PharmerQuery::outputMols(ostream& out)
 		dbCoords(dbid, db, index);
 		unsigned long loc =  myres[i]->c->location / maxID();
 
+		sddata.clear();
+		sddata.push_back(ASDDataItem("rmsd",lexical_cast<string>(myres[i]->c->val)));
+
 		databases[db][index].db->getMolData(loc, mdata, pread);
 		mdata.mol->writeSDF(out, sddata, myres[i]->c->rmsd);
 	}
@@ -603,6 +606,7 @@ void PharmerQuery::outputMol(const QueryResult* mol, ostream& out,
 	MolData mdata;
 	vector<ASDDataItem> sddata;
 
+	sddata.push_back(ASDDataItem("rmsd",lexical_cast<string>(mol->c->val)));
 	unsigned dbid = mol->c->location % maxID();
 	unsigned db = 0;
 	unsigned i = 0;
