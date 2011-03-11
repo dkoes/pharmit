@@ -233,6 +233,9 @@ extern void getPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoi
 //identify all pharma points in a multi-conformer molecule
 extern void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector<PharmaPoint> >& points);
 
+//accelerated pharma point recognition for pdb files
+extern void getPDBPharmaPoints(const Pharmas& pharmas, OBMol& pdb, vector<PharmaPoint>& points);
+
 //translate a point vector into json
 extern bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points);
 

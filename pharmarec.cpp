@@ -874,3 +874,15 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& mo
 	return convertPharmaJson(root, points);
 }
 
+//OpenBabel SMARTs matching is horribly slow and doesn't scale to a full protein
+//Instead of doing a complete rewrite of the parse, I'll just implement this little hack
+//where I break the protein up into its residues and just match those
+void getPDBPharmaPoints(const Pharmas& pharmas, OBMol& pdb, vector<PharmaPoint>& points)
+{
+	//iterate over bonds, keeping track of which ones span residues
+
+	//delete this bonds
+
+	//now match
+}
+
