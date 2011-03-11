@@ -106,15 +106,23 @@ const char
 				NULL };
 
 const vector<Pharma> defaultPharmaVec = assign::list_of
-		(Pharma(0, "Aromatic", aromatic, 18, PharmaInteract(0, 5, 1), 1.1,0.1))
-		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, PharmaInteract(2, 4, 1),  .5,0.1))
-		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, PharmaInteract(1, 4, 1), .5, 0.1))
-		(Pharma(3, "PositiveIon", positive_ion, 7, PharmaInteract(4, 5, 1), .75,0.1))
-		(Pharma(4, "NegativeIon", negative_ion, 8, PharmaInteract(3, 5, 1), .75,0.1))
-		(Pharma(5, "Hydrophobic", hydrophobic, 6, PharmaInteract(5, 6, 3), 1.0, 2.0))
+		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
+		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
+		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
+		(Pharma(3, "PositiveIon", positive_ion, 7, .75,0.1))
+		(Pharma(4, "NegativeIon", negative_ion, 8, .75,0.1))
+		(Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0))
 		;
 
-
+//TODO: make this user-configurable
+static unordered_map<string, PharmaInteract> pharmaInteractions = assign::map_list_of
+		("Aromatic",  PharmaInteract(0, 5, 1))
+		("HydrogenDonor", PharmaInteract(2, 4, 1))
+		("HydrogenAcceptor", PharmaInteract(1, 4, 1))
+		("PositiveIon", PharmaInteract(4, 5, 1))
+		("NegativeIon", PharmaInteract(3, 5, 1))
+		("Hydrophobic", PharmaInteract(5, 6, 3))
+		;
 //reduced set of pharmacophore definitions for proteins
 const char * positive_ion_protein[] =
 {
@@ -145,12 +153,12 @@ const char
 				NULL };
 
 static const vector<Pharma> proteinPharmaVec = assign::list_of
-		(Pharma(0, "Aromatic", aromatic, 18, PharmaInteract(), 1.1,0.1))
-		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, PharmaInteract(), .5,0.1))
-		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, PharmaInteract(), .5, 0.1))
-		(Pharma(3, "PositiveIon", positive_ion_protein, 7, PharmaInteract(), .75,0.1))
-		(Pharma(4, "NegativeIon", negative_ion_protein, 8, PharmaInteract(), .75,0.1))
-		(Pharma(5, "Hydrophobic", hydrophobic_protein, 6, PharmaInteract(), 1.0, 2.0))
+		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
+		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
+		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
+		(Pharma(3, "PositiveIon", positive_ion_protein, 7, .75,0.1))
+		(Pharma(4, "NegativeIon", negative_ion_protein, 8, .75,0.1))
+		(Pharma(5, "Hydrophobic", hydrophobic_protein, 6, 1.0, 2.0))
 		;
 static Pharmas proteinPharmas(proteinPharmaVec);
 
@@ -901,7 +909,8 @@ bool Pharmas::read(istream& in)
 
 //output a set of points in json format that is suitable for query based on
 //the data in moldata
-bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& moldata, OBFormat *format)
+bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& moldata,
+		OBFormat *format, const string& recdata, OBFormat *rformat)
 {
 	OBMol mol;
 	OBConversion conv;
@@ -910,9 +919,36 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& mo
 		return false;
 
 	vector<PharmaPoint> points;
-	getPharmaPoints(pharmas, mol, points);
+	vector<PharmaPoint> disabled;
 
-	return convertPharmaJson(root, points);
+	if(rformat == NULL || recdata.length() == 0)
+	{
+		getPharmaPoints(pharmas, mol, points);
+	}
+	else //compute interaction pharma
+	{
+		conv.SetInFormat(rformat);
+		OBMol rec;
+		if(!conv.ReadString(&rec, recdata))
+		{
+			getPharmaPoints(pharmas, mol, points);
+		}
+		else
+		{
+			getInteractionPoints(pharmas, rec, mol, points, disabled);
+			points.insert(points.end(), disabled.begin(), disabled.end());
+		}
+	}
+
+	if(!convertPharmaJson(root, points))
+		return false;
+
+	//set disabled points
+	for(unsigned i = points.size() - disabled.size(), n = points.size(); i < n; i++)
+	{
+		root["points"][i]["enabled"] = false;
+	}
+	return true;
 }
 
 //OpenBabel SMARTs matching is a little slow, so for when we're matching large
@@ -943,11 +979,14 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand
 	getPharmaPoints(pharmas, ligand, ligandpoints);
 	getProteinPharmaPoints(pharmas, receptor, receptorpoints); //could potentially prune a very large molecule..
 
+	cerr <<  "receptor pts " << receptorpoints.size() << "\n";
+
 	//remove anything without interacting info
 	vector<PharmaPoint> interactpoints;
 	for(unsigned i = 0, n = ligandpoints.size(); i < n; i++)
 	{
-		if(ligandpoints[i].pharma->interact.maxDist > 0)
+		const PharmaInteract& interact = pharmaInteractions[ligandpoints[i].pharma->name];
+		if(interact.maxDist > 0)
 		{
 			interactpoints.push_back(ligandpoints[i]);
 		}
@@ -956,13 +995,13 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand
 			screenedout.push_back(ligandpoints[i]);
 		}
 	}
-
 	//collate receptor points
 	vector< vector<PharmaPoint> > rinteractpoints(pharmas.size());
 
 	for(unsigned i = 0, n = receptorpoints.size(); i < n; i++)
 	{
-		if(receptorpoints[i].pharma->interact.maxDist > 0)
+		const PharmaInteract& interact = pharmaInteractions[receptorpoints[i].pharma->name];
+		if(interact.maxDist > 0)
 		{
 			rinteractpoints[receptorpoints[i].pharma->index].push_back(receptorpoints[i]);
 		}
@@ -973,7 +1012,7 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand
 	{
 		const PharmaPoint& l = interactpoints[i];
 		unsigned cnt = 0;
-		const PharmaInteract& I = l.pharma->interact;
+		const PharmaInteract& I = pharmaInteractions[l.pharma->name];
 		const vector<PharmaPoint>& rvec = rinteractpoints[I.complement];
 		unsigned j, m;
 		for(j = 0, m = rvec.size(); j < m; j++)

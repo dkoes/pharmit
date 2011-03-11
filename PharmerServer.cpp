@@ -216,9 +216,10 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 	unordered_map<string, shared_ptr<Command> > commands = assign::map_list_of
 			("startquery",shared_ptr<Command>(new StartQuery(queries, LOG, logmutex, logdirpath,pharmas, totalConfs, totalMols)))
 					("hasreceptor", shared_ptr<Command>(new HasReceptor(LOG, logmutex,logdirpath)))
+					("setreceptor", shared_ptr<Command>(new SetReceptor(LOG, logmutex,logdirpath)))
 					("cancelquery",shared_ptr<Command>(new CancelQuery(LOG, logmutex, queries)))
 					("getdata",shared_ptr<Command>(new GetData(LOG, logmutex, queries)))
-					("getpharma",shared_ptr<Command>(new GetPharma(LOG, logmutex, pharmas, parsers)))
+					("getpharma",shared_ptr<Command>(new GetPharma(LOG, logmutex, pharmas, parsers, logdirpath)))
 					("getmol",shared_ptr<Command>(new GetMol(LOG, logmutex, queries)))
 					("saveres",shared_ptr<Command>(new SaveRes(LOG, logmutex, queries)))
 					("ping", shared_ptr<Command>(new Ping(LOG, logmutex)))

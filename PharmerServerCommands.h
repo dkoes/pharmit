@@ -114,6 +114,45 @@ public:
 	}
 };
 
+
+//set receptor key
+class SetReceptor : public Command
+{
+	filesystem::path logdirpath;
+	SpinMutex recmutex;
+
+public:
+	SetReceptor(FILE * l, SpinMutex& lm, const filesystem::path& ldp) :
+		Command(l, lm), logdirpath(ldp)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		string key = cgiGetString(CGI, "key");
+		string recstr = cgiGetString(CGI,"receptor");
+		filesystem::path rname = logdirpath/ key;
+		IO << HTTPPlainHeader();
+
+		SpinLock lock(recmutex);
+		if (filesystem::exists(rname))
+		{
+			//exists already, but set it again anyway
+			IO << "exists";
+			ofstream rec(rname.string().c_str());
+			rec << recstr;
+		}
+		else if (recstr.length() > 0)
+		{
+			//set
+			ofstream rec(rname.string().c_str());
+			rec << recstr;
+			IO << "saved";
+		}
+	}
+};
+
+
 class StartQuery : public Command
 {
 	WebQueryManager& queries;
@@ -152,23 +191,22 @@ public:
 			else
 			{
 				//check for memoized receptor
-				if(root.isMember("receptorid"))
+				if (root.isMember("receptorid"))
 				{
-					string recstr;
-					filesystem::path rname = logdirpath / root["receptorid"].asString();
-					SpinLock lock(recmutex);
-					if(filesystem::exists(rname))
+					if (!root["receptor"].isString()
+							|| root["receptor"].asString().length() == 0)
 					{
-						ifstream rec(rname.string().c_str());
-						stringstream str;
-						str << rec.rdbuf();
-						root["receptor"] = str.str();
-					}
-					else if(root["receptor"].isString() && root["receptor"].asString().length() > 0)
-					{
-						//set
-						ofstream rec(rname.string().c_str());
-						rec <<  root["receptor"].asString();
+						string recstr;
+						filesystem::path rname = logdirpath
+								/ root["receptorid"].asString();
+						SpinLock lock(recmutex);
+						if (filesystem::exists(rname))
+						{
+							ifstream rec(rname.string().c_str());
+							stringstream str;
+							str << rec.rdbuf();
+							root["receptor"] = str.str();
+						}
 					}
 				}
 
@@ -313,10 +351,12 @@ class GetPharma : public Command
 {
 	const Pharmas *pharmas;
 	unordered_map<string, QueryParser*>& parsers;
+	const filesystem::path logdirpath;
+
 public:
 	GetPharma(FILE * l, SpinMutex& lm, const Pharmas *ph,
-			unordered_map<string, QueryParser*>& p) :
-		Command(l, lm), pharmas(ph), parsers(p)
+			unordered_map<string, QueryParser*>& p, const filesystem::path& ldp) :
+		Command(l, lm), pharmas(ph), parsers(p), logdirpath(ldp)
 	{
 	}
 
@@ -360,15 +400,42 @@ public:
 					sendError(IO, "Error parsing query format file.");
 				}
 			}
-			else if (format == NULL || !jsonPharmaQuery(*pharmas, val, filedata, format))
+			else //molecular data
 			{
-				sendError(IO, "Could not understand molecular data.");
-			}
-			else
-			{
+				if (format == NULL)
+				{
+					sendError(IO, "Could not understand molecular data.");
+					return;
+				}
+
+				//check for receptor
+				string receptor;
+				OBFormat* rformat = NULL;
+				if(cgiTagExists(CGI, "reckey") && cgiTagExists(CGI, "recname"))
+				{
+					string key = cgiGetString(CGI, "reckey");
+					filesystem::path rname = logdirpath/key;
+					if (filesystem::exists(rname))
+					{
+						ifstream rec(rname.string().c_str());
+						stringstream str;
+						str << rec.rdbuf();
+						receptor = str.str();
+						string fname = cgiGetString(CGI, "recname");
+						rformat = OBConversion::FormatFromExt(fname.c_str());
+					}
+				}
+
+				if(!jsonPharmaQuery(*pharmas, val, filedata, format, receptor, rformat))
+				{
+					sendError(IO, "Could not parse molecular data.");
+					return;
+				}
+
 				IO << HTTPHTMLHeader();
 				IO << html() << body();
 				Json::FastWriter writer;
+				//val filled in above
 				val["status"] = 1;
 				val["mol"] = true;
 				//output the json as one line

@@ -74,16 +74,14 @@ struct Pharma {
 	genPointVectorFn getVectors;
 	float clusterLimit;
 
-	PharmaInteract interact;
-
 	Pharma(): atomic_number_label(0), index(-1), defaultSearchRadius(0), getVectors(NULL), clusterLimit(0)
 	{
 
 	}
 
-	Pharma(int indx, const char *n, const char** sm, int atomic, const PharmaInteract& I, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
+	Pharma(int indx, const char *n, const char** sm, int atomic, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
 		name(n), atomic_number_label(atomic),
-				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl), interact(I) {
+				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl){
 		//const char * smiles for easier initialization
 		if(sm != NULL)
 		{
@@ -97,9 +95,9 @@ struct Pharma {
 		setVectorFn();
 	}
 
-	Pharma(int indx, const string& n, const vector<string>& sm, int atomic, const PharmaInteract& I, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
+	Pharma(int indx, const string& n, const vector<string>& sm, int atomic, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
 		name(n), atomic_number_label(atomic),
-				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl), interact(I) {
+				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl) {
 		unsigned ns = sm.size();
 		smarts.resize(ns);
 		for(unsigned i = 0; i < ns; i++)
@@ -248,6 +246,9 @@ extern void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector
 //accelerated pharma point recognition for proteins
 extern void getProteinPharmaPoints(const Pharmas& pharmas, OBMol& protein, vector<PharmaPoint>& points);
 
+extern void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand,
+		vector<PharmaPoint>& points, vector<PharmaPoint>& screenedout);
+
 //translate a point vector into json
 extern bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points);
 
@@ -256,7 +257,8 @@ extern bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& poin
 extern void addPharmaPoints(OBMol& mol, vector<PharmaPoint>& points);
 
 //extract pharmacophore points into json from moldata in format
-extern bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& moldata, OBFormat *format);
+extern bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
+		const string& moldata, OBFormat *format, const string& recdata, OBFormat *rformat);
 
 
 #endif /* PHARMAREC_H_ */
