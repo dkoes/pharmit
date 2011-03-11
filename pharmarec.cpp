@@ -39,6 +39,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 using namespace boost;
 
@@ -915,6 +916,7 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& mo
 	OBMol mol;
 	OBConversion conv;
 	conv.SetInFormat(format);
+
 	if(!conv.ReadString(&mol, moldata))
 		return false;
 
@@ -978,8 +980,6 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand
 
 	getPharmaPoints(pharmas, ligand, ligandpoints);
 	getProteinPharmaPoints(pharmas, receptor, receptorpoints); //could potentially prune a very large molecule..
-
-	cerr <<  "receptor pts " << receptorpoints.size() << "\n";
 
 	//remove anything without interacting info
 	vector<PharmaPoint> interactpoints;

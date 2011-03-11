@@ -363,21 +363,18 @@ public:
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
 		vector<PharmaPoint> points;
-		const std::vector<FormFile>& files = CGI.getFiles();
-		if (files.size() == 0)
+		if (!cgiTagExists(CGI,"ligand") || !cgiTagExists(CGI,"ligandname"))
 		{
-			sendError(IO,
-					"No file for pharmacophore identification.");
+			sendError(IO, "No ligand for pharmacophore identification.");
+			return;
 		}
-		else //just process first file
+		else
 		{
 			Json::Value val;
-			string filedata = files[0].getData();
-			string filename = files[0].getFilename();
-
+			string filedata = cgiGetString(CGI,"ligand");
+			string filename = cgiGetString(CGI,"ligandname");
 			OBFormat* format = OBConversion::FormatFromExt(filename.c_str());
 			string ext = filesystem::extension(filename);
-
 			if (parsers.count(ext))
 			{
 				//a pharmacophore query format
@@ -386,14 +383,12 @@ public:
 				if (parsers[ext]->parse(*pharmas, str, points))
 				{
 					convertPharmaJson(val, points);
-					IO << HTTPHTMLHeader();
-					IO << html() << body();
+					IO << HTTPPlainHeader();
 					Json::FastWriter writer;
 					val["status"] = 1;
 					val["mol"] = false;
 					//output the json as one line
 					IO << writer.write(val);
-					IO << body() << html();
 				}
 				else
 				{
@@ -432,17 +427,13 @@ public:
 					return;
 				}
 
-				IO << HTTPHTMLHeader();
-				IO << html() << body();
+				IO << HTTPPlainHeader();
 				Json::FastWriter writer;
 				//val filled in above
 				val["status"] = 1;
 				val["mol"] = true;
 				//output the json as one line
 				IO << writer.write(val);
-				//followed by mol
-				IO << filedata << "\n";
-				IO << body() << html();
 			}
 		}
 	}
@@ -530,14 +521,16 @@ public:
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
-		//response goes into iframe, the body of which is parsed out
+		//response goes into iframe and textarea, the body of which is parsed out
+		//as long as </textarea> isn't in the file this works
 		IO << HTTPHTMLHeader();
 		IO << html() << body();
+		IO << textarea();
 		BOOST_FOREACH(const FormFile& f, CGI.getFiles())
 		{
 			IO << f.getData();
 		}
-		IO << body() << html();
+		IO << textarea() << body() << html();
 	}
 };
 
