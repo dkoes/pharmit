@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <cassert>
 #include <string>
 #include "pharmarec.h"
+#include "Timer.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_set.hpp>
@@ -98,8 +99,8 @@ const char
 				"[C&r8]1~[C&r8]~[C&r8]~[C&r8]~[C&r8]~[C&r8]~[C&r8]~[C&r8]1",
 				//aliphatic chains
 				"[CH2X4,CH1X3,CH0X2]~[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]",
-				"[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])]",
-				"[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])])]",
+				"[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]",
+				"[$([CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]",
 				// sulfur (apparently)
 				"[$([S]~[#6])&!$(S~[!#6])]",
 				NULL };
@@ -112,6 +113,46 @@ const vector<Pharma> defaultPharmaVec = assign::list_of
 		(Pharma(4, "NegativeIon", negative_ion, 8, .75,0.1))
 		(Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0))
 		;
+
+
+//reduced set of pharmacophore definitions for proteins
+const char * positive_ion_protein[] =
+{
+		"[+,+2,+3,+4]",
+		//amidine
+		//guanidine
+		"[$(C(N)(N)=N)]",
+		"[$(n1cc[nH]c1)]",
+		NULL };
+
+const char * negative_ion_protein[] =
+{ 		"[-,-2,-3,-4]",
+		"C(=O)[O-,OH,OX1]",
+		NULL };
+
+const char
+		*hydrophobic_protein[] =
+		{
+				"a1aaaaa1",
+				"a1aaaa1",
+				//branched terminals as one point
+				"[$([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])&!$(**[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])]",
+				"[$(*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])&!$(*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])]([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]",
+
+				"[CH2X4,CH1X3,CH0X2]~[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]",
+				"[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]",
+				"[$([S]~[#6])&!$(S~[!#6])]",
+				NULL };
+
+static const vector<Pharma> proteinPharmaVec = assign::list_of
+		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
+		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
+		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
+		(Pharma(3, "PositiveIon", positive_ion_protein, 7, .75,0.1))
+		(Pharma(4, "NegativeIon", negative_ion_protein, 8, .75,0.1))
+		(Pharma(5, "Hydrophobic", hydrophobic_protein, 6, 1.0, 2.0))
+		;
+static Pharmas proteinPharmas(proteinPharmaVec);
 
 
 //setup lookup tables, pharmas must be initialized
@@ -874,15 +915,15 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& mo
 	return convertPharmaJson(root, points);
 }
 
-//OpenBabel SMARTs matching is horribly slow and doesn't scale to a full protein
-//Instead of doing a complete rewrite of the parse, I'll just implement this little hack
-//where I break the protein up into its residues and just match those
-void getPDBPharmaPoints(const Pharmas& pharmas, OBMol& pdb, vector<PharmaPoint>& points)
+//OpenBabel SMARTs matching is a little slow, so for when we're matching large
+//proteins use an optimizes set of pharmas, and then convert
+void getProteinPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoint>& points)
 {
-	//iterate over bonds, keeping track of which ones span residues
-
-	//delete this bonds
-
-	//now match
+	getPharmaPoints(proteinPharmas, mol, points);
+	//now convert to requested pharmas based on name equality
+	for(unsigned i = 0, n = points.size(); i < n; i++)
+	{
+		points[i].pharma = pharmas.pharmaFromName(points[i].pharma->name);
+	}
 }
 
