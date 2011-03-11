@@ -53,6 +53,16 @@ struct PharmaPoint;
 typedef void (*genPointVectorFn)(const vector<int>& atoms_indexes,
 		const OBMol& mol, PharmaPoint& pnt);
 
+//description of interaction features
+struct PharmaInteract
+{
+	unsigned complement; //index of interacting point
+	float maxDist; //max distance that a feature can be to still be considered interacting
+	unsigned minMatch; //minimum number of feature that must be close
+
+	PharmaInteract(unsigned c, float md, unsigned mm): complement(c), maxDist(md), minMatch(mm) {}
+	PharmaInteract(): complement(0), maxDist(0), minMatch(0) {}
+};
 
 //a description of a pharmacophore class
 struct Pharma {
@@ -64,14 +74,16 @@ struct Pharma {
 	genPointVectorFn getVectors;
 	float clusterLimit;
 
+	PharmaInteract interact;
+
 	Pharma(): atomic_number_label(0), index(-1), defaultSearchRadius(0), getVectors(NULL), clusterLimit(0)
 	{
 
 	}
 
-	Pharma(int indx, const char *n, const char** sm, int atomic, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
+	Pharma(int indx, const char *n, const char** sm, int atomic, const PharmaInteract& I, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
 		name(n), atomic_number_label(atomic),
-				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl) {
+				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl), interact(I) {
 		//const char * smiles for easier initialization
 		if(sm != NULL)
 		{
@@ -85,9 +97,9 @@ struct Pharma {
 		setVectorFn();
 	}
 
-	Pharma(int indx, const string& n, const vector<string>& sm, int atomic, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
+	Pharma(int indx, const string& n, const vector<string>& sm, int atomic, const PharmaInteract& I, float r = .5, float cl = 0, unsigned nb =1, float trfr = 0):
 		name(n), atomic_number_label(atomic),
-				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl){
+				index(indx), defaultSearchRadius(r), getVectors(NULL), clusterLimit(cl), interact(I) {
 		unsigned ns = sm.size();
 		smarts.resize(ns);
 		for(unsigned i = 0; i < ns; i++)

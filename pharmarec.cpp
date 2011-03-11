@@ -106,12 +106,12 @@ const char
 				NULL };
 
 const vector<Pharma> defaultPharmaVec = assign::list_of
-		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
-		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
-		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
-		(Pharma(3, "PositiveIon", positive_ion, 7, .75,0.1))
-		(Pharma(4, "NegativeIon", negative_ion, 8, .75,0.1))
-		(Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0))
+		(Pharma(0, "Aromatic", aromatic, 18, PharmaInteract(0, 5, 1), 1.1,0.1))
+		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, PharmaInteract(2, 4, 1),  .5,0.1))
+		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, PharmaInteract(1, 4, 1), .5, 0.1))
+		(Pharma(3, "PositiveIon", positive_ion, 7, PharmaInteract(4, 5, 1), .75,0.1))
+		(Pharma(4, "NegativeIon", negative_ion, 8, PharmaInteract(3, 5, 1), .75,0.1))
+		(Pharma(5, "Hydrophobic", hydrophobic, 6, PharmaInteract(5, 6, 3), 1.0, 2.0))
 		;
 
 
@@ -145,12 +145,12 @@ const char
 				NULL };
 
 static const vector<Pharma> proteinPharmaVec = assign::list_of
-		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
-		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
-		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
-		(Pharma(3, "PositiveIon", positive_ion_protein, 7, .75,0.1))
-		(Pharma(4, "NegativeIon", negative_ion_protein, 8, .75,0.1))
-		(Pharma(5, "Hydrophobic", hydrophobic_protein, 6, 1.0, 2.0))
+		(Pharma(0, "Aromatic", aromatic, 18, PharmaInteract(), 1.1,0.1))
+		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, PharmaInteract(), .5,0.1))
+		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, PharmaInteract(), .5, 0.1))
+		(Pharma(3, "PositiveIon", positive_ion_protein, 7, PharmaInteract(), .75,0.1))
+		(Pharma(4, "NegativeIon", negative_ion_protein, 8, PharmaInteract(), .75,0.1))
+		(Pharma(5, "Hydrophobic", hydrophobic_protein, 6, PharmaInteract(), 1.0, 2.0))
 		;
 static Pharmas proteinPharmas(proteinPharmaVec);
 
@@ -927,3 +927,85 @@ void getProteinPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoi
 	}
 }
 
+
+//compute pharmacophore of the interaction
+//calculate both ligand and receptor points and then
+//enable only those ligand points that are close to complimentary receptor points
+void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand,
+		vector<PharmaPoint>& points, vector<PharmaPoint>& screenedout)
+{
+	points.clear();
+	screenedout.clear();
+
+	vector<PharmaPoint> ligandpoints;
+	vector<PharmaPoint> receptorpoints;
+
+	getPharmaPoints(pharmas, ligand, ligandpoints);
+	getProteinPharmaPoints(pharmas, receptor, receptorpoints); //could potentially prune a very large molecule..
+
+	//remove anything without interacting info
+	vector<PharmaPoint> interactpoints;
+	for(unsigned i = 0, n = ligandpoints.size(); i < n; i++)
+	{
+		if(ligandpoints[i].pharma->interact.maxDist > 0)
+		{
+			interactpoints.push_back(ligandpoints[i]);
+		}
+		else
+		{
+			screenedout.push_back(ligandpoints[i]);
+		}
+	}
+
+	//collate receptor points
+	vector< vector<PharmaPoint> > rinteractpoints(pharmas.size());
+
+	for(unsigned i = 0, n = receptorpoints.size(); i < n; i++)
+	{
+		if(receptorpoints[i].pharma->interact.maxDist > 0)
+		{
+			rinteractpoints[receptorpoints[i].pharma->index].push_back(receptorpoints[i]);
+		}
+	}
+
+	//screen ligand points
+	for(unsigned i = 0, n = interactpoints.size(); i < n; i++)
+	{
+		const PharmaPoint& l = interactpoints[i];
+		unsigned cnt = 0;
+		const PharmaInteract& I = l.pharma->interact;
+		const vector<PharmaPoint>& rvec = rinteractpoints[I.complement];
+		unsigned j, m;
+		for(j = 0, m = rvec.size(); j < m; j++)
+		{
+			const PharmaPoint& rp = rvec[j];
+			double d = PharmaPoint::pharmaDist(l, rp);
+			if(d <= I.maxDist)
+				cnt++;
+			if(cnt >= I.minMatch)
+			{
+				//just hydrogen bond features and set vector
+				if(l.pharma->name == "HydrogenAcceptor" || l.pharma->name == "HydrogenDonor")
+				{
+					PharmaPoint lp = l;
+					vector3 rv(rp.x,rp.y,rp.z);
+					vector3 lv(l.x,l.y,l.z);
+					lp.vecs.clear();
+					lp.vecs.push_back((rv-lv).normalize());
+					//assume identical points with different vectors are right next to each other
+					//and only do one
+					if(points.size() == 0 || points.back().pharma != l.pharma || points.back().x != l.x ||
+							points.back().y != l.y || points.back().z != l.z)
+						points.push_back(lp);
+				}
+				else
+				{
+					points.push_back(l);
+				}
+				break;
+			}
+		}
+		if(j == m)
+			screenedout.push_back(l);
+	}
+}
