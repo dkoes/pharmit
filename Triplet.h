@@ -398,7 +398,7 @@ protected:
 	//set parameters for any extra constraints
 	void setExtra(const PharmaPoint* p, unsigned& min, unsigned& max, unsigned long& mask)
 	{
-		if(p->maxSize > 0) //has a range
+		if(p->maxSize > 0 && p->maxSize < UINT_MAX) //has a range
 		{
 			max = p->maxSize;
 			min = p->minSize;
@@ -431,10 +431,11 @@ protected:
 				}
 				else
 				{
-					mask = sphereGrid.searchMask(g, 90);
+					mask = sphereGrid.searchMask(g, 60);
 				}
 				//0 is reserved
 				mask <<= 1;
+				cerr << "mask " << mask << "\n";
 			}
 		}
 	}

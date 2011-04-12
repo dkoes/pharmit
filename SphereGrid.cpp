@@ -160,12 +160,12 @@ unsigned SphereGrid::pointToGrid(double x, double y, double z)
 	return ret;
 }
 
-//return a mask of all grid points within angle (radians) of pt
+//return a mask of all grid points within angle (degrees) of pt
 //angle should be <= pi
 unsigned long SphereGrid::searchMask(unsigned pt, double angle)
 {
 	unsigned long ret = 0;
-
+	angle = DEG_TO_RAD*angle;
 	//compute max distance for angle
 	double maxdist = 2*sin(angle/2);
 	maxdist *= maxdist;
