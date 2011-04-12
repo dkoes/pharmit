@@ -367,30 +367,45 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 				else if(req == "notpresent")
 					required = PharmaPoint::NotPresent;
 			}
-			if(jpnt.isMember("minsize"))
+
+			if (jpnt.isMember("minsize") && !jpnt["minsize"].isNull())
 			{
-				if(jpnt["minsize"].isString())
+				if (jpnt["minsize"].isString())
 				{
-					try {
-						minsize = lexical_cast<unsigned>(jpnt["minsize"].asString());
+					if (jpnt["minsize"].asString().length() > 0)
+					{
+						try
+						{
+							minsize = lexical_cast<unsigned> (
+									jpnt["minsize"].asString());
+						} catch (std::exception& e)
+						{
+						}
 					}
-					catch(std::exception& e) {}
 				}
 				else
 					minsize = jpnt["minsize"].asUInt();
 			}
-			if(jpnt.isMember("maxsize"))
+
+			if (jpnt.isMember("maxsize") && !jpnt["maxsize"].isNull())
 			{
-				if(jpnt["maxsize"].isString())
+				if (jpnt["maxsize"].isString())
 				{
-					try {
-						maxsize = lexical_cast<unsigned>(jpnt["maxsize"].asString());
+					if (jpnt["maxsize"].asString().length() > 0)
+					{
+						try
+						{
+							maxsize = lexical_cast<unsigned> (
+									jpnt["maxsize"].asString());
+						} catch (std::exception& e)
+						{
+						}
 					}
-					catch(std::exception& e) {}
 				}
 				else
 					maxsize = jpnt["maxsize"].asUInt();
 			}
+
 			double x = jpnt["x"].asDouble();
 			double y = jpnt["y"].asDouble();
 			double z = jpnt["z"].asDouble();
@@ -407,12 +422,27 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 			pnt.y = y;
 			pnt.z = z;
 			pnt.size = size;
+			pnt.maxSize = maxsize;
+			pnt.minSize = minsize;
 
-			if(jpnt.isMember("vector"))
-			{ //queries typically have only one vector
-				for(unsigned v = 0, nv = jpnt["vector"].size(); v < nv; v++)
+			if (!jpnt.isMember("vector_on") || jpnt["vector_on"].asBool())
+			{
+				if (jpnt.isMember("svector") && !jpnt["svector"].isNull())
 				{
-					pnt.vecs.push_back(vector3(jpnt["vector"][v]["x"].asDouble(), jpnt["vector"][v]["y"].asDouble(), jpnt["vector"][v]["z"].asDouble()));
+					pnt.vecs.push_back(
+							vector3(jpnt["svector"]["x"].asDouble(),
+									jpnt["svector"]["y"].asDouble(),
+									jpnt["svector"]["z"].asDouble()));
+				}
+				else if (jpnt.isMember("vector"))
+				{ //queries typically have only one vector
+					for (unsigned v = 0, nv = jpnt["vector"].size(); v < nv; v++)
+					{
+						pnt.vecs.push_back(
+								vector3(jpnt["vector"][v]["x"].asDouble(),
+										jpnt["vector"][v]["y"].asDouble(),
+										jpnt["vector"][v]["z"].asDouble()));
+					}
 				}
 			}
 
@@ -424,8 +454,10 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 	} catch (std::exception& e)
 	{
 		//poorly formated json
+		cerr << "Parse " << e.what() << "\n";
 		return false;
 	}
+	cerr << "parsed points\n";
 	return true;
 }
 
