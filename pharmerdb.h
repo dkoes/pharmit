@@ -29,6 +29,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #ifndef PHARMERDB_H_
 #define PHARMERDB_H_
 
+#ifndef BOOST_FILESYSTEM_VERSION
+#define BOOST_FILESYSTEM_VERSION 2
+#endif
+
 #include <iostream>
 #include <string>
 #include <boost/foreach.hpp>

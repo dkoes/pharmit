@@ -27,7 +27,9 @@
 #include <utility>
 #include <vector>
 #include <string>
-
+#ifndef BOOST_FILESYSTEM_VERSION
+#define BOOST_FILESYSTEM_VERSION 2
+#endif
 using namespace std;
 
 #if __GNUC__ > 3
