@@ -47,7 +47,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "ReadMCMol.h"
 
 using namespace boost;
-cl::opt<bool> SeparateWeight("separate-weight", cl::desc("Segregrate database based on molecular weight"), cl::init(true));
+cl::opt<bool> SeparateWeight("separate-weight", cl::desc("Segregate database based on molecular weight"), cl::init(true));
 cl::opt<bool> Quiet("q", cl::desc("quiet; suppress informational messages"),
 		cl::init(false));
 cl::opt<bool> ShowQuery("show-query", cl::desc("print query points"), cl::init(

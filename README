@@ -1,0 +1,104 @@
+Pharmer: Efficient and Exact 3D Pharmacophore Search
+Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+
+LICENSE
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+BUILDING
+
+Currently, the easiest way to build pharmer is to checkout the source code
+using Eclipse and build it with the automatically generated make files.
+The contribution of a standard autoconf/make build system would be greatly
+appreciated.
+
+There are several dependencies on third party libraries:
+Boost (currently building against version 1.45)
+http://www.boost.org/
+
+JsonCpp
+http://jsoncpp.sourceforge.net/
+
+FastCGI
+http://www.fastcgi.com
+
+cgicc
+http://www.gnu.org/software/cgicc/
+
+tcmalloc (google performance tools)
+http://code.google.com/p/google-perftools/
+
+OpenBabel
+http://openbabel.org/
+
+
+USING
+
+The --help option will provide the following:
+
+USAGE: pharmer [options] --cmd command [pharma, dbcreate, dbsearch, server]
+
+OPTIONS:
+  -bloom-large=<uint>  - Number of bits for coarse discretization fingerprint.
+  -bloom-small=<uint>  - Number of bits for fine discretization fingerprint.
+  -cmd=<string>        - command [pharma, dbcreate, dbsearch, server]
+  -dbdir=<string>      - database directory(s)
+  -extra-info          - Output additional molecular properties.  Slower.
+  -file-partition      - Partion database slices based on files
+  -help                - Display available options (--help-hidden for more)
+  -in=<string>         - input file(s)
+  -logdir=<string>     - log directory for server
+  -max-hits=<n>        - return at most n results
+  -max-orient=<n>      - return at most n orientations of each conformation
+  -max-rmsd=<number>   - maximum allowed RMSD; default max allowed by query
+  -max-weight=<uint>   - maximum allowed molecular weight
+  -nthreads=<n>        - utilize n threads; default 1
+  -out=<string>        - output file
+  -pharmaspec=<string> - pharmacophore specification
+  -port=<uint>         - port for server to listen on
+  -print               - print results
+  -q                   - quiet; suppress informational messages
+  -reduceconfs=<n>     - return at most n conformations for each molecule
+  -separate-weight     - Segregate database based on molecular weight
+  -show-query          - print query points
+  -sort-rmsd           - Sort results by RMSD.
+  -unweighted-rmsd     - Compute minimal RMSD without radius weights
+
+To IDENTIFY the pharmacophore features of a molecule ex.pdb:
+ pharmer pharma -in ex.pdb
+ pharmer pharma -in ex.pdb -out out.sdf
+ pharmer pharma -in ex.pdb -out out.json
+For interactive, graphical editting of pharmacophore features, try
+http://zincpharmer.csb.pitt.edu
+The saved session file is a json file that can be used as input for Pharmer.
+
+To CREATE a database DB from library.sdf:
+ pharmer dbcreate -dbdir DB -in library.sdf
+If you have multiple disk drives, you can improve performance by striping the
+database across the drives:
+ pharmer dbcreate -dbdir /drive1/DB -dbdir /drive2/DB -in library.sdf
+If you pre-split the input file things will go faster:
+ pharmer dbcreate -dbdir /drive1/DB -dbdir /drive2/DB -file-partition -in library1.sdf -in library2.sdf
+
+To SEARCH a database:
+ pharmer dbsearch -dbdir DB -in query.json
+ pharmer dbsearch -dbdir DB -in query.sdf
+ pharmer dbsearch -dbdir DB -in query.ph4
+
+
+CITING
+
+Please use the citation from http://pubs.acs.org/doi/abs/10.1021/ci200097m

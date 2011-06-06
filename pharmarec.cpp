@@ -43,7 +43,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/foreach.hpp>
 using namespace boost;
 
-cl::opt<bool> DKoesTest("dkoes");
+cl::opt<bool> DKoesTest("dkoes",cl::Hidden);
 
 //default pharmacophore definitions
 //The original definitions are due to Lidio Meireles and have been subsequently modified by me (dkoes)
