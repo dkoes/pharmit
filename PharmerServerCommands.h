@@ -475,8 +475,9 @@ public:
 			SpinLock lock(logmutex);
 			posix_time::ptime t(
 					posix_time::second_clock::local_time());
-			fprintf(LOG, "save %s %s %lu\n", posix_time::to_simple_string(
-					t).c_str(), CGI.getEnvironment().getRemoteHost().c_str(), cgiGetInt(CGI, "qid"));
+			fprintf(LOG, "save %s %s %lu %u\n", posix_time::to_simple_string(
+					t).c_str(), CGI.getEnvironment().getRemoteHost().c_str(), cgiGetInt(CGI, "qid"),
+					query->numResults());
 			fflush(LOG);
 			lock.release();
 
