@@ -256,7 +256,7 @@ public:
 
 						//if it points to the ligand, the target is the ligand point
 						bool toligand = false;
-						if(strcmp(el->Attribute("pointsToLigand"), "true") == 0)
+						if(el->Attribute("pointsToLigand") && strcmp(el->Attribute("pointsToLigand"), "true") == 0)
 							toligand = true;
 
 						TiXmlElement *orig = toligand ? el->FirstChildElement("target") : el->FirstChildElement("origin");
