@@ -167,7 +167,7 @@ public:
 		createBuffer();
 	}
 	virtual ~MolDataCreator() { if(buffer) delete [] buffer; }
-	void write(FILE *molData, vector<PointDataFile>& pointDataFiles);
+	unsigned write(FILE *molData, vector<PointDataFile>& pointDataFiles);
 	unsigned NumPoints() const
 	{
 		unsigned ret = 0;
@@ -350,6 +350,7 @@ private:
 	FILE *lookup; //human readable pharmacophore classes for my own benefit
 	FILE *molData; //flat file of molecular data
 	FILE *binData; //binned cnts of lengths
+	FILE *midList; //index of mids corresponding to sequential index
 
 	vector<PointDataFile> pointDataFiles; //just pointdata objects; separate library for every pharma combo; indexed by triplet index
 	MMappedRegion<ThreePointData> *pointDataArrays;
@@ -376,6 +377,8 @@ private:
 	static void thread_start_doSplitInPage(PharmerDatabaseCreator *db, unsigned pharma, FILE *geoFile, GeoKDPage& page, unsigned pos,
 			ThreePointData *start, ThreePointData *end, ThreePointData *begin, unsigned depth);
 
+	void writeMIDs();
+
 	unsigned long stats[LastStat];
 
 	const Pharmas& pharmas;
@@ -387,12 +390,13 @@ private:
 
 	MTQueue< vector<MolDataCreator*> > molDataWorkQ;
 
+	vector<unsigned> mids;
 	unsigned nThreads;
 
 public:
 	PharmerDatabaseCreator(const Pharmas& ps, const filesystem::path& dbp,
 			 unsigned nt) :
-				dbpath(dbp), info(NULL), molData(NULL), pointDataArrays(NULL),
+				dbpath(dbp), info(NULL), molData(NULL), midList(NULL), pointDataArrays(NULL),
 				  pharmas(ps), tindex(ps.size()),
 				tcnt(nt), molDataWorkQ(32),
 				nThreads(nt)
@@ -428,6 +432,8 @@ public:
 			fclose(info);
 		if (molData)
 			fclose(molData);
+		if(midList)
+			fclose(midList);
 		for(unsigned i = 0, n = pointDataFiles.size(); i < n; i++)
 		{
 			pointDataFiles[i].close();
@@ -496,6 +502,7 @@ class PharmerDatabaseSearcher
 	MMappedRegion<unsigned char> molData;
 	MMappedRegion<ThreePointData>  * tripletDataArrays;
 	MMappedRegion<GeoKDPage> * geoDataArrays;
+	MMappedRegion<unsigned> midList;
 
 	unsigned goodChunkSize;
 
@@ -542,6 +549,17 @@ public:
 	unsigned long numConformations() const
 	{
 		return stats[NumConfs];
+	}
+
+	//translate file-offset mid to true (lowest of cmpd) mid
+	unsigned getBaseMID(unsigned lmid) const
+	{
+		unsigned len = midList.length();
+		if(len == 0)
+			return lmid;
+		if(lmid >= len)
+			return midList[len-1];
+		return midList[lmid];
 	}
 
 	//generate ranking and return index of best triplet

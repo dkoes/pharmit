@@ -165,9 +165,13 @@ void MolDataCreator::createBuffer()
 }
 
 //write out the data with proper offsets to files (assumed positioned properly and single threaded)
-void MolDataCreator::write(FILE *molData, vector<PointDataFile >& pointDataFiles)
+unsigned MolDataCreator::write(FILE *molData, vector<PointDataFile >& pointDataFiles)
 {
 	unsigned long location = ftell(molData);
+
+	location = ftell(molData);
+
+	unsigned mid = location >> (TPD_MOLDATA_BITS - TPD_MOLID_BITS);
 
 	//update the point datas
 
@@ -204,6 +208,7 @@ void MolDataCreator::write(FILE *molData, vector<PointDataFile >& pointDataFiles
 				<< "Input database is too large (moldata more than 1TB). Split and retry.\n";
 		abort();
 	}
+	return mid;
 }
 
 void MolData::clear()
@@ -295,6 +300,12 @@ void PharmerDatabaseCreator::initializeDatabases()
 	lookup = fopen(lpath.file_string().c_str(), "w"); //create
 	assert(lookup);
 
+	//mid index (to better support lots of conformers)
+	filesystem::path mpath = dbpath;
+	mpath /= "mids";
+	midList = fopen(mpath.file_string().c_str(), "w"); //create
+	assert(midList);
+
 	//moldata
 	filesystem::path mdpath = dbpath;
 	mdpath /= "molData";
@@ -327,6 +338,26 @@ void PharmerDatabaseCreator::initializeDatabases()
 }
 
 
+//write out index into "correct" mid
+void PharmerDatabaseCreator::writeMIDs()
+{
+	if(midList)
+	{
+		fseek(midList, 0, SEEK_SET);
+		unsigned cnt = 0;
+		for(unsigned i = 0, n = mids.size(); i < n; i++)
+		{
+			fwrite(&mids[i],sizeof(unsigned),1,midList);
+
+			while(i+1 < n && cnt < mids[i+1])
+			{
+				fwrite(&mids[i],sizeof(unsigned),1,midList);
+				cnt++;
+			}
+		}
+	}
+}
+
 void PharmerDatabaseCreator::writeStats()
 {
 	if (info)
@@ -339,6 +370,7 @@ void PharmerDatabaseCreator::writeStats()
 	{
 		tindex.dump(lookup);
 	}
+	writeMIDs();
 }
 
 //add a multiconformer mol to the database; weighted is passed in to assure
@@ -390,7 +422,8 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, double weight)
 
 	//generate moldata
 	MolDataCreator mdc(pharmas, tindex, mol, weight, stats[NumMols]);
-	mdc.write(molData, pointDataFiles);
+	unsigned mid = mdc.write(molData, pointDataFiles);
+	mids.push_back(mid);
 	stats[NumMols]++;
 	stats[NumConfs] += mdc.NumConfs();
 	stats[NumDbPoints] += mdc.NumPoints();
@@ -733,7 +766,8 @@ void PharmerDatabaseCreator::createSpatialIndex()
 	for(unsigned i = 0, n = binnedCnts.size(); i < n; i ++)
 		fwrite(binnedCnts[i].c_array(),  LENGTH_BINS*LENGTH_BINS*LENGTH_BINS, sizeof(unsigned), binData);
 
-	cout << stats[NumUniquePoints] << "\tunique points\n";
+	cout << stats[NumConfs] << "\tconformations\n";
+	cout << stats[NumMols] << "\tmolecules\n";
 	cout << stats[NumInternalPages] << "\tinternal pages\n";
 	cout << "Index creation time: " << t.elapsed() << "s ("
 			<< t.elapsedProcess() << "s)" << "\n";
@@ -776,6 +810,12 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	filesystem::path mdpath = dbpath;
 	mdpath /= "molData";
 	molData.map(mdpath.file_string(), true, true);
+
+	//mids
+	filesystem::path mpath = dbpath;
+	mpath /= "mids";
+	if(filesystem::exists(mpath)) //back-wards compat
+		midList.map(mpath.file_string(), true, true,true);
 
 	//length histogram
 	filesystem::path binpath = dbpath / "binCnts";
@@ -892,7 +932,8 @@ void PharmerDatabaseSearcher::queryProcessPoints(QueryInfo& t,
 	unsigned cnt = 0;
 	for (const ThreePointData *itr = start; itr != end; itr++)
 	{
-		if (t.M.add(*itr, t.triplet, t.which))
+		unsigned mid = getBaseMID(itr->molID());
+		if (t.M.add(mid, *itr, t.triplet, t.which))
 		{
 			cnt++;
 		}

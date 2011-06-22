@@ -101,7 +101,7 @@ class TripletMatchAllocator
 	BumpAllocator<1024*1024, false> allocator; //1MB chunks, NOT THREAD SAFE
 public:
 	TripletMatchAllocator(unsigned qsz);
-	TripletMatch* newTripletMatch(const ThreePointData& tdata);
+	TripletMatch* newTripletMatch(unsigned mid, const ThreePointData& tdata);
 	TripletMatchInfoArray* newTripletMatchInfoArray(unsigned numEl);
 
 	void clear()
@@ -266,9 +266,9 @@ struct TripletMatch
 	TripletMatchInfoArray matches[]; //indexed by query size
 	//space must be reserved by allocator
 
-	TripletMatch(const ThreePointData& tdata, unsigned numtrip):
+	TripletMatch(unsigned mid, const ThreePointData& tdata, unsigned numtrip):
 		mustMatch(0), nextMustMatch(-1),
-		id(tdata.molPos), molid(tdata.molID()), weight(ThreePointData::unreduceWeight(tdata.weight)),
+		id(tdata.molPos), molid(mid), weight(ThreePointData::unreduceWeight(tdata.weight)),
 		currIndex(-1), numTriplets(numtrip), nRBnds(tdata.nrot)
 	{
 		for (unsigned i = 0; i < numTriplets; i++)
@@ -436,7 +436,7 @@ public:
 
 	//allocates a triplet match and returns it
 	//alternatively, if returns an already created triplet match
-	TripletMatch* create(const ThreePointData& tdata)
+	TripletMatch* create(unsigned mid, const ThreePointData& tdata)
 	{
 		unsigned long id = tdata.molPos;
 
@@ -451,7 +451,7 @@ public:
 			if (pos >= table_size)
 				pos = 0;
 		}
-		TripletMatch *match = alloc.newTripletMatch(tdata);
+		TripletMatch *match = alloc.newTripletMatch(mid, tdata);
 		table[pos] = match;
 		num_elements++;
 
@@ -511,7 +511,7 @@ public:
 	}
 
 	//add point, return true if triplet is actual valid
-	bool add(const ThreePointData& tdata, const QueryTriplet& trip, unsigned which)
+	bool add(unsigned mid, const ThreePointData& tdata, const QueryTriplet& trip, unsigned which)
 	{
 		//see if we've seen this match already
 		unsigned long key = tdata.molPos;
@@ -545,7 +545,7 @@ public:
 			if(!trip.isMatch(tdata))
 				return false;
 			//create the match
-			match = seenMatches.create(tdata);
+			match = seenMatches.create(mid, tdata);
 		}
 
 		//create match info

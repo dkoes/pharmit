@@ -502,6 +502,8 @@ static void handle_dbsearch_cmd()
 	params.reduceConfs = ReduceConfs;
 	params.orientationsPerConf = MaxOrient;
 	params.maxHits = MaxHits;
+	if(SortRMSD)
+		params.sort = SortType::RMSD;
 
 	PharmerQuery query(databases, qfile, filesystem::extension(inputFiles[0]),
 			params, NThreads*databases.size());

@@ -43,11 +43,11 @@ TripletMatchAllocator::TripletMatchAllocator(unsigned qsz) :
 
 }
 
-TripletMatch* TripletMatchAllocator::newTripletMatch(
+TripletMatch* TripletMatchAllocator::newTripletMatch(unsigned mid,
 		const ThreePointData& tdata)
 {
 	void *ptr = allocator.alloc(PMsize);
-	return new (ptr) TripletMatch(tdata, qsize);
+	return new (ptr) TripletMatch(mid, tdata, qsize);
 }
 
 unsigned TripletMatchInfoArray::allocSize(unsigned numEl)
