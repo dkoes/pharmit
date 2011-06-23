@@ -348,7 +348,7 @@ void PharmerDatabaseCreator::writeMIDs()
 		for(unsigned i = 0, n = mids.size(); i < n; i++)
 		{
 			fwrite(&mids[i],sizeof(unsigned),1,midList);
-
+			cnt++;
 			while(i+1 < n && cnt < mids[i+1])
 			{
 				fwrite(&mids[i],sizeof(unsigned),1,midList);
