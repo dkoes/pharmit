@@ -261,25 +261,39 @@ public:
 
 						TiXmlElement *orig = toligand ? el->FirstChildElement("target") : el->FirstChildElement("origin");
 						if(orig == NULL)
-							break;
-						orig->Attribute("x3", &point.x);
-						orig->Attribute("y3", &point.y);
-						orig->Attribute("z3", &point.z);
-						orig->Attribute("tolerance",&point.radius);
+						{	//directionless, just a position
+							TiXmlElement *pos = el->FirstChildElement("position");
+							if(!pos)
+								break;
 
-						TiXmlElement *targ = toligand ? el->FirstChildElement("origin") : el->FirstChildElement("target");
-						if (targ != NULL)
+							pos->Attribute("x3", &point.x);
+							pos->Attribute("y3", &point.y);
+							pos->Attribute("z3", &point.z);
+							pos->Attribute("tolerance",&point.radius);
+						}
+						else
 						{
-							vector3 vec;
-							targ->Attribute("x3", &vec.x());
-							targ->Attribute("y3", &vec.y());
-							targ->Attribute("z3", &vec.z());
-							vec -= vector3(point.x, point.y, point.z);
-							double t = 0;
-							targ->Attribute("tolerance",&t);
-							//use tolerance to compute vec pivot
-							point.vecpivot = atan2(t, vec.length());
-							point.vecs.push_back(vec);
+							orig->Attribute("x3", &point.x);
+							orig->Attribute("y3", &point.y);
+							orig->Attribute("z3", &point.z);
+							orig->Attribute("tolerance", &point.radius);
+
+							TiXmlElement *targ =
+									toligand ? el->FirstChildElement("origin")
+											: el->FirstChildElement("target");
+							if (targ != NULL)
+							{
+								vector3 vec;
+								targ->Attribute("x3", &vec.x());
+								targ->Attribute("y3", &vec.y());
+								targ->Attribute("z3", &vec.z());
+								vec -= vector3(point.x, point.y, point.z);
+								double t = 0;
+								targ->Attribute("tolerance", &t);
+								//use tolerance to compute vec pivot
+								point.vecpivot = atan2(t, vec.length());
+								point.vecs.push_back(vec);
+							}
 						}
 						points.push_back(point);
 					}
