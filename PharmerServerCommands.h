@@ -399,7 +399,9 @@ public:
 			{
 				if (format == NULL)
 				{
-					sendError(IO, "Could not understand molecular data.");
+					stringstream err;
+					err << "Could not understand molecular data in " << filename << " (OpenBabel compatible format required).";
+					sendError(IO, err.str().c_str());
 					return;
 				}
 
