@@ -63,6 +63,9 @@ string cgiGetString(Cgicc& cgi, const string& name);
 //get a double value, 0 is returned if there's a problem
 double cgiGetDouble(Cgicc& cgi, const string& name);
 
+//dump the cgi request for debugging
+string cgiDump(Cgicc& cgi);
+
 /*
  * This class provides access to the input byte-stream and environment
  * variable interfaces of a FastCGI request.  It is fully compatible with the

@@ -93,6 +93,7 @@ protected:
 			if (qid == 0)
 			{
 				sendError(IO, "Bad data request. Invalid query id.");
+				if(LOG) fprintf(LOG,"Query command: %s\n",cgiDump(CGI).c_str());
 				return WebQueryHandle();
 			}
 			else

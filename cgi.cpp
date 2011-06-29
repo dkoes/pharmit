@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
-
+#include <sstream>
 #include "cgi.h"
 
 namespace cgicc {
@@ -64,7 +64,16 @@ double cgiGetDouble(Cgicc& cgi, const string& name)
 	else
 		return 0;
 }
+
+string cgiDump(Cgicc& cgi)
+{
+	stringstream ret;
+	ret << "cgiquery " << cgi.getEnvironment().getQueryString() << "\n"
+	<< "cgipost " << cgi.getEnvironment().getPostData() << "\n";
+	return ret.str();
 }
+}
+
 cgicc::FastCgiIO::FastCgiIO(FCGX_Request& request) :
 	std::ostream(&fOutBuf), fRequest(request), fOutBuf(request.out), fErrBuf(
 			request.err), fErr(&fErrBuf)
