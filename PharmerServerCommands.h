@@ -216,7 +216,7 @@ public:
 						root), oldqid);
 				if (qid == 0) //invalid query
 				{
-					sendError(IO, "Invalid query.");
+					sendError(IO, "Invalid query.  Three distinct features are required.");
 				}
 				else
 				{
