@@ -627,8 +627,10 @@ static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, con
 void getPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoint>& points)
 {
 	vector< vector<PharmaPoint> > pts;
+	points.clear();
 	getPharmaPointsMC(pharmas, mol, pts);
-	points.swap(pts[0]);
+	if(pts.size() > 0)
+		points.swap(pts[0]);
 }
 
 
