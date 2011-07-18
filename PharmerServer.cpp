@@ -197,6 +197,7 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 		cerr << "Could not open log directory " << logname << "\n";
 		exit(-1);
 	}
+	setlinebuf(LOG);
 
 	WebQueryManager queries(databases);
 
@@ -248,15 +249,12 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 		unsigned npurged = queries.purgeOldQueries();
 		if(npurged > 0)
 		{
-			char buffer[1024];
 			posix_time::ptime t(posix_time::second_clock::local_time());
 			SpinLock lock(logmutex);
 			fprintf(LOG, "purged %s %d\n", posix_time::to_simple_string(t).c_str(), npurged);
 
-			//return mem to system, display stats
+			//return mem to system
 			MallocExtension::instance()->ReleaseFreeMemory();
-			MallocExtension::instance()->GetStats(buffer, 1024);
-			fprintf(LOG, "%s", buffer);
 			fflush(LOG);
 		}
 	}

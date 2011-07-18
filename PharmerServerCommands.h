@@ -60,6 +60,7 @@ protected:
 		if(LOG)
 		{
 			fprintf(LOG,"error %s\n", msg);
+			fflush(LOG);
 		}
 	}
 
