@@ -464,7 +464,7 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 
 
 //return location of max degree, return false if no nonzero degrees
-static bool findMax(unsigned *degrees, unsigned n, unsigned& maxi)
+static bool findMax(vector<unsigned>& degrees, unsigned n, unsigned& maxi)
 {
 	unsigned m = 0;
 	for(unsigned i = 0; i < n; i++)
@@ -534,9 +534,8 @@ static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, con
 	unsigned n = points.size();
 	vector<PharmaPoint> npts;
 	npts.reserve(n);
-	double distance[n][n];
-	unsigned degrees[n];
-	memset(degrees, 0, sizeof(degrees));
+	vector< vector<double> > distance(n, vector<double>(n, 0));
+	vector<unsigned> degrees(n,0);
 
 	//compute distances and degrees (number of close neighbors)
 	for(unsigned i = 0; i < n; i++)
