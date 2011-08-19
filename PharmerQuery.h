@@ -185,6 +185,7 @@ public:
 	void outputMol(const QueryResult* mol, ostream& out, bool minimize = false);
 	void outputMol(unsigned index, ostream& out, bool jsonHeader, bool minimize = false);
 
+	void getZINCIDs(vector<unsigned>& ids);
 	//attempt to cancel, non-blocking, query neest time to wrap up
 	void cancel();
 	bool finished(); //okay to deallocate, user may still care though

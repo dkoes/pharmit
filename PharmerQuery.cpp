@@ -634,6 +634,32 @@ void PharmerQuery::outputMol(unsigned index, ostream& out, bool jsonHeader, bool
 	outputMol(m, out, minimize);
 }
 
+//let ZINC know that someone is downloading all these compounds
+void PharmerQuery::getZINCIDs(vector<unsigned>& ids)
+{
+	ids.clear();
+	loadResults();
+	SpinLock lock(mutex);
+	//copy so we can sort weirdly and release access to results
+	vector<QueryResult*> myres = results;
+	lock.release();
+
+	for (unsigned i = 0, n = myres.size(); i < n; i++)
+	{
+		access();
+		if(myres[i]->name[0] == 'Z' && myres[i]->name[1] == 'I' &&
+				myres[i]->name[2] == 'N' && myres[i]->name[3] == 'C')
+		{
+			unsigned id = 0;
+			id = atoi(myres[i]->name+4);
+			if(id > 0)
+			{
+				ids.push_back(id);
+			}
+		}
+	}
+}
+
 void PharmerQuery::print(ostream& out) const
 {
 	Json::Value root;

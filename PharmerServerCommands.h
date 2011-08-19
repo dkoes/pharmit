@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string>
 #include <cstdio>
 #include <google/malloc_extension.h>
+#include <curl/curl.h>
 
 using namespace std;
 using namespace cgicc;
@@ -490,6 +491,42 @@ public:
 					<< "Content-Disposition: attachment; filename=query_results.sdf\n";
 			IO << endl;
 			query->outputMols(IO);
+		}
+	}
+
+};
+
+/* Distribution of major portions of ZINC needs to be tracked through
+ * their website, so if downloading a whole set of ZINC compounds, inform them.
+ */
+class RegisterZINC : public QueryCommand
+{
+public:
+	RegisterZINC(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
+		QueryCommand(l, lm, qs)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		WebQueryHandle query = getQuery(CGI, IO);
+		if (query)
+		{
+			vector<unsigned> ids;
+			query->getZINCIDs(ids);
+			CURL *h = curl_easy_init();
+
+			for(unsigned i = 0, n = ids.size(); i < n; i++)
+			{
+				unsigned id = ids[i];
+				stringstream url;
+				url << "http://zinc12.docking.org/apps/ZINCPharmer.php?";
+				url << id;
+				curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
+				curl_easy_perform(h);
+				cerr << "registered " << id << " with zinc\n";
+			}
+			curl_easy_cleanup(h);
 		}
 	}
 
