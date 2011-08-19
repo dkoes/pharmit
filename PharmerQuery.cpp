@@ -647,6 +647,7 @@ void PharmerQuery::getZINCIDs(vector<unsigned>& ids)
 	for (unsigned i = 0, n = myres.size(); i < n; i++)
 	{
 		access();
+		setExtraInfo(*myres[i]); //there is a slight race condition here..
 		if(myres[i]->name[0] == 'Z' && myres[i]->name[1] == 'I' &&
 				myres[i]->name[2] == 'N' && myres[i]->name[3] == 'C')
 		{

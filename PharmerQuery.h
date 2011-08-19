@@ -59,12 +59,12 @@ struct QueryResult
 
 	QueryResult() : c(NULL)
 	{
-		name[0] = 0;
+		memset(name,0,QR_NAME_SIZE);
 	}
 
 	QueryResult(const CorrespondenceResult *c): c(c)
 	{
-		name[0] = 0;
+		memset(name,0,QR_NAME_SIZE);
 	}
 };
 
