@@ -457,7 +457,6 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 		cerr << "Parse " << e.what() << "\n";
 		return false;
 	}
-	cerr << "parsed points\n";
 	return true;
 }
 
