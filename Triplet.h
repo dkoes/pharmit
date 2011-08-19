@@ -435,7 +435,6 @@ protected:
 				}
 				//0 is reserved
 				mask <<= 1;
-				cerr << "mask " << mask << "\n";
 			}
 		}
 	}
