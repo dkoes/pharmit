@@ -229,6 +229,7 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 					("receptor",shared_ptr<Command>(new Receptor(LOG, logmutex)))
 					("echo",shared_ptr<Command>(new Echo(LOG, logmutex)))
 					("savedata",shared_ptr<Command>(new SaveData(LOG, logmutex)))
+					("registerzinc",shared_ptr<Command>(new RegisterZINC(LOG, logmutex,queries)))
 					("getstatus",shared_ptr<Command>(new GetStatus(LOG, logmutex, queries)));
 
 
