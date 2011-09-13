@@ -588,5 +588,7 @@ int main(int argc, char *argv[])
 			cerr << Cmd << " not a valid command.\n";
 		exit(-1);
 	}
+
+	return 0;
 }
 
