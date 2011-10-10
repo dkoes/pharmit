@@ -85,6 +85,8 @@ cl::opt<bool> SortRMSD("sort-rmsd", cl::desc("Sort results by RMSD."),
 		cl::init(false));
 cl::opt<bool> FilePartition("file-partition", cl::desc("Partion database slices based on files"), cl::init(false));
 
+cl::opt<string> Receptor("receptor", cl::desc("Receptor file for interaction pharmacophroes"));
+
 typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&);
 
 static void pharmaNoOutput(ostream&, vector<PharmaPoint>&)
@@ -205,9 +207,28 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 		OBMol mol;
 		vector<PharmaPoint> points;
 
+		OBMol receptor;
+		if(Receptor.size() > 0)
+		{
+			OBConversion rconv;
+			OBFormat *rformat = rconv.FormatFromExt(Receptor.c_str());
+			if(format)
+			{
+				rconv.SetInFormat(rformat);
+				ifstream rin(Receptor.c_str());
+				rconv.Read(&receptor, &rin);
+			}
+		}
+
 		while (conv.Read(&mol, &in))
 		{
-			getPharmaPoints(pharmas, mol, points);
+			if(receptor.NumAtoms() > 0)
+			{
+				vector<PharmaPoint> screenedout;
+				getInteractionPoints(pharmas, receptor, mol, points, screenedout);
+			}
+			else
+				getPharmaPoints(pharmas, mol, points);
 			if (!Quiet)
 				pharmaTxtOutput(cout, points);
 			outfn(out, points);
