@@ -403,7 +403,7 @@ public:
 				if (format == NULL)
 				{
 					stringstream err;
-					err << "Could not understand molecular data in " << filename << " (OpenBabel compatible format required).";
+					err << "Could not understand molecular data in " << filename << " (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format.";
 					sendError(IO, err.str().c_str());
 					return;
 				}
@@ -515,7 +515,6 @@ public:
 			vector<unsigned> ids;
 			query->getZINCIDs(ids);
 			CURL *h = curl_easy_init();
-
 			for(unsigned i = 0, n = ids.size(); i < n; i++)
 			{
 				unsigned id = ids[i];
