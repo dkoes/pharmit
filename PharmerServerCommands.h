@@ -523,8 +523,9 @@ public:
 				url << "http://zinc12.docking.org/apps/ZINCPharmer.php?";
 				url << id;
 				curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
+				curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
+				curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 3);
 				curl_easy_perform(h);
-				cerr << "registered " << id << " with zinc\n";
 			}
 			curl_easy_cleanup(h);
 		}
