@@ -465,25 +465,6 @@ static void handle_dbsearch_cmd()
 				<< "Warning: pharmaspec option not valid for database search; database specification will be used instead\n";
 	}
 
-	//query file
-	if (inputFiles.size() != 1)
-	{
-		cerr << "Need single input pharmacophore query file.\n";
-		exit(-1);
-	}
-
-	if (!PharmerQuery::validFormat(filesystem::extension(inputFiles[0])))
-	{
-		cerr << "Invalid extension for query file: " << inputFiles[0] << "\n";
-		exit(-1);
-	}
-	ifstream qfile(inputFiles[0].c_str());
-	if (!qfile)
-	{
-		cerr << "Could not open query file: " << inputFiles[0] << "\n";
-		exit(-1);
-	}
-
 	//databases
 	if (Database.size() == 0)
 	{
@@ -498,6 +479,8 @@ static void handle_dbsearch_cmd()
 
 	if(!Quiet)
 		cout << "Searching " << totalC << " conformations of " << totalM << " compounds.\n";
+
+
 	//output file
 	string oext = filesystem::extension(outputFile);
 	ofstream out;
@@ -526,42 +509,71 @@ static void handle_dbsearch_cmd()
 	if(SortRMSD)
 		params.sort = SortType::RMSD;
 
-	PharmerQuery query(databases, qfile, filesystem::extension(inputFiles[0]),
-			params, NThreads*databases.size());
-
-	string err;
-	if (!query.isValid(err))
-	{
-		cerr << err << "\n";
-		exit(-1);
-	}
-	if (ShowQuery)
-		query.print(cout);
-
-	Timer timer;
-	query.execute(); //blocking
-
+	//data parameters
 	DataParameters dparams;
 	dparams.extraInfo = ExtraInfo;
 	dparams.sort = SortType::RMSD;
 
-	if (Print) //dump to stdout
+	//query file
+	if (inputFiles.size() >= 1)
 	{
-		query.outputData(dparams, cout);
+		cerr << "Need input pharmacophore query file(s).\n";
+		exit(-1);
 	}
 
-	if (oext != ".sdf") //text output
+	Timer timer;
+
+	for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
 	{
-		query.outputData(dparams, out);
-	}
-	else //mol output
-	{
-		query.outputMols(out);
+
+		if (!PharmerQuery::validFormat(filesystem::extension(inputFiles[i])))
+		{
+			cerr << "Invalid extension for query file: " << inputFiles[i]
+					<< "\n";
+			exit(-1);
+		}
+		ifstream qfile(inputFiles[i].c_str());
+		if (!qfile)
+		{
+			cerr << "Could not open query file: " << inputFiles[i] << "\n";
+			exit(-1);
+		}
+
+		PharmerQuery query(databases, qfile,
+				filesystem::extension(inputFiles[i]), params,
+				NThreads * databases.size());
+
+		string err;
+		if (!query.isValid(err))
+		{
+			cerr << err << "\n";
+			exit(-1);
+		}
+		if (ShowQuery)
+			query.print(cout);
+
+		query.execute(); //blocking
+
+		if (Print) //dump to stdout
+		{
+			query.outputData(dparams, cout);
+		}
+
+		if (oext != ".sdf") //text output
+		{
+			query.outputData(dparams, out);
+		}
+		else //mol output
+		{
+			query.outputMols(out);
+		}
+
+		if(!Quiet)
+			cout << "NumResults: " << query.numResults() << "\n";
 	}
 
-	cout << "Time: " << timer.elapsed() << "\n";
-	cout << "NumResults: " << query.numResults() << "\n";
-
+	if(!Quiet)
+		cout << "Time: " << timer.elapsed() << "\n";
 }
 
 int main(int argc, char *argv[])
