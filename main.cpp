@@ -532,6 +532,7 @@ static void handle_dbsearch_cmd()
 					<< "\n";
 			exit(-1);
 		}
+		cout << "Query " << inputFiles[i] << "\n";
 		ifstream qfile(inputFiles[i].c_str());
 		if (!qfile)
 		{
@@ -568,12 +569,10 @@ static void handle_dbsearch_cmd()
 			query.outputMols(out);
 		}
 
-		if(!Quiet)
-			cout << "NumResults: " << query.numResults() << "\n";
+		cout << "NumResults: " << query.numResults() << "\n";
 	}
 
-	if(!Quiet)
-		cout << "Time: " << timer.elapsed() << "\n";
+	cout << "Time: " << timer.elapsed() << "\n";
 }
 
 int main(int argc, char *argv[])
