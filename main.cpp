@@ -515,7 +515,7 @@ static void handle_dbsearch_cmd()
 	dparams.sort = SortType::RMSD;
 
 	//query file
-	if (inputFiles.size() >= 1)
+	if (inputFiles.size() < 1)
 	{
 		cerr << "Need input pharmacophore query file(s).\n";
 		exit(-1);
