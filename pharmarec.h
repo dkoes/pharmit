@@ -190,7 +190,7 @@ struct PharmaPoint {
 		x(0), y(0), z(0), size(0), pharma(p), radius(p->defaultSearchRadius), vecpivot(0), requirements(Required), minSize(0), maxSize(0)  {
 	}
 
-	PharmaPoint(double xc, double yc, double zc, unsigned sz, const Pharma* p) :
+	PharmaPoint(double xc, double yc, double zc, const Pharma* p) :
 		x(xc), y(yc), z(zc), size(),pharma(p), radius(p->defaultSearchRadius), vecpivot(0), requirements(Required), minSize(0), maxSize(0)  {
 	}
 
@@ -237,6 +237,9 @@ struct PharmaPoint {
 
 //read from a json formatted stream
 extern bool readPharmaPointsJSON(const Pharmas& pharma, Json::Value& data, vector<PharmaPoint>& points);
+
+//special case - identify pharmagist output
+bool isPharmaGist(const Pharmas& pharmas, const string& mol, vector<PharmaPoint>& points);
 
 //identify all pharma points in mol
 extern void getPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoint>& points);

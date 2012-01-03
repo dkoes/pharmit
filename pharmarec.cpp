@@ -1,21 +1,21 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
-Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+ Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /*
  * pharmarec.cpp
@@ -43,7 +43,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/foreach.hpp>
 using namespace boost;
 
-cl::opt<bool> DKoesTest("dkoes",cl::Hidden);
+cl::opt<bool> DKoesTest("dkoes", cl::Hidden);
 
 //default pharmacophore definitions
 //The original definitions are due to Lidio Meireles and have been subsequently modified by me (dkoes)
@@ -51,39 +51,28 @@ const char *aromatic[] =
 { "a1aaaaa1", "a1aaaa1", NULL };
 
 const char * hydrogen_donor[] =
-{ "[#7!H0&!$(N-[SX4](=O)(=O)[CX4](F)(F)F)]", "[#8!H0&!$([OH][C,S,P]=O)]", "[#16!H0]", NULL };
+{ "[#7!H0&!$(N-[SX4](=O)(=O)[CX4](F)(F)F)]", "[#8!H0&!$([OH][C,S,P]=O)]",
+		"[#16!H0]", NULL };
 
-const char
-		* hydrogen_acceptor[] =
-		{
-				"[#7&!$([nX3])&!$([NX3]-*=[!#6])&!$([NX3]-[a])&!$([NX4])&!$(N=C([C,N])N)]",
-				"[$([O])&!$([OX2](C)C=O)&!$(*(~a)~a)]", NULL };
+const char * hydrogen_acceptor[] =
+{ "[#7&!$([nX3])&!$([NX3]-*=[!#6])&!$([NX3]-[a])&!$([NX4])&!$(N=C([C,N])N)]",
+		"[$([O])&!$([OX2](C)C=O)&!$(*(~a)~a)]", NULL };
 
 const char * positive_ion[] =
-{
-		"[+,+2,+3,+4]",
-		//amidine
+{ "[+,+2,+3,+4]",
+//amidine
 		"[$(CC)](=N)N",
 		//guanidine
-		"[$(C(N)(N)=N)]",
-		"[$(n1cc[nH]c1)]",
-		NULL };
+		"[$(C(N)(N)=N)]", "[$(n1cc[nH]c1)]", NULL };
 
 const char * negative_ion[] =
-{ 		"[-,-2,-3,-4]",
-		"C(=O)[O-,OH,OX1]",
-		"[$([S,P](=O)[O-,OH,OX1])]",
-		"c1[nH1]nnn1",
-		"c1nn[nH1]n1",
-		"C(=O)N[OH1,O-,OX1]",
-		"C(=O)N[OH1,O-]",
+{ "[-,-2,-3,-4]", "C(=O)[O-,OH,OX1]", "[$([S,P](=O)[O-,OH,OX1])]",
+		"c1[nH1]nnn1", "c1nn[nH1]n1", "C(=O)N[OH1,O-,OX1]", "C(=O)N[OH1,O-]",
 		"CO(=N[OH1,O-])",
 		//trifluoromethyl sulfonamide
-		"[$(N-[SX4](=O)(=O)[CX4](F)(F)F)]",
-		NULL };
+		"[$(N-[SX4](=O)(=O)[CX4](F)(F)F)]", NULL };
 
-const char
-		*hydrophobic[] =
+const char *hydrophobic[] =
 		{
 				"a1aaaaa1",
 				"a1aaaa1",
@@ -103,44 +92,34 @@ const char
 				"[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]",
 				"[$([CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]",
 				// sulfur (apparently)
-				"[$([S]~[#6])&!$(S~[!#6])]",
-				NULL };
+				"[$([S]~[#6])&!$(S~[!#6])]", NULL };
 
-const vector<Pharma> defaultPharmaVec = assign::list_of
-		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
-		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
-		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
-		(Pharma(3, "PositiveIon", positive_ion, 7, .75,0.1))
-		(Pharma(4, "NegativeIon", negative_ion, 8, .75,0.1))
-		(Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0))
-		;
+const vector<Pharma> defaultPharmaVec = assign::list_of(
+		Pharma(0, "Aromatic", aromatic, 18, 1.1, 0.1))(
+		Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5, 0.1))(
+		Pharma(2, "HydrogenAcceptor", hydrogen_acceptor, 89, .5, 0.1))(
+		Pharma(3, "PositiveIon", positive_ion, 7, .75, 0.1))(
+		Pharma(4, "NegativeIon", negative_ion, 8, .75, 0.1))(
+		Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0));
 
 //TODO: make this user-configurable
-static unordered_map<string, PharmaInteract> pharmaInteractions = assign::map_list_of
-		("Aromatic",  PharmaInteract(0, 5, 1))
-		("HydrogenDonor", PharmaInteract(2, 4, 1))
-		("HydrogenAcceptor", PharmaInteract(1, 4, 1))
-		("PositiveIon", PharmaInteract(4, 5, 1))
-		("NegativeIon", PharmaInteract(3, 5, 1))
-		("Hydrophobic", PharmaInteract(5, 6, 3))
-		;
+static unordered_map<string, PharmaInteract> pharmaInteractions =
+		assign::map_list_of("Aromatic", PharmaInteract(0, 5, 1))(
+				"HydrogenDonor", PharmaInteract(2, 4, 1))("HydrogenAcceptor",
+				PharmaInteract(1, 4, 1))("PositiveIon", PharmaInteract(4, 5, 1))(
+				"NegativeIon", PharmaInteract(3, 5, 1))("Hydrophobic",
+				PharmaInteract(5, 6, 3));
 //reduced set of pharmacophore definitions for proteins
 const char * positive_ion_protein[] =
-{
-		"[+,+2,+3,+4]",
-		//amidine
-		//guanidine
-		"[$(C(N)(N)=N)]",
-		"[$(n1cc[nH]c1)]",
-		NULL };
+{ "[+,+2,+3,+4]",
+//amidine
+//guanidine
+		"[$(C(N)(N)=N)]", "[$(n1cc[nH]c1)]", NULL };
 
 const char * negative_ion_protein[] =
-{ 		"[-,-2,-3,-4]",
-		"C(=O)[O-,OH,OX1]",
-		NULL };
+{ "[-,-2,-3,-4]", "C(=O)[O-,OH,OX1]", NULL };
 
-const char
-		*hydrophobic_protein[] =
+const char *hydrophobic_protein[] =
 		{
 				"a1aaaaa1",
 				"a1aaaa1",
@@ -150,30 +129,28 @@ const char
 
 				"[CH2X4,CH1X3,CH0X2]~[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]",
 				"[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]",
-				"[$([S]~[#6])&!$(S~[!#6])]",
-				NULL };
+				"[$([S]~[#6])&!$(S~[!#6])]", NULL };
 
-static const vector<Pharma> proteinPharmaVec = assign::list_of
-		(Pharma(0, "Aromatic", aromatic, 18, 1.1,0.1))
-		(Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5,0.1))
-		(Pharma(2, "HydrogenAcceptor", hydrogen_acceptor,89, .5, 0.1))
-		(Pharma(3, "PositiveIon", positive_ion_protein, 7, .75,0.1))
-		(Pharma(4, "NegativeIon", negative_ion_protein, 8, .75,0.1))
-		(Pharma(5, "Hydrophobic", hydrophobic_protein, 6, 1.0, 2.0))
-		;
+static const vector<Pharma> proteinPharmaVec = assign::list_of(
+		Pharma(0, "Aromatic", aromatic, 18, 1.1, 0.1))(
+		Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5, 0.1))(
+		Pharma(2, "HydrogenAcceptor", hydrogen_acceptor, 89, .5, 0.1))(
+		Pharma(3, "PositiveIon", positive_ion_protein, 7, .75, 0.1))(
+		Pharma(4, "NegativeIon", negative_ion_protein, 8, .75, 0.1))(
+		Pharma(5, "Hydrophobic", hydrophobic_protein, 6, 1.0, 2.0));
 static Pharmas proteinPharmas(proteinPharmaVec);
-
 
 //setup lookup tables, pharmas must be initialized
 //use a manually managed array to make sure pointers stay valid
 void Pharmas::initialize(const vector<Pharma>& ps)
 {
-	if(pharmas != NULL) delete [] pharmas;
+	if (pharmas != NULL)
+		delete[] pharmas;
 	nameLookup.clear();
 	anumLookup.clear();
 	pharmas = new Pharma[ps.size()];
 	numPharmas = ps.size();
-	for(unsigned i = 0; i < numPharmas; i++)
+	for (unsigned i = 0; i < numPharmas; i++)
 	{
 		pharmas[i] = ps[i];
 		nameLookup[pharmas[i].name] = i;
@@ -183,23 +160,23 @@ void Pharmas::initialize(const vector<Pharma>& ps)
 
 bool Pharma::operator==(const Pharma& rhs) const
 {
-	if(name != rhs.name)
+	if (name != rhs.name)
 		return false;
-	if(atomic_number_label != rhs.atomic_number_label)
+	if (atomic_number_label != rhs.atomic_number_label)
 		return false;
-	if(index != rhs.index)
+	if (index != rhs.index)
 		return false;
-	if(defaultSearchRadius != rhs.defaultSearchRadius)
+	if (defaultSearchRadius != rhs.defaultSearchRadius)
 		return false;
-	if(getVectors != rhs.getVectors)
-		return false;
-
-	if(smarts.size() != rhs.smarts.size())
+	if (getVectors != rhs.getVectors)
 		return false;
 
-	for(unsigned i = 0, n = smarts.size(); i < n; i++)
+	if (smarts.size() != rhs.smarts.size())
+		return false;
+
+	for (unsigned i = 0, n = smarts.size(); i < n; i++)
 	{
-		if(smarts[i].GetSMARTS() != rhs.smarts[i].GetSMARTS())
+		if (smarts[i].GetSMARTS() != rhs.smarts[i].GetSMARTS())
 			return false;
 	}
 
@@ -210,9 +187,10 @@ bool Pharma::operator==(const Pharma& rhs) const
 //represent pharmas externally with atomic number to support compatibility
 const Pharma* Pharmas::pharmaFromAtomicNumber(int anum) const
 {
-	unordered_map<unsigned, unsigned>::const_iterator pos = anumLookup.find(anum);
+	unordered_map<unsigned, unsigned>::const_iterator pos = anumLookup.find(
+			anum);
 
-	if(pos == anumLookup.end())
+	if (pos == anumLookup.end())
 	{
 		cerr << "Unknown pharma point\n";
 		return NULL;
@@ -224,7 +202,7 @@ const Pharma* Pharmas::pharmaFromAtomicNumber(int anum) const
 const Pharma* Pharmas::pharmaFromName(const string& name) const
 {
 	unordered_map<string, unsigned>::const_iterator pos = nameLookup.find(name);
-	if(pos == nameLookup.end())
+	if (pos == nameLookup.end())
 	{
 		cerr << "Unknown pharma point " << name << "\n";
 		return NULL;
@@ -234,33 +212,32 @@ const Pharma* Pharmas::pharmaFromName(const string& name) const
 
 bool Pharmas::operator==(const Pharmas& rhs) const
 {
-	if(numPharmas != rhs.numPharmas)
+	if (numPharmas != rhs.numPharmas)
 		return false;
-	for(unsigned i = 0; i < numPharmas; i++)
+	for (unsigned i = 0; i < numPharmas; i++)
 	{
-		if(pharmas[i] != rhs.pharmas[i])
+		if (pharmas[i] != rhs.pharmas[i])
 			return false;
 	}
 	return true;
 }
 
-
 static void readVectors(stringstream& str, vector<vector3>& vecs)
 {
-	while(str && ::isblank(str.peek()))
+	while (str && ::isblank(str.peek()))
 		str.get();
 
-	while(str && str.peek() == '[')
+	while (str && str.peek() == '[')
 	{
-		double x,y,z;
+		double x, y, z;
 		str >> x;
 		str >> y;
 		str >> z;
-		vecs.push_back(vector3(x,y,z));
+		vecs.push_back(vector3(x, y, z));
 		char c;
 		str >> c; //end bracket
 
-		while(str && ::isblank(str.peek()))
+		while (str && ::isblank(str.peek()))
 			str.get();
 	}
 
@@ -273,7 +250,6 @@ bool PharmaPoint::read(const Pharmas& pharmas, istream &in)
 	getline(in, line);
 	stringstream str(line);
 
-
 	//init
 	size = 0;
 	vecpivot = 0;
@@ -283,26 +259,26 @@ bool PharmaPoint::read(const Pharmas& pharmas, istream &in)
 	string name;
 	str >> name;
 	pharma = pharmas.pharmaFromName(name);
-	if(pharma == NULL)
+	if (pharma == NULL)
 		return false;
 
 	int anum = 0;
 	str >> anum;
-	if(anum != pharma->atomic_number_label)
+	if (anum != pharma->atomic_number_label)
 		return false;
 
 	str >> x;
 	str >> y;
 	str >> z;
 
-	if(!str)
+	if (!str)
 		return false;
 	readVectors(str, vecs);
 
-	str >>  radius;
+	str >> radius;
 	char r = 0;
 	str >> r;
-	switch(r)
+	switch (r)
 	{
 	case 'r':
 	case 'R':
@@ -329,13 +305,13 @@ ostream &operator<<(ostream &stream, const PharmaPoint& obj)
 	stream << obj.pharma->atomic_number_label << " ";
 	stream << obj.x << ' ' << obj.y << ' ' << obj.z;
 
-	for(unsigned i = 0, n = obj.vecs.size(); i < n; i++)
+	for (unsigned i = 0, n = obj.vecs.size(); i < n; i++)
 	{
-		stream << " [ " << obj.vecs[i].x() << " " << obj.vecs[i].y() << " " << obj.vecs[i].z() << " ]";
+		stream << " [ " << obj.vecs[i].x() << " " << obj.vecs[i].y() << " "
+				<< obj.vecs[i].z() << " ]";
 	}
 	return stream;
 }
-
 
 //read from a json formatted stream
 // {anchors: [name,  wiggle, x1,y1,z1,x2... ], points[ {pharma, radius, weight, x,y,z} ] }
@@ -349,7 +325,7 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 		for (unsigned i = 0, n = jpoints.size(); i < n; i++)
 		{
 			Json::Value jpnt = jpoints[i];
-			if(jpnt.isMember("enabled") && !jpnt["enabled"].asBool())
+			if (jpnt.isMember("enabled") && !jpnt["enabled"].asBool())
 				continue;
 			string name = jpnt["name"].asString();
 			double radius = .1;
@@ -362,9 +338,9 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 			{
 				string req = jpnt["requirement"].asString();
 				algorithm::to_lower(req);
-				if(req == "optional")
+				if (req == "optional")
 					required = PharmaPoint::Optional;
-				else if(req == "notpresent")
+				else if (req == "notpresent")
 					required = PharmaPoint::NotPresent;
 			}
 
@@ -376,7 +352,7 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 					{
 						try
 						{
-							minsize = lexical_cast<unsigned> (
+							minsize = lexical_cast<unsigned>(
 									jpnt["minsize"].asString());
 						} catch (std::exception& e)
 						{
@@ -395,7 +371,7 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 					{
 						try
 						{
-							maxsize = lexical_cast<unsigned> (
+							maxsize = lexical_cast<unsigned>(
 									jpnt["maxsize"].asString());
 						} catch (std::exception& e)
 						{
@@ -410,10 +386,10 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 			double y = jpnt["y"].asDouble();
 			double z = jpnt["z"].asDouble();
 			const Pharma* p = pharmas.pharmaFromName(name);
-			if(p == NULL)
+			if (p == NULL)
 				continue;
 			unsigned size = 1;
-			if(jpnt.isMember("size"))
+			if (jpnt.isMember("size"))
 				size = jpnt["size"].asUInt();
 
 			PharmaPoint pnt;
@@ -436,7 +412,8 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 				}
 				else if (jpnt.isMember("vector"))
 				{ //queries typically have only one vector
-					for (unsigned v = 0, nv = jpnt["vector"].size(); v < nv; v++)
+					for (unsigned v = 0, nv = jpnt["vector"].size(); v < nv;
+							v++)
 					{
 						pnt.vecs.push_back(
 								vector3(jpnt["vector"][v]["x"].asDouble(),
@@ -460,15 +437,13 @@ bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 	return true;
 }
 
-
-
 //return location of max degree, return false if no nonzero degrees
 static bool findMax(vector<unsigned>& degrees, unsigned n, unsigned& maxi)
 {
 	unsigned m = 0;
-	for(unsigned i = 0; i < n; i++)
+	for (unsigned i = 0; i < n; i++)
 	{
-		if(degrees[i] > m)
+		if (degrees[i] > m)
 		{
 			m = degrees[i];
 			maxi = i;
@@ -483,8 +458,14 @@ struct Coord
 	double y;
 	double z;
 
-	Coord(double X, double Y, double Z): x(X), y(Y), z(Z) {}
-	Coord(): x(0), y(0), z(0) {}
+	Coord(double X, double Y, double Z) :
+			x(X), y(Y), z(Z)
+	{
+	}
+	Coord() :
+			x(0), y(0), z(0)
+	{
+	}
 
 	bool operator==(const Coord& rhs) const
 	{
@@ -492,16 +473,15 @@ struct Coord
 	}
 };
 
+static size_t hash_value(const Coord & t)
+{
+	size_t seed = 0;
+	hash_combine(seed, t.x);
+	hash_combine(seed, t.y);
+	hash_combine(seed, t.z);
 
-  static  size_t hash_value(const Coord & t) {
-    	size_t seed = 0;
-    	hash_combine(seed, t.x);
-    	hash_combine(seed, t.y);
-    	hash_combine(seed, t.z);
-
-    	return seed;
-    }
-
+	return seed;
+}
 
 //sort an indexing array into points by distance to index point
 class DistanceSorter
@@ -510,7 +490,7 @@ class DistanceSorter
 	const vector<PharmaPoint>& points;
 public:
 	DistanceSorter(unsigned i, const vector<PharmaPoint>& pts) :
-		index(i), points(pts)
+			index(i), points(pts)
 	{
 	}
 
@@ -528,23 +508,24 @@ public:
 //the common cases if for all points we want to be clustered to be in a clique
 //so hopefully no need for more complex algorithms
 //mutates points
-static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, const vector< vector< Coord > >& ptatoms, double dist)
+static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points,
+		const vector<vector<Coord> >& ptatoms, double dist)
 {
 	unsigned n = points.size();
 	vector<PharmaPoint> npts;
 	npts.reserve(n);
-	vector< vector<double> > distance(n, vector<double>(n, 0));
-	vector<unsigned> degrees(n,0);
+	vector<vector<double> > distance(n, vector<double>(n, 0));
+	vector<unsigned> degrees(n, 0);
 
 	//compute distances and degrees (number of close neighbors)
-	for(unsigned i = 0; i < n; i++)
+	for (unsigned i = 0; i < n; i++)
 	{
-		for(unsigned j = 0; j < i; j++)
+		for (unsigned j = 0; j < i; j++)
 		{
-			double d = PharmaPoint::pharmaDist(points[i],points[j]);
+			double d = PharmaPoint::pharmaDist(points[i], points[j]);
 			distance[j][i] = distance[i][j] = d;
 
-			if(d <= dist)
+			if (d <= dist)
 			{
 				degrees[i]++;
 				degrees[j]++;
@@ -554,35 +535,35 @@ static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, con
 
 	unsigned order[n];
 	//add all zero degree points
-	for(unsigned i = 0; i < n; i++)
+	for (unsigned i = 0; i < n; i++)
 	{
 		order[i] = i;
-		if(degrees[i] == 0)
+		if (degrees[i] == 0)
 			npts.push_back(points[i]);
 	}
 
 	unsigned maxi = 0;
-	while(findMax(degrees, n, maxi))
+	while (findMax(degrees, n, maxi))
 	{
 		vector<unsigned> cluster;
 		cluster.push_back(maxi);
 		degrees[maxi] = 0;
 
 		DistanceSorter sorter(maxi, points);
-		sort(order,order+n,sorter);
+		sort(order, order + n, sorter);
 		//add points that are within threshold of all member of the cluster
-		for(unsigned o = 0; o < n; o++)
+		for (unsigned o = 0; o < n; o++)
 		{
 			unsigned i = order[o];
-			if(degrees[i] > 0)
+			if (degrees[i] > 0)
 			{
 				unsigned j = 0;
-				for(unsigned csz = cluster.size(); j < csz; j++)
+				for (unsigned csz = cluster.size(); j < csz; j++)
 				{
-					if(distance[i][cluster[j]] > dist)
+					if (distance[i][cluster[j]] > dist)
 						break;
 				}
-				if(j == cluster.size()) //close to all current cluster members
+				if (j == cluster.size()) //close to all current cluster members
 				{
 					degrees[i] = 0;
 					cluster.push_back(i);
@@ -591,22 +572,22 @@ static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, con
 		}
 
 		//create point with average of atom coords
-		unordered_set< Coord > atoms;
-		for(unsigned i = 0, csz = cluster.size(); i < csz; i++)
+		unordered_set<Coord> atoms;
+		for (unsigned i = 0, csz = cluster.size(); i < csz; i++)
 		{
 			unsigned index = cluster[i];
-			for(unsigned j = 0, na = ptatoms[index].size(); j < na; j++)
+			for (unsigned j = 0, na = ptatoms[index].size(); j < na; j++)
 			{
 				atoms.insert(ptatoms[index][j]);
 			}
 		}
 		PharmaPoint pt(pharma);
 		BOOST_FOREACH(const Coord& a, atoms)
-		{
-			pt.x += a.x;
-			pt.y += a.y;
-			pt.z += a.z;
-		}
+				{
+					pt.x += a.x;
+					pt.y += a.y;
+					pt.z += a.z;
+				}
 		pt.x /= atoms.size();
 		pt.y /= atoms.size();
 		pt.z /= atoms.size();
@@ -622,28 +603,89 @@ static void clusterPoints(const Pharma *pharma, vector<PharmaPoint>& points, con
  * Note that this is very inefficient in processing sequences of
  * multi-conformer molecules.
  * */
-void getPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoint>& points)
+void getPharmaPoints(const Pharmas& pharmas, OBMol& mol,
+		vector<PharmaPoint>& points)
 {
-	vector< vector<PharmaPoint> > pts;
+	vector<vector<PharmaPoint> > pts;
 	points.clear();
 	getPharmaPointsMC(pharmas, mol, pts);
-	if(pts.size() > 0)
+	if (pts.size() > 0)
 		points.swap(pts[0]);
 }
 
+//return true if mol is a PharmaGist mol2 and fill in points with first model
+bool isPharmaGist(const Pharmas& pharmas, const string& mol,
+		vector<PharmaPoint>& points)
+{
+	if (mol.substr(0, 17) != "@<TRIPOS>MOLECULE")
+		return false;
 
+	istringstream str(mol);
 
-void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector<PharmaPoint> >& points)
+	bool readatoms = false;
+	string line;
+	while (getline(str, line))
+	{
+		if (line == "@<TRIPOS>ATOM")
+			readatoms = true;
+		else if (line == "@<TRIPOS>BOND")
+			return points.size() > 0;
+		else if (readatoms)
+		{
+			stringstream l(line);
+			unsigned num;
+			string type;
+			double x, y, z;
+			l >> num >> type >> x >> y >> z;
+
+			if(type == "DON")
+			{
+				points.push_back(PharmaPoint(x,y,z,pharmas.pharmaFromName("HydrogenDonor")));
+			}
+			else if(type == "ACC")
+			{
+				points.push_back(PharmaPoint(x,y,z,pharmas.pharmaFromName("HydrogenAcceptor")));
+			}
+			else if(type == "ANI")
+			{
+				points.push_back(PharmaPoint(x,y,z,pharmas.pharmaFromName("NegativeIon")));
+			}
+			else if(type == "CAT")
+			{
+				points.push_back(PharmaPoint(x,y,z,pharmas.pharmaFromName("PositiveIon")));
+			}
+			else if(type == "HYD")
+			{
+				points.push_back(PharmaPoint(x,y,z,pharmas.pharmaFromName("Hydrophobic")));
+			}
+			else if(type == "AR")
+			{
+				points.push_back(PharmaPoint(x,y,z,pharmas.pharmaFromName("Aromatic")));
+			}
+			else
+			{
+				points.clear();
+				return false;
+			}
+
+		}
+	}
+	points.clear();
+	return false;
+}
+
+void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol,
+		vector<vector<PharmaPoint> >& points)
 {
 	points.clear();
 	points.resize(mol.NumConformers());
 	//for each kind of pharma
-	for(int p = 0, np = pharmas.size(); p < np; p++)
+	for (int p = 0, np = pharmas.size(); p < np; p++)
 	{
 		const Pharma* pharma = pharmas[p];
 
-		vector< vector<PharmaPoint> > cpoints(mol.NumConformers());
-		vector< vector< vector< Coord > > > ccoords(mol.NumConformers());
+		vector<vector<PharmaPoint> > cpoints(mol.NumConformers());
+		vector<vector<vector<Coord> > > ccoords(mol.NumConformers());
 		//foreach smart for the pharma
 		for (int s = 0, ns = pharma->smarts.size(); s < ns; s++)
 		{
@@ -657,7 +699,7 @@ void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector<Pharma
 					for (int i = 0, n = maplist.size(); i < n; i++)
 					{
 						mol.SetConformer(c);
-						ccoords[c].resize(ccoords[c].size()+1);
+						ccoords[c].resize(ccoords[c].size() + 1);
 
 						PharmaPoint point(pharma);
 						point.x = point.y = point.z = 0;
@@ -671,8 +713,9 @@ void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector<Pharma
 							point.x += atom->x();
 							point.y += atom->y();
 							point.z += atom->z();
-							if(pharma->clusterLimit > 0)
-								ccoords[c].back().push_back(Coord(atom->x(), atom->y(), atom->z()));
+							if (pharma->clusterLimit > 0)
+								ccoords[c].back().push_back(
+										Coord(atom->x(), atom->y(), atom->z()));
 						}
 						//take average
 						if (numatoms > 0)
@@ -690,11 +733,12 @@ void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector<Pharma
 			}
 		}
 		//now add all points for each conformation, clustering as necessary
-		for(unsigned c = 0, nc = cpoints.size(); c < nc; c++)
+		for (unsigned c = 0, nc = cpoints.size(); c < nc; c++)
 		{
-			if(pharma->clusterLimit > 0)
+			if (pharma->clusterLimit > 0)
 			{
-				clusterPoints(pharma, cpoints[c], ccoords[c], pharma->clusterLimit);
+				clusterPoints(pharma, cpoints[c], ccoords[c],
+						pharma->clusterLimit);
 			}
 
 			//add (possibly clustered) conformer points
@@ -704,11 +748,10 @@ void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector<Pharma
 	}
 }
 
-
 /* add the passed pharma points to the molecule model */
 void addPharmaPoints(OBMol& mol, vector<PharmaPoint>& points)
 {
-	for(int p = 0, np = points.size(); p < np; p++)
+	for (int p = 0, np = points.size(); p < np; p++)
 	{
 		OBAtom atom;
 		atom.SetVector(points[p].x, points[p].y, points[p].z);
@@ -721,7 +764,7 @@ void addPharmaPoints(OBMol& mol, vector<PharmaPoint>& points)
 bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points)
 {
 	//add all points
-	for(unsigned i = 0, n = points.size(); i < n; i++)
+	for (unsigned i = 0, n = points.size(); i < n; i++)
 	{
 		Json::Value& pt = root["points"][i];
 		pt["name"] = points[i].pharma->name;
@@ -730,7 +773,7 @@ bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points)
 		pt["z"] = points[i].z;
 		pt["size"] = points[i].size;
 
-		for(unsigned j = 0, nv = points[i].vecs.size(); j < nv; j++)
+		for (unsigned j = 0, nv = points[i].vecs.size(); j < nv; j++)
 		{
 			pt["vector"][j]["x"] = points[i].vecs[j].x();
 			pt["vector"][j]["y"] = points[i].vecs[j].y();
@@ -744,30 +787,31 @@ bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points)
 	return true;
 }
 
-
 //look for hydrogens bonded to first atom, take bond to H as vector
 static void genHDonorPointVector(const vector<int>& atom_indexes,
 		const OBMol& mol, PharmaPoint& pnt)
 {
-	if(atom_indexes.size() == 0)
+	if (atom_indexes.size() == 0)
 	{
 		return;
 	}
 	OBAtom *atom = mol.GetAtom(atom_indexes[0]);
 	OBBondIterator i;
-	for (OBAtom* nbor = atom->BeginNbrAtom(i); nbor; nbor = atom->NextNbrAtom(i))
+	for (OBAtom* nbor = atom->BeginNbrAtom(i); nbor;
+			nbor = atom->NextNbrAtom(i))
 	{
-    	if(nbor->GetAtomicNum() == 1)
-    	{
-    		vector3 vec1 = atom->GetVector();
-    		vector3 vec2 = nbor->GetVector();
-    		vector3 vec = vec2-vec1;;
-    		if(!isfinite(vec.x()))
-    			continue; //sometimes, despite our best efforts, H has same coords as N
+		if (nbor->GetAtomicNum() == 1)
+		{
+			vector3 vec1 = atom->GetVector();
+			vector3 vec2 = nbor->GetVector();
+			vector3 vec = vec2 - vec1;
+			;
+			if (!isfinite(vec.x()))
+				continue; //sometimes, despite our best efforts, H has same coords as N
 
-    		vec.normalize();
-    		pnt.vecs.push_back(vec);
-    	}
+			vec.normalize();
+			pnt.vecs.push_back(vec);
+		}
 	}
 }
 
@@ -776,40 +820,42 @@ static void genHDonorPointVector(const vector<int>& atom_indexes,
 static void genHAcceptorPointVector(const vector<int>& atom_indexes,
 		const OBMol& mol, PharmaPoint& pnt)
 {
-	if(atom_indexes.size() == 0)
+	if (atom_indexes.size() == 0)
 	{
 		return;
 	}
 	OBAtom *atom = mol.GetAtom(atom_indexes[0]);
 	OBBondIterator i;
 	bool foundvec = false;
-	for (OBAtom* nbor = atom->BeginNbrAtom(i); nbor; nbor = atom->NextNbrAtom(i))
+	for (OBAtom* nbor = atom->BeginNbrAtom(i); nbor;
+			nbor = atom->NextNbrAtom(i))
 	{
-    	if(nbor->GetAtomicNum() == 1)
-    	{
-      		vector3 vec1;
-      		vector3 vec2;
-      		vec1 = atom->GetVector();
-      		vec2 = nbor->GetVector();
+		if (nbor->GetAtomicNum() == 1)
+		{
+			vector3 vec1;
+			vector3 vec2;
+			vec1 = atom->GetVector();
+			vec2 = nbor->GetVector();
 
-    		vector3 vec = vec2-vec1;
-    		if(!isfinite(vec.x()))
-    			continue; //sometimes, despite our best efforts, H has same coords as N
+			vector3 vec = vec2 - vec1;
+			if (!isfinite(vec.x()))
+				continue; //sometimes, despite our best efforts, H has same coords as N
 
-    		vec.normalize();
+			vec.normalize();
 
-    		pnt.vecs.push_back(vec);
-    		foundvec = true;
-    	}
+			pnt.vecs.push_back(vec);
+			foundvec = true;
+		}
 	}
 
-	if(!foundvec)
+	if (!foundvec)
 	{
-		vector3 avebond(0,0,0);
+		vector3 avebond(0, 0, 0);
 		vector3 avec = atom->GetVector();
 		unsigned cnt = 0;
 		OBBondIterator i;
-		for (OBAtom* nbor = atom->BeginNbrAtom(i); nbor; nbor = atom->NextNbrAtom(i))
+		for (OBAtom* nbor = atom->BeginNbrAtom(i); nbor;
+				nbor = atom->NextNbrAtom(i))
 		{
 			avebond += nbor->GetVector() - avec;
 			cnt++;
@@ -827,7 +873,7 @@ static void genHAcceptorPointVector(const vector<int>& atom_indexes,
 static void genAromaticPointVector(const vector<int>& atom_indexes,
 		const OBMol& mol, PharmaPoint& pnt)
 {
-	if(atom_indexes.size() < 3)
+	if (atom_indexes.size() < 3)
 	{
 		return;
 	}
@@ -836,7 +882,7 @@ static void genAromaticPointVector(const vector<int>& atom_indexes,
 	vector3 pt1 = mol.GetAtom(atom_indexes[1])->GetVector();
 	vector3 pt2 = mol.GetAtom(atom_indexes[2])->GetVector();
 
-	vector3 norm = cross((pt2-base),(pt1-base));
+	vector3 norm = cross((pt2 - base), (pt1 - base));
 	norm.normalize();
 
 	pnt.vecs.push_back(norm);
@@ -845,17 +891,17 @@ static void genAromaticPointVector(const vector<int>& atom_indexes,
 
 void Pharma::setVectorFn(genPointVectorFn fn)
 {
-	if(fn != NULL)
+	if (fn != NULL)
 	{
 		getVectors = fn;
 	}
 	else
 	{
-		if(name == "Aromatic")
+		if (name == "Aromatic")
 			getVectors = genAromaticPointVector;
-		else if(name == "HydrogenDonor")
+		else if (name == "HydrogenDonor")
 			getVectors = genHDonorPointVector;
-		else if(name == "HydrogenAcceptor")
+		else if (name == "HydrogenAcceptor")
 			getVectors = genHAcceptorPointVector;
 		else
 			getVectors = NULL;
@@ -865,7 +911,7 @@ void Pharma::setVectorFn(genPointVectorFn fn)
 //write out pharma definitions
 void Pharmas::write(ostream& out) const
 {
-	for(unsigned i = 0; i < numPharmas; i++)
+	for (unsigned i = 0; i < numPharmas; i++)
 	{
 		out << pharmas[i].name << " ";
 		out << pharmas[i].atomic_number_label << " ";
@@ -875,7 +921,7 @@ void Pharmas::write(ostream& out) const
 		//0, no vectors
 		//1, default
 		//anything else has to be done programatically
-		if(pharmas[i].getVectors != NULL)
+		if (pharmas[i].getVectors != NULL)
 			out << "1 ";
 		else
 			out << "0 ";
@@ -883,7 +929,7 @@ void Pharmas::write(ostream& out) const
 		out << pharmas[i].clusterLimit << " ";
 		out << "\n";
 		//now list all smarts
-		for(unsigned s = 0, ns = pharmas[i].smarts.size(); s < ns; s++)
+		for (unsigned s = 0, ns = pharmas[i].smarts.size(); s < ns; s++)
 		{
 			out << pharmas[i].smarts[s].GetSMARTS() << "\n";
 		}
@@ -898,7 +944,7 @@ bool Pharmas::read(istream& in)
 {
 	string line;
 	vector<Pharma> pharmavec;
-	while(getline(in, line))
+	while (getline(in, line))
 	{
 		//first line has all info
 		Pharma p;
@@ -906,31 +952,31 @@ bool Pharmas::read(istream& in)
 		str >> p.name;
 		str >> p.atomic_number_label;
 		str >> p.index;
-		if(p.index != pharmavec.size())
+		if (p.index != pharmavec.size())
 			return false;
 		str >> p.defaultSearchRadius;
 		int vecid = 0;
 		str >> vecid;
-		if(vecid == 1)
+		if (vecid == 1)
 			p.setVectorFn();
-		else if(vecid > 1)
+		else if (vecid > 1)
 			return false; //unknown vector generator
 
 		str >> p.clusterLimit;
 
-		if(!str) //fail bit got set
+		if (!str) //fail bit got set
 			return false;
 
 		//now read in smarts
-		while(getline(in, line))
+		while (getline(in, line))
 		{
-			if(line.length() == 0)
+			if (line.length() == 0)
 				break; //empty line
 
 			p.smarts.push_back(OBSmartsPattern());
 			p.smarts.back().Init(line);
 		}
-		if(p.smarts.size() == 0)
+		if (p.smarts.size() == 0)
 			return false;
 		pharmavec.push_back(p);
 	}
@@ -939,46 +985,53 @@ bool Pharmas::read(istream& in)
 	return true;
 }
 
-
 //output a set of points in json format that is suitable for query based on
 //the data in moldata
-bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& moldata,
-		OBFormat *format, const string& recdata, OBFormat *rformat)
+bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
+		const string& moldata, OBFormat *format, const string& recdata,
+		OBFormat *rformat)
 {
-	OBMol mol;
-	OBConversion conv;
-	conv.SetInFormat(format);
-
-	if(!conv.ReadString(&mol, moldata))
-		return false;
 
 	vector<PharmaPoint> points;
 	vector<PharmaPoint> disabled;
 
-	if(rformat == NULL || recdata.length() == 0)
+	if (isPharmaGist(pharmas, moldata, points))
+		; //got points from the file
+	else
 	{
-		getPharmaPoints(pharmas, mol, points);
-	}
-	else //compute interaction pharma
-	{
-		conv.SetInFormat(rformat);
-		OBMol rec;
-		if(!conv.ReadString(&rec, recdata))
+		OBMol mol;
+		OBConversion conv;
+		conv.SetInFormat(format);
+
+		if (!conv.ReadString(&mol, moldata))
+			return false;
+
+		if (rformat == NULL || recdata.length() == 0)
 		{
 			getPharmaPoints(pharmas, mol, points);
 		}
-		else
+		else //compute interaction pharma
 		{
-			getInteractionPoints(pharmas, rec, mol, points, disabled);
-			points.insert(points.end(), disabled.begin(), disabled.end());
+			conv.SetInFormat(rformat);
+			OBMol rec;
+			if (!conv.ReadString(&rec, recdata))
+			{
+				getPharmaPoints(pharmas, mol, points);
+			}
+			else
+			{
+				getInteractionPoints(pharmas, rec, mol, points, disabled);
+				points.insert(points.end(), disabled.begin(), disabled.end());
+			}
 		}
 	}
 
-	if(!convertPharmaJson(root, points))
+	if (!convertPharmaJson(root, points))
 		return false;
 
 	//set disabled points
-	for(unsigned i = points.size() - disabled.size(), n = points.size(); i < n; i++)
+	for (unsigned i = points.size() - disabled.size(), n = points.size(); i < n;
+			i++)
 	{
 		root["points"][i]["enabled"] = false;
 	}
@@ -987,22 +1040,23 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root, const string& mo
 
 //OpenBabel SMARTs matching is a little slow, so for when we're matching large
 //proteins use an optimizes set of pharmas, and then convert
-void getProteinPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoint>& points)
+void getProteinPharmaPoints(const Pharmas& pharmas, OBMol& mol,
+		vector<PharmaPoint>& points)
 {
 	getPharmaPoints(proteinPharmas, mol, points);
 	//now convert to requested pharmas based on name equality
-	for(unsigned i = 0, n = points.size(); i < n; i++)
+	for (unsigned i = 0, n = points.size(); i < n; i++)
 	{
 		points[i].pharma = pharmas.pharmaFromName(points[i].pharma->name);
 	}
 }
 
-
 //compute pharmacophore of the interaction
 //calculate both ligand and receptor points and then
 //enable only those ligand points that are close to complimentary receptor points
-void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand,
-		vector<PharmaPoint>& points, vector<PharmaPoint>& screenedout)
+void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor,
+		OBMol& ligand, vector<PharmaPoint>& points,
+		vector<PharmaPoint>& screenedout)
 {
 	points.clear();
 	screenedout.clear();
@@ -1015,10 +1069,11 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand
 
 	//remove anything without interacting info
 	vector<PharmaPoint> interactpoints;
-	for(unsigned i = 0, n = ligandpoints.size(); i < n; i++)
+	for (unsigned i = 0, n = ligandpoints.size(); i < n; i++)
 	{
-		const PharmaInteract& interact = pharmaInteractions[ligandpoints[i].pharma->name];
-		if(interact.maxDist > 0)
+		const PharmaInteract& interact =
+				pharmaInteractions[ligandpoints[i].pharma->name];
+		if (interact.maxDist > 0)
 		{
 			interactpoints.push_back(ligandpoints[i]);
 		}
@@ -1028,45 +1083,49 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand
 		}
 	}
 	//collate receptor points
-	vector< vector<PharmaPoint> > rinteractpoints(pharmas.size());
+	vector<vector<PharmaPoint> > rinteractpoints(pharmas.size());
 
-	for(unsigned i = 0, n = receptorpoints.size(); i < n; i++)
+	for (unsigned i = 0, n = receptorpoints.size(); i < n; i++)
 	{
-		const PharmaInteract& interact = pharmaInteractions[receptorpoints[i].pharma->name];
-		if(interact.maxDist > 0)
+		const PharmaInteract& interact =
+				pharmaInteractions[receptorpoints[i].pharma->name];
+		if (interact.maxDist > 0)
 		{
-			rinteractpoints[receptorpoints[i].pharma->index].push_back(receptorpoints[i]);
+			rinteractpoints[receptorpoints[i].pharma->index].push_back(
+					receptorpoints[i]);
 		}
 	}
 
 	//screen ligand points
-	for(unsigned i = 0, n = interactpoints.size(); i < n; i++)
+	for (unsigned i = 0, n = interactpoints.size(); i < n; i++)
 	{
 		const PharmaPoint& l = interactpoints[i];
 		unsigned cnt = 0;
 		const PharmaInteract& I = pharmaInteractions[l.pharma->name];
 		const vector<PharmaPoint>& rvec = rinteractpoints[I.complement];
 		unsigned j, m;
-		for(j = 0, m = rvec.size(); j < m; j++)
+		for (j = 0, m = rvec.size(); j < m; j++)
 		{
 			const PharmaPoint& rp = rvec[j];
 			double d = PharmaPoint::pharmaDist(l, rp);
-			if(d <= I.maxDist)
+			if (d <= I.maxDist)
 				cnt++;
-			if(cnt >= I.minMatch)
+			if (cnt >= I.minMatch)
 			{
 				//just hydrogen bond features and set vector
-				if(l.pharma->name == "HydrogenAcceptor" || l.pharma->name == "HydrogenDonor")
+				if (l.pharma->name == "HydrogenAcceptor"
+						|| l.pharma->name == "HydrogenDonor")
 				{
 					PharmaPoint lp = l;
-					vector3 rv(rp.x,rp.y,rp.z);
-					vector3 lv(l.x,l.y,l.z);
+					vector3 rv(rp.x, rp.y, rp.z);
+					vector3 lv(l.x, l.y, l.z);
 					lp.vecs.clear();
-					lp.vecs.push_back((rv-lv).normalize());
+					lp.vecs.push_back((rv - lv).normalize());
 					//assume identical points with different vectors are right next to each other
 					//and only do one
-					if(points.size() == 0 || points.back().pharma != l.pharma || points.back().x != l.x ||
-							points.back().y != l.y || points.back().z != l.z)
+					if (points.size() == 0 || points.back().pharma != l.pharma
+							|| points.back().x != l.x || points.back().y != l.y
+							|| points.back().z != l.z)
 						points.push_back(lp);
 				}
 				else
@@ -1076,7 +1135,7 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand
 				break;
 			}
 		}
-		if(j == m)
+		if (j == m)
 			screenedout.push_back(l);
 	}
 }
