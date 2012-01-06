@@ -137,6 +137,7 @@ class MolDataCreator
 		ConfCreator(unsigned mid, float mw, unsigned cid, OBMol& m);
 
 		unsigned write(unsigned char *buf);
+		bool isValid() const { return molData.length() > 0; }
 	};
 
 	const Pharmas& pharmas;

@@ -110,7 +110,7 @@ public:
 	void copyFrom(OBMol& mol, bool deleteH=false);
 
 	//write custom binary data
-	void writeBinary(ostream& out);
+	bool writeBinary(ostream& out);
 
 };
 
@@ -121,6 +121,7 @@ struct AdjList
 	unsigned char dsts[];
 };
 
+#define PMOLHEADER_MAX (256)
 struct PMolHeader
 {
 	unsigned char nAtoms;

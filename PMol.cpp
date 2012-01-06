@@ -157,18 +157,30 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
  * [atom index | value ] - * # isos
  * [atom index | value ] - * # chgs
  * [srcIndex nDsts [dsts]] - * number of bonds for each bond type
+ *
+ * Returns false if cannot create molecule due to size constraints
  */
-void PMolCreator::writeBinary(ostream& out)
+bool PMolCreator::writeBinary(ostream& out)
 {
 	PMolHeader header;
+
+	//check sizes
+	if(nDsts >= PMOLHEADER_MAX || numAtoms >= PMOLHEADER_MAX) //assume others are < nAtoms
+		return false;
+	for (unsigned i = 0; i < MAX_BONDS; i++)
+	{
+		if(bndSize[i] >= PMOLHEADER_MAX)
+			return false;
+	}
 
 	//calcualte size
 	unsigned two = sizeof(unsigned char) * 2;
 	unsigned short size = sizeof(header) + sizeof(FloatCoord) * numAtoms + two
 			* atoms.size() + two * chg.size() + two * iso.size() + two * nSrcs
 			+ sizeof(unsigned char) * nDsts + sizeof(char) * (name.size() + 1);
-
+	unsigned check = 0;
 	out.write((char*) &size, sizeof(unsigned short));
+
 	header.nAtoms = numAtoms;
 	header.nAtomTypes = atoms.size();
 	header.nCHG = chg.size();
@@ -180,11 +192,12 @@ void PMolCreator::writeBinary(ostream& out)
 	}
 
 	out.write((char*) &header, sizeof(header));
-
+	check += sizeof(header);
 	//coordinates
 	BOOST_FOREACH(const AtomGroup& ag, atoms)
 	{
 		out.write((const char*)&ag.coords[0], sizeof(FloatCoord)*ag.coords.size());
+		check += sizeof(FloatCoord)*ag.coords.size();
 	}
 
 	//number of each atom type
@@ -192,6 +205,7 @@ void PMolCreator::writeBinary(ostream& out)
 	{
 		out.put(ag.atomic_number);
 		out.put(ag.coords.size());
+		check += 2;
 	}
 
 	//iso
@@ -199,12 +213,14 @@ void PMolCreator::writeBinary(ostream& out)
 	{
 		out.put(p.atom);
 		out.put(p.value);
+		check += 2;
 	}
 	//chg
 	BOOST_FOREACH(const Property& p, chg)
 	{
 		out.put(p.atom);
 		out.put(p.value);
+		check += 2;
 	}
 
 	//bonds
@@ -216,9 +232,11 @@ void PMolCreator::writeBinary(ostream& out)
 			{
 				out.put(j); //atom index
 				out.put(bonds[i][j].size()); //number of dsts
+				check += 2;
 				BOOST_FOREACH(unsigned char d, bonds[i][j])
 				{
 					out.put(d); //dsts
+					check++;
 				}
 			}
 		}
@@ -226,6 +244,15 @@ void PMolCreator::writeBinary(ostream& out)
 
 	//name
 	out.write(name.c_str(), name.size()+1); //include null
+	check += name.size()+1;
+
+	if(check != size)
+	{
+		cout << check << " " << size << "\n";
+		cout << name << "\n";
+		abort();
+	}
+	return true;
 }
 
 //allocate a pmol from f and return it
@@ -287,7 +314,6 @@ unsigned PMol::setup()
 
 	offset += header.nAtomTypes * sizeof(AtomTypeCnts);
 	iso = (Property*) &buffer[offset];
-
 	offset += header.nISO * sizeof(Property);
 	chg = (Property*) &buffer[offset];
 

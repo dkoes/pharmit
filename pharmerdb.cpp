@@ -79,8 +79,10 @@ MolDataCreator::ConfCreator::ConfCreator(unsigned mid, float mw, unsigned cid,
 {
 	PMolCreator mol(m, true);
 	stringstream mdata;
-	mol.writeBinary(mdata);
-	molData = mdata.str();
+	if(mol.writeBinary(mdata))
+		molData = mdata.str();
+	else
+		molData = "";
 }
 
 unsigned MolDataCreator::maxIndex = 0;
@@ -114,6 +116,12 @@ void MolDataCreator::processMol(OBMol& mol, double mWeight, unsigned mid)
 		confs.push_back(ConfCreator(mid, mWeight, confidx, mol));
 		ConfCreator& conf = confs.back();
 
+		if(!conf.isValid())
+		{
+			cerr << mol.GetTitle() << " is too large.  Omitting.\n";
+			confs.pop_back();
+			continue;
+		}
 		//setup pharma points
 		const vector<PharmaPoint>& points = mcpoints[confidx];
 
