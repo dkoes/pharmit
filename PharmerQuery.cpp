@@ -557,7 +557,7 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 	for (unsigned i = 0, n = r.size(); i < n; i++)
 	{
 		out << i + dp.start << ","  << r[i]->c->val << ","
-				<< r[i]->c->weight << "," << r[i]->c->nRBnds << "," << r[i]->name << "," << r[i]->c->location << "\n";
+				<< r[i]->c->weight << "," << r[i]->c->nRBnds << "," << r[i]->name << "," << r[i]->c->molid << "," << r[i]->c->location  << "\n";
 	}
 }
 
