@@ -221,11 +221,17 @@ public:
 		in >> doc;
 
 		TiXmlElement *base = doc.FirstChildElement("MolecularEnvironment");
+		TiXmlElement *ph = NULL;
 		if(base == NULL)
+		{
 			base = doc.ToElement();
-		if(base == NULL)
-			return false;
-		TiXmlElement *ph = base->FirstChildElement("pharmacophore");
+			if(base != NULL) //xml missing?
+				ph = base->FirstChildElement("pharmacophore");
+			else //no molecular environments
+				ph = doc.FirstChildElement("pharmacophore");
+		}
+		else
+			ph = base->FirstChildElement("pharmacophore");
 		if(ph == NULL)
 			return false;
 
