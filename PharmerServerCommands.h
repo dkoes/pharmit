@@ -519,7 +519,7 @@ public:
 			{
 				unsigned id = ids[i];
 				stringstream url;
-				url << "http://zinc12.docking.org/apps/ZINCPharmer.php?";
+				url << "http://zinc.docking.org/apps/ZINCPharmer.php?";
 				url << id;
 				curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
 				curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
