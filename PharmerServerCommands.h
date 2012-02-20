@@ -501,6 +501,10 @@ public:
  */
 class RegisterZINC : public QueryCommand
 {
+	static size_t curlDummyWrite( char *ptr, size_t size, size_t nmemb, void *userdata)
+	{
+		return size*nmemb;
+	}
 public:
 	RegisterZINC(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
 		QueryCommand(l, lm, qs)
@@ -524,6 +528,7 @@ public:
 				curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
 				curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
 				curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 3);
+				curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, curlDummyWrite);
 				curl_easy_perform(h);
 			}
 			curl_easy_cleanup(h);
