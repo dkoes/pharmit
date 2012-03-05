@@ -194,7 +194,6 @@ unsigned MolDataCreator::write(FILE *molData, vector<PointDataFile >& pointDataF
 
 	//write out
 	fwrite(buffer, bufferSize, 1, molData);
-
 	for (unsigned p = 0, np = pdatas.size(); p < np; p++)
 	{
 		pointDataFiles[p].write(&pdatas[p][0], sizeof(pdatas[p][0]),
@@ -568,8 +567,8 @@ public:
 };
 
 //find the median value in one sequential scan using counts
-static short findMedianValue(ThreePointData *start, ThreePointData *end,
-		const SplitInfo& info, short min, short max)
+static unsigned short findMedianValue(ThreePointData *start, ThreePointData *end,
+		const SplitInfo& info, unsigned short min, unsigned short max)
 {
 	unsigned long total = 0;
 	int left = min;
@@ -629,7 +628,7 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 	else //need to split
 	{
 		//choose a median value, points with this value can be on either side
-		short medianVal = findMedianValue(start, end, info, info.getMin(box),
+		unsigned short medianVal = findMedianValue(start, end, info, info.getMin(box),
 				info.getMax(box));
 		PivotCompareRnd rcmp(medianVal, info);
 		ThreePointData *median = partition(start, end, rcmp);
@@ -977,8 +976,9 @@ void PharmerDatabaseSearcher::queryIndex(QueryInfo& t, const GeoKDPage *page,
 		const GeoKDPageNode& node = page->nodes[pos];
 		//are there potentially points within this region?
 		if (!t.triplet.inRange(node.box))
+		{
 			return;
-
+		}
 		if (node.splitType == NoSplit)
 		{
 			queryProcessPoints(t, startLoc, endLoc);
@@ -1005,8 +1005,9 @@ void PharmerDatabaseSearcher::queryIndex(QueryInfo& t, const GeoKDPage *page,
 			assert(endLoc >= node.splitData);
 
 			//always do left and then right so we access data sequentially
-
-			if (max >= node.splitVal && min <= node.splitVal)
+			//if min or max are exactly equal, then we must consider both sides of the split
+			//in case the split is in the middle of a range of equal values
+			if ((max > node.splitVal && min < node.splitVal) || max == node.splitVal || min == node.splitVal)
 			{
 				//have to do both sides
 				//first go left

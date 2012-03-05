@@ -799,7 +799,9 @@ protected:
 				double max = jL * jL + sR * sR - 2.0 * jL * sR * cos(A + acos(
 						(-l * l + iL * iL + sR * sR) / iL / sR / 2.0));
 				if (l2 * l2 > max)
+				{
 					return true;
+				}
 			}
 		}
 		return false;
@@ -1061,6 +1063,7 @@ public:
 
 			if (distancejTooLargeForSmalli(0, box.maxx, 1, box.miny))
 				return false;
+
 			if (distancejTooLargeForSmalli(0, box.maxx, 2, box.minz))
 				return false;
 
@@ -1093,7 +1096,6 @@ public:
 				return false;
 			if(distancejTooLargeForLargei(1, box.miny, 2, box.minz))
 				return false;
-
 			if(distancejTooLargeForLargei(2, box.minz, 0, box.minx))
 				return false;
 

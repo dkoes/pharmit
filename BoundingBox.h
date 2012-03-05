@@ -50,16 +50,15 @@ typedef tuple<int, int, int> TripleInt;
 //maintain a bounding box
 struct BoundingBox
 {
-	short minx;
-	short maxx;
-	short miny;
-	short maxy;
-	short minz;
-	short maxz;
+	unsigned short minx;
+	unsigned short maxx;
+	unsigned short miny;
+	unsigned short maxy;
+	unsigned short minz;
+	unsigned short maxz;
 
 	BoundingBox() :
-		minx(SHRT_MAX), maxx(SHRT_MIN), miny(SHRT_MAX), maxy(SHRT_MIN), minz(
-				SHRT_MAX), maxz(SHRT_MIN)
+		minx(USHRT_MAX), maxx(0), miny(USHRT_MAX), maxy(0), minz(USHRT_MAX), maxz(0)
 	{
 	}
 
@@ -68,7 +67,7 @@ struct BoundingBox
 		update(ijk.get<0>(), ijk.get<1>(), ijk.get<2>());
 	}
 
-	void update(short x, short y, short z)
+	void update(unsigned short x, unsigned short y, unsigned short z)
 	{
 		if (x < minx)
 			minx = x;
@@ -89,26 +88,19 @@ struct BoundingBox
 		return (double)(maxx-minx)*(maxy-miny)*(maxz-minz);
 	}
 
-	//make largest possible
-	void maximize()
-	{
-		minx = miny = minz = SHRT_MIN;
-		maxx = maxy = maxz = SHRT_MAX;
-	}
-
-	void setX(short min, short max)
+	void setX(unsigned short min, unsigned short max)
 	{
 		minx = min;
 		maxx = max;
 	}
 
-	void setY(short min, short max)
+	void setY(unsigned short min, unsigned short max)
 	{
 		miny = min;
 		maxy = max;
 	}
 
-	void setZ(short min, short max)
+	void setZ(unsigned short min, unsigned short max)
 	{
 		minz = min;
 		maxz = max;
@@ -150,7 +142,7 @@ struct BoundingBox
 	}
 
 	//return true if passed split bisects box
-	bool planeInBox(SplitType split, short splitVal) const
+	bool planeInBox(SplitType split, unsigned short splitVal) const
 	{
 		switch (split)
 		{
@@ -166,7 +158,7 @@ struct BoundingBox
 	}
 
 	//narrow along a single dimension
-	void narrow(SplitType split, short min, short max)
+	void narrow(SplitType split, unsigned short min, unsigned short max)
 	{
 		switch(split)
 		{

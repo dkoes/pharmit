@@ -215,8 +215,8 @@ struct SplitInfo
 {
 	SplitType type;
 	pointDataCompare func;
-	short min;
-	short max;
+	unsigned short min;
+	unsigned short max;
 
 	SplitInfo() :
 		type(NoSplit), func(NULL), min(0), max(0)
@@ -224,7 +224,7 @@ struct SplitInfo
 
 	}
 
-	SplitInfo(SplitType t, short n, short x) :
+	SplitInfo(SplitType t, unsigned short n, unsigned short x) :
 		type(t), min(n), max(x)
 	{
 		switch (type)
@@ -244,7 +244,7 @@ struct SplitInfo
 	}
 
 	//return the value from p that we're splitting on
-	short splitVal(const ThreePointData& p) const
+	unsigned short splitVal(const ThreePointData& p) const
 	{
 		switch (type)
 		{
@@ -259,7 +259,7 @@ struct SplitInfo
 		}
 	}
 
-	short getMin(const BoundingBox& box) const
+	unsigned short getMin(const BoundingBox& box) const
 	{
 		switch (type)
 		{
@@ -274,7 +274,7 @@ struct SplitInfo
 		}
 	}
 
-	short getMax(const BoundingBox& box) const
+	unsigned short getMax(const BoundingBox& box) const
 	{
 		switch (type)
 		{
@@ -294,7 +294,7 @@ struct SplitInfo
 struct GeoKDPageNode
 {
 	BoundingBox box; //bounding box of this entire node
-	short splitVal; // value we are splitting on
+	unsigned short splitVal; // value we are splitting on
 	SplitType splitType:8; //how we are splitting, nosplit means we are a leaf
 	//some extra space here if we can think of a use for it
 	unsigned long splitData; //position within pointData where the split is

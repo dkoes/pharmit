@@ -547,7 +547,6 @@ public:
 			//create the match
 			match = seenMatches.create(mid, tdata);
 		}
-
 		//create match info
 		assert(match != NULL);
 		TripletMatchInfo info(tdata, which, trip.getNextUnconnected(), trip.getPrevUnconnected());
