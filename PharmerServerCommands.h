@@ -403,7 +403,9 @@ public:
 				if (format == NULL)
 				{
 					stringstream err;
-					err << "Could not understand molecular data in " << filename << " (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format.";
+					err << "Could not understand molecular data in " << filename <<
+							" (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format."
+							<< " Please request support for new formats in the ZINCPharmer forum.";
 					sendError(IO, err.str().c_str());
 					return;
 				}
