@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <openbabel/data.h>
 #include <openbabel/mol.h>
-#include "boost/foreach.hpp"
+#include <boost/foreach.hpp>
 #include <iomanip>
 
 //copy data needed to write out pmol from obmol
