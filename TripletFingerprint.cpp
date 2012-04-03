@@ -35,8 +35,8 @@ const unsigned TripletFingerprint::MAXPHARMA = 32;
 
 
 cl::opt<bool> ComputeThresholds("compute-thresholds", cl::desc("compute good thresholds for binning fingerprints"), cl::Hidden);
-cl::opt<unsigned> BloomBitsLarge("bloom-large", cl::desc("Number of bits for coarse discretization fingerprint."), cl::init(6));
-cl::opt<unsigned> BloomBitsSmall("bloom-small", cl::desc("Number of bits for fine discretization fingerprint."), cl::init(8));
+cl::opt<unsigned> BloomBitsLarge("bloom-large", cl::desc("Number of bits for coarse discretization fingerprint."), cl::init(6),cl::Hidden);
+cl::opt<unsigned> BloomBitsSmall("bloom-small", cl::desc("Number of bits for fine discretization fingerprint."), cl::init(8),cl::Hidden);
 
 
 ThresholdComputer thresholdComputer(6, 32, .5);
