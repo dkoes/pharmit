@@ -1,21 +1,21 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
-Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+ Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /*
  * main.cpp
@@ -38,6 +38,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include "queryparsers.h"
 #include "Timer.h"
 #include "MolFilter.h"
@@ -47,45 +50,51 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "ReadMCMol.h"
 
 using namespace boost;
-cl::opt<bool> SeparateWeight("separate-weight", cl::desc("Segregate database based on molecular weight"), cl::init(true));
+cl::opt<bool> SeparateWeight("separate-weight",
+		cl::desc("Segregate database based on molecular weight"),
+		cl::init(true));
 cl::opt<bool> Quiet("q", cl::desc("quiet; suppress informational messages"),
 		cl::init(false));
-cl::opt<bool> ShowQuery("show-query", cl::desc("print query points"), cl::init(
-		false));
+cl::opt<bool> ShowQuery("show-query", cl::desc("print query points"),
+		cl::init(false));
 cl::opt<bool> Print("print", cl::desc("print results"), cl::init(true));
-cl::opt<string> Cmd("cmd", cl::desc(
-		"command [pharma, dbcreate, dbsearch, server]"), cl::Positional);
+cl::opt<string> Cmd("cmd",
+		cl::desc("command [pharma, dbcreate, dbsearch, server]"),
+		cl::Positional);
 cl::list<string> Database("dbdir", cl::desc("database directory(s)"));
 cl::list<string> inputFiles("in", cl::desc("input file(s)"));
+cl::list<string> outputFiles("out", cl::desc("output file(s)"));
+
 cl::opt<string> pharmaSpec("pharmaspec",
 		cl::desc("pharmacophore specification"));
-cl::opt<string> outputFile("out", cl::desc("output file"));
-cl::opt<unsigned> NThreads("nthreads",
-		cl::desc("utilize n threads; default 1"), cl::value_desc("n"),
-		cl::init(1));
-cl::opt<double> MaxRMSD("max-rmsd", cl::desc(
-		"maximum allowed RMSD; default max allowed by query"), cl::init(
-		HUGE_VAL));
-cl::opt<unsigned> MaxWeight("max-weight", cl::desc(
-		"maximum allowed molecular weight"), cl::init(UINT_MAX));
-cl::opt<unsigned> ReduceConfs("reduceconfs", cl::desc(
-		"return at most n conformations for each molecule"),
+cl::opt<unsigned> NThreads("nthreads", cl::desc("utilize n threads; default 1"),
+		cl::value_desc("n"), cl::init(1));
+cl::opt<double> MaxRMSD("max-rmsd",
+		cl::desc("maximum allowed RMSD; default max allowed by query"),
+		cl::init(HUGE_VAL));
+cl::opt<unsigned> MaxWeight("max-weight",
+		cl::desc("maximum allowed molecular weight"), cl::init(UINT_MAX));
+cl::opt<unsigned> ReduceConfs("reduceconfs",
+		cl::desc("return at most n conformations for each molecule"),
 		cl::value_desc("n"), cl::init(0));
-cl::opt<unsigned> MaxOrient("max-orient", cl::desc(
-		"return at most n orientations of each conformation"), cl::value_desc(
-		"n"), cl::init(UINT_MAX));
+cl::opt<unsigned> MaxOrient("max-orient",
+		cl::desc("return at most n orientations of each conformation"),
+		cl::value_desc("n"), cl::init(UINT_MAX));
 cl::opt<unsigned> MaxHits("max-hits", cl::desc("return at most n results"),
 		cl::value_desc("n"), cl::init(UINT_MAX));
 cl::opt<unsigned> Port("port", cl::desc("port for server to listen on"));
 cl::opt<string> LogDir("logdir", cl::desc("log directory for server"),
 		cl::init("."));
-cl::opt<bool> ExtraInfo("extra-info", cl::desc(
-		"Output additional molecular properties.  Slower."), cl::init(false));
+cl::opt<bool> ExtraInfo("extra-info",
+		cl::desc("Output additional molecular properties.  Slower."),
+		cl::init(false));
 cl::opt<bool> SortRMSD("sort-rmsd", cl::desc("Sort results by RMSD."),
 		cl::init(false));
-cl::opt<bool> FilePartition("file-partition", cl::desc("Partion database slices based on files"), cl::init(false));
+cl::opt<bool> FilePartition("file-partition",
+		cl::desc("Partion database slices based on files"), cl::init(false));
 
-cl::opt<string> Receptor("receptor", cl::desc("Receptor file for interaction pharmacophroes"));
+cl::opt<string> Receptor("receptor",
+		cl::desc("Receptor file for interaction pharmacophroes"));
 
 typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&);
 
@@ -127,63 +136,11 @@ static void pharmaSDFOutput(ostream& out, vector<PharmaPoint>& points)
 //identify all the pharma points within each mol in the input file
 static void handle_pharma_cmd(const Pharmas& pharmas)
 {
-	ofstream out;
-	pharmaOutputFn outfn = pharmaNoOutput;
-	//output can be plain text, json, or an sdf file (collection of atoms)
-	if (outputFile.size() > 0)
-	{
-		out.open(outputFile.c_str());
-		if (!out)
-		{
-			cerr << "Error opening output file " << outputFile << "\n";
-			exit(-1);
-		}
-		string ext = filesystem::extension(outputFile);
-		if (ext == ".txt" || ext == "")
-			outfn = pharmaTxtOutput;
-		else if (ext == ".json")
-			outfn = pharmaJSONOutput;
-		else if (ext == ".sdf")
-			outfn = pharmaSDFOutput;
-		else
-		{
-			cerr << "Unsupported output format\n";
-			exit(-1);
-		}
-	}
 
-	//special case - convert  query to points
-	if (inputFiles.size() == 1 && (filesystem::extension(inputFiles[0])
-			== ".json" || filesystem::extension(inputFiles[0]) == ".ph4"
-					|| filesystem::extension(inputFiles[0]) == ".query"
-			|| filesystem::extension(inputFiles[0]) == ".txt" ||
-			filesystem::extension(inputFiles[0]) == ".pml"))
+	if (outputFiles.size() > 0 && outputFiles.size() != inputFiles.size())
 	{
-		ifstream in(inputFiles[0].c_str());
-		vector<PharmaPoint> points;
-
-		if (filesystem::extension(inputFiles[0]) == ".json" || filesystem::extension(inputFiles[0]) == ".query")
-		{
-			JSonQueryParser parser;
-			parser.parse(pharmas, in, points);
-		}
-		else if (filesystem::extension(inputFiles[0]) == ".ph4")
-		{
-			PH4Parser parser;
-			parser.parse(pharmas, in, points);
-		}
-		else if (filesystem::extension(inputFiles[0]) == ".pml")
-		{
-			PMLParser parser;
-			parser.parse(pharmas, in, points);
-		}
-		else
-		{
-			TextQueryParser parser;
-			parser.parse(pharmas, in, points);
-		}
-		outfn(out, points);
-		return;
+		cerr << "Number of outputs must equal number of inputs.\n";
+		exit(-1);
 	}
 
 	for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
@@ -196,42 +153,104 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 			exit(-1);
 		}
 
-		OBConversion conv;
-		OBFormat *format = conv.FormatFromExt(fname.c_str());
-		if (format == NULL)
+		ofstream out;
+		pharmaOutputFn outfn = pharmaNoOutput;
+		//output can be plain text, json, or an sdf file (collection of atoms)
+		if (outputFiles.size() > 0)
 		{
-			cerr << "Invalid input file format " << fname << "\n";
-			exit(-1);
-		}
-		conv.SetInFormat(format);
-		OBMol mol;
-		vector<PharmaPoint> points;
-
-		OBMol receptor;
-		if(Receptor.size() > 0)
-		{
-			OBConversion rconv;
-			OBFormat *rformat = rconv.FormatFromExt(Receptor.c_str());
-			if(format)
+			out.open(outputFiles[i].c_str());
+			if (!out)
 			{
-				rconv.SetInFormat(rformat);
-				ifstream rin(Receptor.c_str());
-				rconv.Read(&receptor, &rin);
+				cerr << "Error opening output file " << outputFiles[i] << "\n";
+				exit(-1);
+			}
+			string ext = filesystem::extension(outputFiles[i]);
+			if (ext == ".txt" || ext == "")
+				outfn = pharmaTxtOutput;
+			else if (ext == ".json")
+				outfn = pharmaJSONOutput;
+			else if (ext == ".sdf")
+				outfn = pharmaSDFOutput;
+			else
+			{
+				cerr << "Unsupported output format\n";
+				exit(-1);
 			}
 		}
 
-		while (conv.Read(&mol, &in))
+		//special case - convert  query to points
+		if (filesystem::extension(fname) == ".json"
+				|| filesystem::extension(fname) == ".ph4"
+				|| filesystem::extension(fname) == ".query"
+				|| filesystem::extension(fname) == ".txt"
+				|| filesystem::extension(fname) == ".pml")
 		{
-			if(receptor.NumAtoms() > 0)
+			ifstream in(fname.c_str());
+			vector<PharmaPoint> points;
+
+			if (filesystem::extension(fname) == ".json"
+					|| filesystem::extension(fname) == ".query")
 			{
-				vector<PharmaPoint> screenedout;
-				getInteractionPoints(pharmas, receptor, mol, points, screenedout);
+				JSonQueryParser parser;
+				parser.parse(pharmas, in, points);
+			}
+			else if (filesystem::extension(fname) == ".ph4")
+			{
+				PH4Parser parser;
+				parser.parse(pharmas, in, points);
+			}
+			else if (filesystem::extension(fname) == ".pml")
+			{
+				PMLParser parser;
+				parser.parse(pharmas, in, points);
 			}
 			else
-				getPharmaPoints(pharmas, mol, points);
-			if (!Quiet)
-				pharmaTxtOutput(cout, points);
+			{
+				TextQueryParser parser;
+				parser.parse(pharmas, in, points);
+			}
 			outfn(out, points);
+		}
+		else //pharma recognition
+		{
+			OBConversion conv;
+			OBFormat *format = conv.FormatFromExt(fname.c_str());
+			if (format == NULL)
+			{
+				cerr << "Invalid input file format " << fname << "\n";
+				exit(-1);
+			}
+			conv.SetInFormat(format);
+			OBMol mol;
+			vector<PharmaPoint> points;
+
+			OBMol receptor;
+			if (Receptor.size() > 0)
+			{
+				OBConversion rconv;
+				OBFormat *rformat = rconv.FormatFromExt(Receptor.c_str());
+				if (format)
+				{
+					rconv.SetInFormat(rformat);
+					ifstream rin(Receptor.c_str());
+					rconv.Read(&receptor, &rin);
+				}
+			}
+
+			while (conv.Read(&mol, &in))
+			{
+				if (receptor.NumAtoms() > 0)
+				{
+					vector<PharmaPoint> screenedout;
+					getInteractionPoints(pharmas, receptor, mol, points,
+							screenedout);
+				}
+				else
+					getPharmaPoints(pharmas, mol, points);
+				if (!Quiet)
+					pharmaTxtOutput(cout, points);
+				outfn(out, points);
+			}
 		}
 	}
 }
@@ -241,8 +260,13 @@ struct FilterDBCreate
 	WeightRangeFilter filter;
 	shared_ptr<PharmerDatabaseCreator> db;
 
-	FilterDBCreate() {}
-	FilterDBCreate(double min, double max, PharmerDatabaseCreator* d): filter(min, max), db(d) {}
+	FilterDBCreate()
+	{
+	}
+	FilterDBCreate(double min, double max, PharmerDatabaseCreator* d) :
+			filter(min, max), db(d)
+	{
+	}
 };
 //create a database
 static void handle_dbcreate_cmd(const Pharmas& pharmas)
@@ -286,10 +310,11 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 		numBytes += filesystem::file_size(inputFiles[i]);
 	}
 
-	double weightThresholds[] = {0, 321, 351, 376, 401, 426, 451, 476, 501, HUGE_VAL};
-	unsigned nweights = sizeof(weightThresholds)/sizeof(double);
+	double weightThresholds[] =
+	{ 0, 321, 351, 376, 401, 426, 451, 476, 501, HUGE_VAL };
+	unsigned nweights = sizeof(weightThresholds) / sizeof(double);
 
-	if(!SeparateWeight)
+	if (!SeparateWeight)
 	{
 		nweights = 2;
 		weightThresholds[1] = HUGE_VAL;
@@ -303,9 +328,9 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 		{
 			//split by weight
 			vector<FilterDBCreate> dbs;
-			for(unsigned w = 1; w < nweights; w++)
+			for (unsigned w = 1; w < nweights; w++)
 			{
-				double min = weightThresholds[w-1];
+				double min = weightThresholds[w - 1];
 				double max = weightThresholds[w];
 				WeightRangeFilter filter(min, max);
 				string dname = Database[d] + "/w" + lexical_cast<string>(min);
@@ -316,26 +341,28 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 					exit(-1);
 				}
 
-				dbs.push_back(FilterDBCreate(min, max, new PharmerDatabaseCreator(pharmas, dname, NThreads)));
+				dbs.push_back(
+						FilterDBCreate(min, max,
+								new PharmerDatabaseCreator(pharmas, dname,
+										NThreads)));
 			}
 
 			//now read files
 			unsigned long readBytes = 0;
 			for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
 			{
-				if(FilePartition)
+				if (FilePartition)
 				{
-					if(i%nd != d)
+					if (i % nd != d)
 						continue;
 				}
 				ifstream in(inputFiles[i].c_str());
-				OBFormat *format =
-							conv.FormatFromExt(inputFiles[i].c_str());
+				OBFormat *format = conv.FormatFromExt(inputFiles[i].c_str());
 				if (!Quiet)
 					cout << "Adding " << inputFiles[i] << "\n";
 				unsigned stride = nd;
 				unsigned offset = d;
-				if(FilePartition)
+				if (FilePartition)
 				{
 					stride = 1;
 					offset = 0;
@@ -347,7 +374,7 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 				{
 					BOOST_FOREACH(FilterDBCreate& f, dbs)
 					{
-						if(f.filter.skip(mol))
+						if (f.filter.skip(mol))
 							continue;
 						f.db->addMolToDatabase(mol, mol.GetMolWt());
 						break;
@@ -371,7 +398,7 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 	int status;
 	while (wait(&status) > 0)
 	{
-		if(!WIFEXITED(status) && WEXITSTATUS(status) != 0)
+		if (!WIFEXITED(status) && WEXITSTATUS(status) != 0)
 			abort();
 		continue;
 	}
@@ -384,41 +411,44 @@ struct LoadDatabase
 	unsigned totalConf;
 	unsigned totalMols;
 
-	LoadDatabase():  totalConf(0), totalMols(0)
+	LoadDatabase() :
+			totalConf(0), totalMols(0)
 	{
 
 	}
 
-	void operator()(vector< vector<MolWeightDatabase> >& databases, unsigned i, filesystem::path dbpath)
+	void operator()(vector<vector<MolWeightDatabase> >& databases, unsigned i,
+			filesystem::path dbpath)
 	{
 		//look for sub directories, assume weight divided, have to sort first
 		vector<unsigned> weights;
-		for (filesystem::directory_iterator itr(dbpath), end_itr; itr
-				!= end_itr; ++itr)
+		for (filesystem::directory_iterator itr(dbpath), end_itr;
+				itr != end_itr; ++itr)
 		{
-			if (is_directory(itr->status()) && filesystem::exists(itr->path()
-					/ "info"))
+			if (is_directory(itr->status())
+					&& filesystem::exists(itr->path() / "info"))
 			{
 				filesystem::path subdir = itr->path();
 				int w;
-				sscanf(subdir.filename().c_str(),"w%d",&w);
+				sscanf(subdir.filename().c_str(), "w%d", &w);
 				weights.push_back(w);
 			}
 		}
 
 		sort(weights.begin(), weights.end());
 
-		for(unsigned j = 0, nw = weights.size(); j < nw; j++)
+		for (unsigned j = 0, nw = weights.size(); j < nw; j++)
 		{
 			unsigned w = weights[j];
-			filesystem::path subdir = dbpath / (string("w" + lexical_cast<string>(w)));
+			filesystem::path subdir = dbpath
+					/ (string("w" + lexical_cast<string>(w)));
 			shared_ptr<PharmerDatabaseSearcher> db(
 					new PharmerDatabaseSearcher(subdir));
-			if(j > 0)
+			if (j > 0)
 				databases[i].back().max = w;
 			databases[i].push_back(MolWeightDatabase(db, w));
 
-			if(!db->isValid())
+			if (!db->isValid())
 			{
 				cerr << "Error reading database " << Database[i] << "\n";
 				exit(-1);
@@ -429,7 +459,8 @@ struct LoadDatabase
 		databases[i].back().max = HUGE_VAL;
 	}
 };
-static void loadDatabases(vector< vector<MolWeightDatabase> >& databases, unsigned& totalConf, unsigned& totalMols)
+static void loadDatabases(vector<vector<MolWeightDatabase> >& databases,
+		unsigned& totalConf, unsigned& totalMols)
 {
 	totalConf = 0;
 	totalMols = 0;
@@ -445,7 +476,8 @@ static void loadDatabases(vector< vector<MolWeightDatabase> >& databases, unsign
 			exit(-1);
 		}
 
-		loading_threads.add_thread(new thread(ref(loaders[i]), ref(databases), i, dbpath));
+		loading_threads.add_thread(
+				new thread(ref(loaders[i]), ref(databases), i, dbpath));
 	}
 	loading_threads.join_all();
 
@@ -472,32 +504,14 @@ static void handle_dbsearch_cmd()
 		exit(-1);
 	}
 
-	vector< vector<MolWeightDatabase> > databases(Database.size());
+	vector<vector<MolWeightDatabase> > databases(Database.size());
 	unsigned totalC = 0;
 	unsigned totalM = 0;
 	loadDatabases(databases, totalC, totalM);
 
-	if(!Quiet)
-		cout << "Searching " << totalC << " conformations of " << totalM << " compounds.\n";
-
-
-	//output file
-	string oext = filesystem::extension(outputFile);
-	ofstream out;
-	if (outputFile.size() > 0) //no outputfile means dump to stdout
-	{
-		if (oext != ".sdf" && oext != ".txt" && oext != "")
-		{
-			cerr << "Invalid output format.  Support only .sdf and .txt\n";
-			exit(-1);
-		}
-		out.open(outputFile.c_str());
-		if (!out)
-		{
-			cerr << "Could not open output file: " << outputFile << "\n";
-			exit(-1);
-		}
-	}
+	if (!Quiet)
+		cout << "Searching " << totalC << " conformations of " << totalM
+				<< " compounds.\n";
 
 	//query parameters
 	QueryParameters params;
@@ -506,7 +520,7 @@ static void handle_dbsearch_cmd()
 	params.reduceConfs = ReduceConfs;
 	params.orientationsPerConf = MaxOrient;
 	params.maxHits = MaxHits;
-	if(SortRMSD)
+	if (SortRMSD)
 		params.sort = SortType::RMSD;
 
 	//data parameters
@@ -522,6 +536,12 @@ static void handle_dbsearch_cmd()
 	}
 
 	Timer timer;
+
+	if (outputFiles.size() > 0 && outputFiles.size() != inputFiles.size())
+	{
+		cerr << "Number of outputs must equal number of inputs\n";
+		exit(-1);
+	}
 
 	for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
 	{
@@ -560,13 +580,40 @@ static void handle_dbsearch_cmd()
 			query.outputData(dparams, cout);
 		}
 
-		if (oext != ".sdf") //text output
+		//output file
+		if (outputFiles.size() > 0)
 		{
-			query.outputData(dparams, out);
-		}
-		else //mol output
-		{
-			query.outputMols(out);
+			string outname = outputFiles[i];
+			string oext = filesystem::extension(outname);
+			ofstream out;
+
+			if (oext != ".sdf" && oext != ".txt" && oext != "" && oext != ".gz")
+			{
+				cerr << "Invalid output format.  Support only .sdf and .txt\n";
+				exit(-1);
+			}
+			out.open(outname.c_str());
+			if (!out)
+			{
+				cerr << "Could not open output file: " << outname << "\n";
+				exit(-1);
+			}
+
+			if(oext == ".gz") //assumed to be compressed sdf
+			{
+				boost::iostreams::filtering_ostream gzout;
+				gzout.push(boost::iostreams::gzip_compressor());
+				gzout.push(out);
+				query.outputMols(gzout);
+			}
+			else if (oext != ".sdf") //text output
+			{
+				query.outputData(dparams, out);
+			}
+			else //mol output
+			{
+				query.outputMols(out);
+			}
 		}
 
 		cout << "NumResults: " << query.numResults() << "\n";
@@ -605,7 +652,7 @@ int main(int argc, char *argv[])
 	}
 	else if (Cmd == "server")
 	{
-		vector< vector<MolWeightDatabase> > databases;
+		vector<vector<MolWeightDatabase> > databases;
 		unsigned totalC = 0;
 		unsigned totalM = 0;
 		loadDatabases(databases, totalC, totalM);
