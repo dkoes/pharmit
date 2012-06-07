@@ -57,7 +57,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/date_time.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <boost/assign/list_of.hpp>
+
+#ifndef SKIP_REGISTERZINC
 #include <curl/curl.h>
+#endif
 
 #include "pharmerdb.h"
 #include "pharmarec.h"
@@ -203,7 +206,9 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 	WebQueryManager queries(databases);
 
 	FCGX_Init();
+#ifndef SKIP_REGISTERZINC
 	curl_global_init(CURL_GLOBAL_ALL);
+#endif
 
 	int listenfd = open_listenfd(port);
 	if (listenfd < 0)

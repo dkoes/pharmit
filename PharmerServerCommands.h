@@ -37,7 +37,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string>
 #include <cstdio>
 #include <google/malloc_extension.h>
+
+#ifndef SKIP_REGISTERZINC
 #include <curl/curl.h>
+#endif
 
 using namespace std;
 using namespace cgicc;
@@ -500,6 +503,7 @@ public:
 
 /* Distribution of major portions of ZINC needs to be tracked through
  * their website, so if downloading a whole set of ZINC compounds, inform them.
+ * This requires including curl, which is a pain, so make it a compile time option
  */
 class RegisterZINC : public QueryCommand
 {
@@ -515,6 +519,7 @@ public:
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
+#ifndef SKIP_REGISTERZINC
 		WebQueryHandle query = getQuery(CGI, IO);
 		if (query)
 		{
@@ -535,6 +540,7 @@ public:
 			}
 			curl_easy_cleanup(h);
 		}
+#endif
 	}
 
 };
