@@ -330,9 +330,9 @@ void PharmerQuery::thread_tripletMatch(PharmerQuery *query)
 				query->corrsQs[db].addProducer();
 
 				Timer ct;
-				Corresponder sponder(query->dbID(db, i), query->maxID(),
+				Corresponder sponder(query->databases[db][i].db,query->dbID(db, i), query->maxID(),
 						query->points, trips, matches, query->coralloc, 0,
-						query->corrsQs[db], query->params, query->stopQuery);
+						query->corrsQs[db], query->params, query->excluder, query->stopQuery);
 				sponder();
 				if (!Quiet)
 					cout << "CTime " << ct.elapsed() << "\n";
@@ -453,7 +453,7 @@ bool PharmerQuery::isExcluded(QueryResult* result)
 	db->getMolData(loc, mdata, pread);
 
 	vector<FloatCoord> coords;
-	mdata.mol->getCoords(coords);
+	mdata.mol->getCoords(coords, result->c->rmsd);
 	for (unsigned i = 0, n = coords.size(); i < n; i++)
 	{
 		if (excluder.isExcluded(coords[i]))
@@ -464,7 +464,6 @@ bool PharmerQuery::isExcluded(QueryResult* result)
 }
 
 //reduce according to parameters, ie, fewer conformers
-//also remove exluced mols (possible expensive)
 void PharmerQuery::reduceResults()
 {
 	if (params.reduceConfs != 0 && params.reduceConfs != UINT_MAX)
@@ -479,20 +478,6 @@ void PharmerQuery::reduceResults()
 				molCnts[molid] = 0;
 
 			if (molCnts[molid]++ < params.reduceConfs)
-			{
-				newr.push_back(results[i]);
-			}
-		}
-		swap(results, newr);
-	}
-
-	if (excluder.isDefined())
-	{
-		vector<QueryResult*> newr;
-		newr.reserve(results.size());
-		for (unsigned i = 0, n = results.size(); i < n; i++)
-		{
-			if (!isExcluded(results[i]))
 			{
 				newr.push_back(results[i]);
 			}

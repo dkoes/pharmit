@@ -180,7 +180,7 @@ public:
 	}
 	double getMolWeight() const;
 
-	void getCoords(vector<FloatCoord>& coords);
+	void getCoords(vector<FloatCoord>& coords, const RMSDResult& rms);
 
 	//write sdf with associated meta data
 	//rotate/translate points if requested

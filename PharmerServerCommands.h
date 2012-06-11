@@ -86,7 +86,6 @@ protected:
 
 	WebQueryHandle getQuery(Cgicc& CGI, FastCgiIO& IO)
 	{
-		form_iterator itr = CGI["qid"];
 		if (!cgiTagExists(CGI, "qid"))
 		{
 			sendError(IO, "Bad data request. No query id.");
