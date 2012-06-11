@@ -29,19 +29,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "pharmarec.h"
 #include "tinyxml/tinyxml.h"
+#include "Excluder.h"
 
 //base class of query file parsers
 class QueryParser
 {
 public:
-	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points) = 0;
+	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points, Excluder& excluder) = 0;
 };
 
 //parses our own text based format
 class TextQueryParser: public QueryParser
 {
 public:
-	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points)
+	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points, Excluder& excluder)
 	{
 		points.clear();
 		PharmaPoint p;
@@ -58,13 +59,17 @@ public:
 class JSonQueryParser: public QueryParser
 {
 public:
-	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points)
+	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points, Excluder& excluder)
 	{
 		try {
 			points.clear();
+			excluder.clear();
+
 			Json::Value root; // will contains the root value after parsing.
 			in >> root;
-			return readPharmaPointsJSON(pharmas, root, points);
+			if(!readPharmaPointsJSON(pharmas, root, points))
+				return false;
+			return excluder.addJSONPoints(root);
 		}
 		catch(std::exception& e)
 		{
@@ -138,7 +143,7 @@ class PH4Parser : public QueryParser
 		return NULL;
 	}
 public:
-	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points)
+	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points, Excluder& excluder)
 	{
 		points.clear();
 		//first #moe
@@ -162,9 +167,9 @@ public:
 		if(!in)
 			return false;
 		//features are whitespace separated, read until we find a # or eof
+		string feature;
 		while(in)
 		{
-			string feature;
 			in >> feature;
 			if(feature.size() == 0 || feature[0] == '#')
 				break;
@@ -205,6 +210,29 @@ public:
 			}
 		}
 
+		while(in && feature != "#volumesphere")
+		{
+			in >> feature;
+		}
+
+		//read in exclusion spheres
+		if(feature == "#volumesphere")
+		{
+			unsigned num = 0;
+			in >> num;
+			getline(in, line); //finish up line
+			for(unsigned i = 0; i < num; i++)
+			{
+				double x,y,z,r;
+				in >> x;
+				in >> y;
+				in >> z;
+				in >> r;
+
+				if(in)
+					excluder.addExclusionSphere(x,y,z,r);
+			}
+		}
 		return true;
 	}
 };
@@ -214,7 +242,7 @@ public:
 class PMLParser : public QueryParser
 {
 public:
-	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points)
+	virtual bool parse(const Pharmas& pharmas, istream& in, vector<PharmaPoint>& points, Excluder& excluder)
 	{
 		points.clear();
 		TiXmlDocument doc;
@@ -370,7 +398,25 @@ public:
 					break;
 				}
 			}
+			else //no name, exclusion?
+			{
+				const char *n = el->Attribute("type");
+				if(n && strcmp(n,"exclusion") == 0 && strcmp(el->Value(),"volume") == 0)
+				{
+					TiXmlElement *pos = el->FirstChildElement("position");
+					if(pos)
+					{
+						double x,y,z,r;
+						pos->Attribute("x3", &x);
+						pos->Attribute("y3", &y);
+						pos->Attribute("z3", &z);
+						pos->Attribute("tolerance",&r);
+						excluder.addExclusionSphere(x,y,z,r);
+					}
+				}
+			}
 		}
+
 
 		//we store hydrogen bond points with a single combined vector, so merge any
 		//hbond features at the same location with different vectors

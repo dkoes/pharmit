@@ -180,6 +180,8 @@ public:
 	}
 	double getMolWeight() const;
 
+	void getCoords(vector<FloatCoord>& coords);
+
 	//write sdf with associated meta data
 	//rotate/translate points if requested
 	void writeSDF(ostream& out, const vector<ASDDataItem>& sddata,

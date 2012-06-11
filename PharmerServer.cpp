@@ -279,6 +279,9 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 
 	readPharmaPointsJSON(pharmas, data, queryPoints);
 
+	Excluder excluder;
+	excluder.addJSONPoints(data);
+
 	//check result - need at least 3 points to define a triangle
 	if (queryPoints.size() < 3)
 	{
@@ -300,7 +303,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		}
 	}
 	unsigned id = nextID++;
-	queries[id] = new PharmerQuery(databases, queryPoints, qp, databases.size());
+	queries[id] = new PharmerQuery(databases, queryPoints, qp, excluder, databases.size());
 	queries[id]->execute(false); //don't wait for result
 	return id;
 }

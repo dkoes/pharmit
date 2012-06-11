@@ -313,8 +313,7 @@ ostream &operator<<(ostream &stream, const PharmaPoint& obj)
 	return stream;
 }
 
-//read from a json formatted stream
-// {anchors: [name,  wiggle, x1,y1,z1,x2... ], points[ {pharma, radius, weight, x,y,z} ] }
+//read from a json formatted stream, return true if successfull
 bool readPharmaPointsJSON(const Pharmas& pharmas, Json::Value& root,
 		vector<PharmaPoint>& points)
 {

@@ -44,6 +44,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "tripletmatching.h"
 #include "cors.h"
 #include "params.h"
+#include "Excluder.h"
+
 using namespace std;
 using namespace boost;
 
@@ -96,6 +98,7 @@ class PharmerQuery
 	vector<QueryTriplet> triplets; //all n^3 triangles
 	multi_array<unsigned, 3> tripIndex; //for any (i,j,k), the index of the corresponding triplet
 	QueryParameters params;
+	Excluder excluder;
 
 	bool valid;
 	bool stopQuery;
@@ -133,6 +136,8 @@ class PharmerQuery
 	void sortResults(SortTyp srt, bool reverse);
 	void reduceResults();
 
+	bool isExcluded(QueryResult* result);
+
 	unsigned dbID(unsigned db, unsigned i) const
 	{
 		return i*databases.size() + db;
@@ -149,6 +154,8 @@ class PharmerQuery
 		return dbcnt;
 	}
 
+	unsigned long getLocation(const QueryResult* r,shared_ptr<PharmerDatabaseSearcher>& db);
+
 public:
 	//input stream and format specified as extension
 	PharmerQuery(const vector< vector<MolWeightDatabase> >& dbs,
@@ -158,7 +165,7 @@ public:
 
 	PharmerQuery(const vector< vector<MolWeightDatabase> >& dbs,
 			const vector<PharmaPoint>& pts, const QueryParameters& qp =
-					QueryParameters(), unsigned nth = 1);
+					QueryParameters(), const Excluder& ex = Excluder(), unsigned nth = 1);
 
 	virtual ~PharmerQuery();
 

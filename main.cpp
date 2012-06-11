@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "ReadMCMol.h"
+#include "Excluder.h"
 
 using namespace boost;
 cl::opt<bool> SeparateWeight("separate-weight",
@@ -96,28 +97,28 @@ cl::opt<bool> FilePartition("file-partition",
 cl::opt<string> Receptor("receptor",
 		cl::desc("Receptor file for interaction pharmacophroes"));
 
-typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&);
+typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&, Excluder& excluder);
 
-static void pharmaNoOutput(ostream&, vector<PharmaPoint>&)
+static void pharmaNoOutput(ostream&, vector<PharmaPoint>&, Excluder& excluder)
 {
 }
 
-static void pharmaTxtOutput(ostream& out, vector<PharmaPoint>& points)
+static void pharmaTxtOutput(ostream& out, vector<PharmaPoint>& points, Excluder& excluder)
 {
 	for (unsigned i = 0, n = points.size(); i < n; i++)
 		out << points[i] << "\n";
 }
 
-static void pharmaJSONOutput(ostream& out, vector<PharmaPoint>& points)
+static void pharmaJSONOutput(ostream& out, vector<PharmaPoint>& points, Excluder& excluder)
 {
 	Json::Value root;
 	convertPharmaJson(root, points);
-
+	excluder.addToJSON(root);
 	Json::StyledStreamWriter writer;
 	writer.write(out, root);
 }
 
-static void pharmaSDFOutput(ostream& out, vector<PharmaPoint>& points)
+static void pharmaSDFOutput(ostream& out, vector<PharmaPoint>& points, Excluder& excluder)
 {
 	OBConversion conv;
 	conv.SetOutFormat("SDF");
@@ -187,29 +188,30 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 		{
 			ifstream in(fname.c_str());
 			vector<PharmaPoint> points;
+			Excluder excluder;
 
 			if (filesystem::extension(fname) == ".json"
 					|| filesystem::extension(fname) == ".query")
 			{
 				JSonQueryParser parser;
-				parser.parse(pharmas, in, points);
+				parser.parse(pharmas, in, points, excluder);
 			}
 			else if (filesystem::extension(fname) == ".ph4")
 			{
 				PH4Parser parser;
-				parser.parse(pharmas, in, points);
+				parser.parse(pharmas, in, points, excluder);
 			}
 			else if (filesystem::extension(fname) == ".pml")
 			{
 				PMLParser parser;
-				parser.parse(pharmas, in, points);
+				parser.parse(pharmas, in, points, excluder);
 			}
 			else
 			{
 				TextQueryParser parser;
-				parser.parse(pharmas, in, points);
+				parser.parse(pharmas, in, points, excluder);
 			}
-			outfn(out, points);
+			outfn(out, points, excluder);
 		}
 		else //pharma recognition
 		{
@@ -247,9 +249,10 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 				}
 				else
 					getPharmaPoints(pharmas, mol, points);
+				Excluder dummy;
 				if (!Quiet)
-					pharmaTxtOutput(cout, points);
-				outfn(out, points);
+					pharmaTxtOutput(cout, points, dummy);
+				outfn(out, points, dummy);
 			}
 		}
 	}

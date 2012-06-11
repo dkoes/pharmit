@@ -386,7 +386,8 @@ public:
 				//a pharmacophore query format
 				stringstream str(filedata);
 				vector<PharmaPoint> points;
-				if (parsers[ext]->parse(*pharmas, str, points))
+				Excluder excluder;
+				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
 					convertPharmaJson(val, points);
 					IO << HTTPPlainHeader();

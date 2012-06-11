@@ -82,7 +82,7 @@ void PharmerQuery::initializeTriplets()
 PharmerQuery::PharmerQuery(
 		const vector< vector<MolWeightDatabase> >& dbs, istream& in,
 		const string& ext, const QueryParameters& qp, unsigned nth) :
-	databases(dbs), params(qp), valid(false), stopQuery(false),
+	databases(dbs), params(qp),valid(false), stopQuery(false),
 			tripletMatchThread(NULL),
 			lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(SortType::Undefined), nthreads(nth),
 			dbcnt(0), inUseCnt(0)
@@ -99,7 +99,7 @@ PharmerQuery::PharmerQuery(
 		errorStr = "Invalid format extension.";
 		return;
 	}
-	if (!parsers[ext]->parse(dbs[0].back().db->getPharmas(), in, points))
+	if (!parsers[ext]->parse(dbs[0].back().db->getPharmas(), in, points, excluder))
 	{
 		errorStr = "Could not parse query.";
 		return;
@@ -120,8 +120,8 @@ PharmerQuery::PharmerQuery(
 
 PharmerQuery::PharmerQuery(
 		const vector< vector<MolWeightDatabase> >& dbs,
-		const vector<PharmaPoint>& pts, const QueryParameters& qp, unsigned nth) :
-	databases(dbs), points(pts), params(qp), valid(false), stopQuery(false),
+		const vector<PharmaPoint>& pts, const QueryParameters& qp, const Excluder& ex, unsigned nth) :
+	databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(false),
 			tripletMatchThread(NULL),
 			lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(SortType::Undefined),nthreads(nth),
 			 dbcnt(0), inUseCnt(0)
@@ -435,6 +435,31 @@ void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 	}
 }
 
+//return true if result doesn't have any atoms in the exclusion zone
+//this will load the molecular data and therefor be slower
+bool PharmerQuery::isExcluded(QueryResult* result)
+{
+	if(excluder.isDefined())
+	{
+		MolData mdata;
+		PMolReaderSingleAlloc pread;
+		shared_ptr<PharmerDatabaseSearcher> db;
+		unsigned long loc = getLocation(result, db);
+		db->getMolData(loc, mdata, pread);
+
+		vector<FloatCoord> coords;
+		mdata.mol->getCoords(coords);
+		for(unsigned i = 0, n = coords.size(); i < n; i++)
+		{
+			if(excluder.isExcluded(coords[i]))
+				return true;
+		}
+
+	}
+	return false;
+}
+
+
 //reduce according to parameters, ie, fewer conformers
 void PharmerQuery::reduceResults()
 {
@@ -518,17 +543,13 @@ void PharmerQuery::setExtraInfo(QueryResult& r)
 {
 	if (!r.name[0])
 	{
-		unsigned dbid = r.c->location % maxID();
-		unsigned db = 0;
-		unsigned i = 0;
-		dbCoords(dbid, db, i);
-
-		unsigned long loc = r.c->location / maxID();
+		shared_ptr<PharmerDatabaseSearcher> db;
+		unsigned long loc = getLocation(&r, db);
 
 		//TODO: make this more efficient (don't need to unpack full mol)
 		MolData mdata;
 		PMolReaderSingleAlloc pread;
-		databases[db][i].db->getMolData(loc, mdata, pread);
+		db->getMolData(loc, mdata, pread);
 
 		strncpy(r.name, mdata.mol->getTitle(), QR_NAME_SIZE-1);
 		r.name[QR_NAME_SIZE-1] = 0;
@@ -566,6 +587,17 @@ static bool locationCompare(const QueryResult* lhs, const QueryResult* rhs)
 	return lhs->c->location < rhs->c->location;
 }
 
+unsigned long PharmerQuery::getLocation(const QueryResult* r, shared_ptr<PharmerDatabaseSearcher>& db)
+{
+	unsigned dbid =  r->c->location % maxID();
+	unsigned dbi = 0;
+	unsigned index = 0;
+	dbCoords(dbid, dbi, index);
+	unsigned long loc =  r->c->location / maxID();
+	db = databases[dbi][index].db;
+	return loc;
+}
+
 //write out all results in sdf format - NOT sorted
 void PharmerQuery::outputMols(ostream& out)
 {
@@ -583,16 +615,13 @@ void PharmerQuery::outputMols(ostream& out)
 	for (unsigned i = 0, n = myres.size(); i < n && out; i++)
 	{
 		access();
-		unsigned dbid =  myres[i]->c->location % maxID();
-		unsigned db = 0;
-		unsigned index = 0;
-		dbCoords(dbid, db, index);
-		unsigned long loc =  myres[i]->c->location / maxID();
+		shared_ptr<PharmerDatabaseSearcher> db;
+		unsigned long loc =  getLocation(myres[i], db);
 
 		sddata.clear();
 		sddata.push_back(ASDDataItem("rmsd",lexical_cast<string>(myres[i]->c->val)));
 
-		databases[db][index].db->getMolData(loc, mdata, pread);
+		db->getMolData(loc, mdata, pread);
 		mdata.mol->writeSDF(out, sddata, myres[i]->c->rmsd);
 	}
 }
@@ -607,13 +636,11 @@ void PharmerQuery::outputMol(const QueryResult* mol, ostream& out,
 	vector<ASDDataItem> sddata;
 
 	sddata.push_back(ASDDataItem("rmsd",lexical_cast<string>(mol->c->val)));
-	unsigned dbid = mol->c->location % maxID();
-	unsigned db = 0;
-	unsigned i = 0;
-	dbCoords(dbid, db, i);
-	unsigned long loc =  mol->c->location / maxID();
 
-	databases[db][i].db->getMolData(loc, mdata, pread);
+	shared_ptr<PharmerDatabaseSearcher> db;
+	unsigned long loc =  getLocation(mol, db);
+
+	db->getMolData(loc, mdata, pread);
 
 	//TODO: minimization if requested - openbabel isn't quite where I want it yet..
 	mdata.mol->writeSDF(out, sddata, mol->c->rmsd);

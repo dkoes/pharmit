@@ -348,6 +348,16 @@ double PMol::getMolWeight() const
 	return ret;
 }
 
+//populate coords with the heavy atom coordinates of this atom
+void PMol::getCoords(vector<FloatCoord>& coords)
+{
+	FloatCoord *c = header.coords;
+	coords.resize(header.nAtoms);
+	for(unsigned i = 0; i < header.nAtoms; i++)
+	{
+		coords[i] = c[i];
+	}
+}
 
 //write sdf with associated meta data
 void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
