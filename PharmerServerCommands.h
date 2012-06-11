@@ -390,6 +390,7 @@ public:
 				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
 					convertPharmaJson(val, points);
+					excluder.addToJSON(val);
 					IO << HTTPPlainHeader();
 					Json::FastWriter writer;
 					val["status"] = 1;

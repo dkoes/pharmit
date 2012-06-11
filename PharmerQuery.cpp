@@ -1,21 +1,21 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
-Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+ Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /*
  * PharmerQuery.cpp
@@ -40,11 +40,9 @@ static PH4Parser ph4Parser;
 static PMLParser pmlParser;
 
 static unordered_map<string, QueryParser*> parsers = assign::map_list_of("",
-		(QueryParser*) &textParser)(".txt", (QueryParser*) &textParser)(
-		".json", (QueryParser*) &jsonParser)
-				(".query", (QueryParser*) &jsonParser)
-				(".ph4", (QueryParser*) &ph4Parser)
-		(".pml", (QueryParser*) &pmlParser);
+		(QueryParser*) &textParser)(".txt", (QueryParser*) &textParser)(".json",
+		(QueryParser*) &jsonParser)(".query", (QueryParser*) &jsonParser)(
+		".ph4", (QueryParser*) &ph4Parser)(".pml", (QueryParser*) &pmlParser);
 
 bool PharmerQuery::validFormat(const string& ext)
 {
@@ -79,13 +77,11 @@ void PharmerQuery::initializeTriplets()
 	valid = true;
 }
 
-PharmerQuery::PharmerQuery(
-		const vector< vector<MolWeightDatabase> >& dbs, istream& in,
-		const string& ext, const QueryParameters& qp, unsigned nth) :
-	databases(dbs), params(qp),valid(false), stopQuery(false),
-			tripletMatchThread(NULL),
-			lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(SortType::Undefined), nthreads(nth),
-			dbcnt(0), inUseCnt(0)
+PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
+		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
+		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
+				NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
+				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0)
 {
 	if (dbs.size() == 0)
 	{
@@ -99,7 +95,8 @@ PharmerQuery::PharmerQuery(
 		errorStr = "Invalid format extension.";
 		return;
 	}
-	if (!parsers[ext]->parse(dbs[0].back().db->getPharmas(), in, points, excluder))
+	if (!parsers[ext]->parse(dbs[0].back().db->getPharmas(), in, points,
+			excluder))
 	{
 		errorStr = "Could not parse query.";
 		return;
@@ -118,13 +115,13 @@ PharmerQuery::PharmerQuery(
 	initializeTriplets();
 }
 
-PharmerQuery::PharmerQuery(
-		const vector< vector<MolWeightDatabase> >& dbs,
-		const vector<PharmaPoint>& pts, const QueryParameters& qp, const Excluder& ex, unsigned nth) :
-	databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(false),
-			tripletMatchThread(NULL),
-			lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(SortType::Undefined),nthreads(nth),
-			 dbcnt(0), inUseCnt(0)
+PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
+		const vector<PharmaPoint>& pts, const QueryParameters& qp,
+		const Excluder& ex, unsigned nth) :
+		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
+				false), tripletMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
+				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
+				0), inUseCnt(0)
 {
 	if (dbs.size() == 0)
 	{
@@ -171,13 +168,14 @@ static void incrementDegrees(const Triplet& t, unsigned *degrees)
 //
 //we expand triplets so we have all possible legal orderings based on overlap
 void PharmerQuery::generateQueryTriplets(PharmerDatabaseSearcher& pharmdb,
-		vector< vector<QueryTriplet> >& expandedtrips)
+		vector<vector<QueryTriplet> >& expandedtrips)
 {
 	vector<QueryTriplet> trips;
 	trips.reserve(points.size() - 1);
 	//have the database d rank the triplets (lower is better, since this
 	//is presumably correlated to frequency)
-	vector<double> ranking;	unsigned mintrip = pharmdb.rankTriplets(triplets, ranking);
+	vector<double> ranking;
+	unsigned mintrip = pharmdb.rankTriplets(triplets, ranking);
 
 	unsigned degrees[points.size()];
 	memset(degrees, 0, sizeof(degrees));
@@ -234,21 +232,22 @@ void PharmerQuery::generateQueryTriplets(PharmerDatabaseSearcher& pharmdb,
 			assert(minval != HUGE_VAL);
 			assert(seen.count(mintrip) == 0);
 			seen.insert(mintrip);
-			unsigned prevucon = (bestj+1)%3;
+			unsigned prevucon = (bestj + 1) % 3;
 			trips.back().setNextUnconnected(prevucon);
 			trips.push_back(triplets[mintrip]);
-			unconnectedpoints.push_back(points[prev.getPoints()[prevucon].index]);
+			unconnectedpoints.push_back(
+					points[prev.getPoints()[prevucon].index]);
 			trips.back().setPrevUnconnectedIndex(bestkindex, unconnectedpoints);
 			incrementDegrees(trips.back(), degrees);
 		}
 	}
 	expandedtrips.resize(trips.size());
-	for(unsigned i = 0, n = trips.size(); i < n; i++)
+	for (unsigned i = 0, n = trips.size(); i < n; i++)
 	{
 		trips[i].expand(expandedtrips[i], *this);
 	}
 
-	if(trips.size() == 1)
+	if (trips.size() == 1)
 	{
 		//don't bother with fingerprints
 		BOOST_FOREACH(QueryTriplet& trp, expandedtrips[0])
@@ -267,14 +266,15 @@ void PharmerQuery::checkThreads()
 		{
 			delete tripletMatchThread;
 			tripletMatchThread = NULL; // thread is done
-			if(!Quiet)
+			if (!Quiet)
 			{
 				size_t mem = 0;
 				MallocExtension::instance()->GetNumericProperty(
 						"generic.current_allocated_bytes", &mem);
 				double gb = round(10000.0 * mem / (1024.0 * 1024 * 1024))
 						/ 10000.0;
-				cout << "CORALLOC NUMCHUNKS " << coralloc.numChunks() << "\t" << gb << "GB\n";
+				cout << "CORALLOC NUMCHUNKS " << coralloc.numChunks() << "\t"
+						<< gb << "GB\n";
 			}
 		}
 	}
@@ -300,7 +300,7 @@ void PharmerQuery::thread_tripletMatch(PharmerQuery *query)
 	unsigned db = 0;
 	while (query->dbSearchQ.pop(db))
 	{
-		for(unsigned i = 0, n = query->databases[db].size(); i < n; i++)
+		for (unsigned i = 0, n = query->databases[db].size(); i < n; i++)
 		{
 			if (query->stopQuery)
 				break;
@@ -315,8 +315,10 @@ void PharmerQuery::thread_tripletMatch(PharmerQuery *query)
 				TripletMatches matches(tmalloc, query->params, trips.size(), 1);
 
 				Timer t;
-				pharmdb.generateTripletMatches(trips, matches, query->stopQuery);
-				if(!Quiet) cout << "PMTime " << t.elapsed() << "\n";
+				pharmdb.generateTripletMatches(trips, matches,
+						query->stopQuery);
+				if (!Quiet)
+					cout << "PMTime " << t.elapsed() << "\n";
 				if (query->stopQuery)
 					break;
 
@@ -332,7 +334,8 @@ void PharmerQuery::thread_tripletMatch(PharmerQuery *query)
 						query->points, trips, matches, query->coralloc, 0,
 						query->corrsQs[db], query->params, query->stopQuery);
 				sponder();
-				if(!Quiet) cout << "CTime " << ct.elapsed() << "\n";
+				if (!Quiet)
+					cout << "CTime " << ct.elapsed() << "\n";
 
 			}
 		}
@@ -370,7 +373,7 @@ bool PharmerQuery::finished() //okay to deallocate
 	checkThreads();
 	if (tripletMatchThread != NULL)
 		return false;
-	if(inUseCnt > 0)
+	if (inUseCnt > 0)
 		return false;
 	return true;
 }
@@ -396,7 +399,10 @@ class ReverseSort
 {
 	QRCompare cmp;
 public:
-	ReverseSort(QRCompare c): cmp(c) {}
+	ReverseSort(QRCompare c) :
+			cmp(c)
+	{
+	}
 
 	bool operator()(const QueryResult* lhs, const QueryResult* rhs)
 	{
@@ -408,10 +414,10 @@ public:
 //do stable sorts, which require an explicit reverse sort
 void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 {
-	if(currsort == srt)
+	if (currsort == srt)
 		return;
 	QRCompare cmp = NULL;
-	switch(srt)
+	switch (srt)
 	{
 	case SortType::RMSD:
 		cmp = rmsdCompare;
@@ -426,9 +432,9 @@ void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 		break;
 	}
 	currsort = srt;
-	if(cmp != NULL)
+	if (cmp != NULL)
 	{
-		if(reverse)
+		if (reverse)
 			stable_sort(results.begin(), results.end(), ReverseSort(cmp));
 		else
 			stable_sort(results.begin(), results.end(), cmp);
@@ -439,42 +445,54 @@ void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 //this will load the molecular data and therefor be slower
 bool PharmerQuery::isExcluded(QueryResult* result)
 {
-	if(excluder.isDefined())
+
+	MolData mdata;
+	PMolReaderSingleAlloc pread;
+	shared_ptr<PharmerDatabaseSearcher> db;
+	unsigned long loc = getLocation(result, db);
+	db->getMolData(loc, mdata, pread);
+
+	vector<FloatCoord> coords;
+	mdata.mol->getCoords(coords);
+	for (unsigned i = 0, n = coords.size(); i < n; i++)
 	{
-		MolData mdata;
-		PMolReaderSingleAlloc pread;
-		shared_ptr<PharmerDatabaseSearcher> db;
-		unsigned long loc = getLocation(result, db);
-		db->getMolData(loc, mdata, pread);
-
-		vector<FloatCoord> coords;
-		mdata.mol->getCoords(coords);
-		for(unsigned i = 0, n = coords.size(); i < n; i++)
-		{
-			if(excluder.isExcluded(coords[i]))
-				return true;
-		}
-
+		if (excluder.isExcluded(coords[i]))
+			return true;
 	}
+
 	return false;
 }
 
-
 //reduce according to parameters, ie, fewer conformers
+//also remove exluced mols (possible expensive)
 void PharmerQuery::reduceResults()
 {
-	if(params.reduceConfs != 0 && params.reduceConfs != UINT_MAX)
+	if (params.reduceConfs != 0 && params.reduceConfs != UINT_MAX)
 	{
 		unordered_map<unsigned, unsigned> molCnts;
 		vector<QueryResult*> newr;
 		newr.reserve(results.size());
-		for(unsigned i = 0, n = results.size(); i < n; i++)
+		for (unsigned i = 0, n = results.size(); i < n; i++)
 		{
 			unsigned molid = results[i]->c->molid;
-			if(molCnts.count(molid) == 0)
+			if (molCnts.count(molid) == 0)
 				molCnts[molid] = 0;
 
-			if(molCnts[molid]++ < params.reduceConfs)
+			if (molCnts[molid]++ < params.reduceConfs)
+			{
+				newr.push_back(results[i]);
+			}
+		}
+		swap(results, newr);
+	}
+
+	if (excluder.isDefined())
+	{
+		vector<QueryResult*> newr;
+		newr.reserve(results.size());
+		for (unsigned i = 0, n = results.size(); i < n; i++)
+		{
+			if (!isExcluded(results[i]))
 			{
 				newr.push_back(results[i]);
 			}
@@ -491,24 +509,25 @@ void PharmerQuery::loadResults()
 	SpinLock lock(mutex);
 	checkThreads();
 
-	for(unsigned i = 0, n = corrsQs.size(); i < n; i++)
+	for (unsigned i = 0, n = corrsQs.size(); i < n; i++)
 	{
 		vector<CorrespondenceResult*> corrs;
 		corrsQs[i].popAll(corrs);
 
-		for(unsigned j = 0, nc = corrs.size(); j < nc; j++)
+		for (unsigned j = 0, nc = corrs.size(); j < nc; j++)
 		{
 			CorrespondenceResult *c = corrs[j];
 			currsort = SortType::Undefined;
-			results.push_back(new (resalloc.alloc(sizeof(QueryResult))) QueryResult(c));
+			results.push_back(
+					new (resalloc.alloc(sizeof(QueryResult))) QueryResult(c));
 		}
 	}
 
-	//filter
+//filter
 	sortResults(params.sort, false);
 	reduceResults();
 
-	if(params.maxHits != 0 && results.size() > params.maxHits)
+	if (params.maxHits != 0 && results.size() > params.maxHits)
 	{
 		results.resize(params.maxHits);
 	}
@@ -529,7 +548,7 @@ void PharmerQuery::getResults(const DataParameters& dp,
 
 	sortResults(dp.sort, dp.reverseSort);
 
-	unsigned end = dp.num == 0 ? results.size() : dp.num+dp.start;
+	unsigned end = dp.num == 0 ? results.size() : dp.num + dp.start;
 	for (unsigned i = dp.start, n = results.size(); i < n && i < end; i++)
 	{
 		if (dp.extraInfo)
@@ -551,8 +570,8 @@ void PharmerQuery::setExtraInfo(QueryResult& r)
 		PMolReaderSingleAlloc pread;
 		db->getMolData(loc, mdata, pread);
 
-		strncpy(r.name, mdata.mol->getTitle(), QR_NAME_SIZE-1);
-		r.name[QR_NAME_SIZE-1] = 0;
+		strncpy(r.name, mdata.mol->getTitle(), QR_NAME_SIZE - 1);
+		r.name[QR_NAME_SIZE - 1] = 0;
 	}
 }
 
@@ -563,7 +582,7 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 	vector<QueryResult*> r;
 	getResults(dp, r);
 
-	//json status line
+//json status line
 	if (jsonHeader)
 	{
 		out << "{\"status\" : 1, \"done\" : ";
@@ -577,8 +596,9 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 
 	for (unsigned i = 0, n = r.size(); i < n; i++)
 	{
-		out << i + dp.start << ","  << r[i]->c->val << ","
-				<< r[i]->c->weight << "," << r[i]->c->nRBnds << "," << r[i]->name << "," << r[i]->c->molid << "," << r[i]->c->location  << "\n";
+		out << i + dp.start << "," << r[i]->c->val << "," << r[i]->c->weight
+				<< "," << r[i]->c->nRBnds << "," << r[i]->name << ","
+				<< r[i]->c->molid << "," << r[i]->c->location << "\n";
 	}
 }
 
@@ -587,13 +607,14 @@ static bool locationCompare(const QueryResult* lhs, const QueryResult* rhs)
 	return lhs->c->location < rhs->c->location;
 }
 
-unsigned long PharmerQuery::getLocation(const QueryResult* r, shared_ptr<PharmerDatabaseSearcher>& db)
+unsigned long PharmerQuery::getLocation(const QueryResult* r,
+		shared_ptr<PharmerDatabaseSearcher>& db)
 {
-	unsigned dbid =  r->c->location % maxID();
+	unsigned dbid = r->c->location % maxID();
 	unsigned dbi = 0;
 	unsigned index = 0;
 	dbCoords(dbid, dbi, index);
-	unsigned long loc =  r->c->location / maxID();
+	unsigned long loc = r->c->location / maxID();
 	db = databases[dbi][index].db;
 	return loc;
 }
@@ -603,7 +624,7 @@ void PharmerQuery::outputMols(ostream& out)
 {
 	loadResults();
 	SpinLock lock(mutex);
-	//copy so we can sort weirdly and release access to results
+//copy so we can sort weirdly and release access to results
 	vector<QueryResult*> myres = results;
 	lock.release();
 	sort(myres.begin(), myres.end(), locationCompare);
@@ -616,10 +637,11 @@ void PharmerQuery::outputMols(ostream& out)
 	{
 		access();
 		shared_ptr<PharmerDatabaseSearcher> db;
-		unsigned long loc =  getLocation(myres[i], db);
+		unsigned long loc = getLocation(myres[i], db);
 
 		sddata.clear();
-		sddata.push_back(ASDDataItem("rmsd",lexical_cast<string>(myres[i]->c->val)));
+		sddata.push_back(
+				ASDDataItem("rmsd", lexical_cast<string>(myres[i]->c->val)));
 
 		db->getMolData(loc, mdata, pread);
 		mdata.mol->writeSDF(out, sddata, myres[i]->c->rmsd);
@@ -635,19 +657,20 @@ void PharmerQuery::outputMol(const QueryResult* mol, ostream& out,
 	MolData mdata;
 	vector<ASDDataItem> sddata;
 
-	sddata.push_back(ASDDataItem("rmsd",lexical_cast<string>(mol->c->val)));
+	sddata.push_back(ASDDataItem("rmsd", lexical_cast<string>(mol->c->val)));
 
 	shared_ptr<PharmerDatabaseSearcher> db;
-	unsigned long loc =  getLocation(mol, db);
+	unsigned long loc = getLocation(mol, db);
 
 	db->getMolData(loc, mdata, pread);
 
-	//TODO: minimization if requested - openbabel isn't quite where I want it yet..
+//TODO: minimization if requested - openbabel isn't quite where I want it yet..
 	mdata.mol->writeSDF(out, sddata, mol->c->rmsd);
 }
 
 //output single mol in sdf format, use index into results
-void PharmerQuery::outputMol(unsigned index, ostream& out, bool jsonHeader, bool minimize)
+void PharmerQuery::outputMol(unsigned index, ostream& out, bool jsonHeader,
+		bool minimize)
 {
 	access();
 	SpinLock lock(mutex);
@@ -656,7 +679,7 @@ void PharmerQuery::outputMol(unsigned index, ostream& out, bool jsonHeader, bool
 	QueryResult *m = results[index];
 	lock.release();
 
-	if(jsonHeader)
+	if (jsonHeader)
 		out << "{\"status\": 1}\n";
 	outputMol(m, out, minimize);
 }
@@ -667,7 +690,7 @@ void PharmerQuery::getZINCIDs(vector<unsigned>& ids)
 	ids.clear();
 	loadResults();
 	SpinLock lock(mutex);
-	//copy so we can sort weirdly and release access to results
+//copy so we can sort weirdly and release access to results
 	vector<QueryResult*> myres = results;
 	lock.release();
 
@@ -675,12 +698,12 @@ void PharmerQuery::getZINCIDs(vector<unsigned>& ids)
 	{
 		access();
 		setExtraInfo(*myres[i]); //there is a slight race condition here..
-		if(myres[i]->name[0] == 'Z' && myres[i]->name[1] == 'I' &&
-				myres[i]->name[2] == 'N' && myres[i]->name[3] == 'C')
+		if (myres[i]->name[0] == 'Z' && myres[i]->name[1] == 'I'
+				&& myres[i]->name[2] == 'N' && myres[i]->name[3] == 'C')
 		{
 			unsigned id = 0;
-			id = atoi(myres[i]->name+4);
-			if(id > 0)
+			id = atoi(myres[i]->name + 4);
+			if (id > 0)
 			{
 				ids.push_back(id);
 			}
@@ -696,54 +719,63 @@ void PharmerQuery::print(ostream& out) const
 }
 
 //use the ordering of sides from qt to set box box
-static void setBoxMinMax(BoundingBox& box, double min, double max, unsigned i, unsigned j, const QueryTriplet& qt)
+static void setBoxMinMax(BoundingBox& box, double min, double max, unsigned i,
+		unsigned j, const QueryTriplet& qt)
 {
-	if(qt.getPoints()[0].index == i)
+	if (qt.getPoints()[0].index == i)
 	{
-		if(qt.getPoints()[1].index == j)
+		if (qt.getPoints()[1].index == j)
 		{
-			box.setX(ThreePointData::reduceFloat(min), ThreePointData::reduceFloat(max));
+			box.setX(ThreePointData::reduceFloat(min),
+					ThreePointData::reduceFloat(max));
 		}
 		else
 		{
-			box.setZ(ThreePointData::reduceFloat(min), ThreePointData::reduceFloat(max));
+			box.setZ(ThreePointData::reduceFloat(min),
+					ThreePointData::reduceFloat(max));
 		}
 	}
-	else if(qt.getPoints()[1].index == i)
+	else if (qt.getPoints()[1].index == i)
 	{
-		if(qt.getPoints()[0].index == j)
+		if (qt.getPoints()[0].index == j)
 		{
-			box.setX(ThreePointData::reduceFloat(min), ThreePointData::reduceFloat(max));
+			box.setX(ThreePointData::reduceFloat(min),
+					ThreePointData::reduceFloat(max));
 		}
 		else
 		{
-			box.setY(ThreePointData::reduceFloat(min), ThreePointData::reduceFloat(max));
+			box.setY(ThreePointData::reduceFloat(min),
+					ThreePointData::reduceFloat(max));
 		}
 	}
 	else
 	{
-		if(qt.getPoints()[0].index == j)
+		if (qt.getPoints()[0].index == j)
 		{
-			box.setZ(ThreePointData::reduceFloat(min), ThreePointData::reduceFloat(max));
+			box.setZ(ThreePointData::reduceFloat(min),
+					ThreePointData::reduceFloat(max));
 		}
 		else
-			box.setY(ThreePointData::reduceFloat(min), ThreePointData::reduceFloat(max));
+			box.setY(ThreePointData::reduceFloat(min),
+					ThreePointData::reduceFloat(max));
 
 	}
 }
 
 //return true if it is possible for there to be a triangle between points i,j and p where the sides ip and jp are
 //constrained by the passed range
-bool PharmerQuery::inRange(unsigned i, unsigned j, unsigned p, double minip, double maxip, double minjp, double maxjp) const
+bool PharmerQuery::inRange(unsigned i, unsigned j, unsigned p, double minip,
+		double maxip, double minjp, double maxjp) const
 {
 	const QueryTriplet& trip = triplets[tripIndex[i][j][p]];
 	BoundingBox box;
 
 	double min = PharmaPoint::pharmaDist(points[i], points[j])
-	- points[i].radius - points[j].radius;
-	if(min < 0) min = 0;
+			- points[i].radius - points[j].radius;
+	if (min < 0)
+		min = 0;
 	double max = PharmaPoint::pharmaDist(points[i], points[j])
-	+ points[i].radius + points[j].radius;
+			+ points[i].radius + points[j].radius;
 	setBoxMinMax(box, min, max, i, j, trip);
 
 	setBoxMinMax(box, minip, maxip, i, p, trip);
