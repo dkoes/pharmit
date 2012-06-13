@@ -95,7 +95,9 @@
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr0/local/include"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.705197603" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.705197603" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="SKIP_REGISTERZINC"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1957531942" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1450417390" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release">
@@ -210,7 +212,9 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="pharmer.cdt.managedbuild.target.gnu.exe.331161080" name="Executable" projectType="cdt.managedbuild.target.gnu.exe"/>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/pharmer"/>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">

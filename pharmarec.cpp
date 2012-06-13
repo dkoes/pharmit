@@ -198,13 +198,12 @@ const Pharma* Pharmas::pharmaFromAtomicNumber(int anum) const
 	return &pharmas[pos->second];
 }
 
-//return pharma with name
+//return pharma from name
 const Pharma* Pharmas::pharmaFromName(const string& name) const
 {
 	unordered_map<string, unsigned>::const_iterator pos = nameLookup.find(name);
 	if (pos == nameLookup.end())
 	{
-		cerr << "Unknown pharma point " << name << "\n";
 		return NULL;
 	}
 	return &pharmas[pos->second];
