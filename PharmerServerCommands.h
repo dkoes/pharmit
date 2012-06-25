@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string>
 #include <cstdio>
 #include <google/malloc_extension.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #ifndef SKIP_REGISTERZINC
 #include <curl/curl.h>
@@ -55,7 +56,7 @@ protected:
 	SpinMutex& logmutex;
 
 	//send a full JSON error message
-	void sendError(FastCgiIO& IO, const char *msg)
+	void sendError(FastCgiIO& IO, Cgicc& CGI, const char *msg)
 	{
 		IO << HTTPPlainHeader();
 		IO << "{\"status\" : 0, \"msg\": \"";
@@ -63,7 +64,10 @@ protected:
 
 		if(LOG)
 		{
-			fprintf(LOG,"error %s\n", msg);
+			posix_time::ptime t(posix_time::second_clock::local_time());
+			fprintf(LOG, "error %s %s %s\n", posix_time::to_simple_string(t).c_str(),
+					CGI.getEnvironment().getRemoteAddr().c_str(), msg);
+			fprintf(LOG, "error cgi %s\n",cgiDump(CGI).c_str());
 			fflush(LOG);
 		}
 	}
@@ -88,7 +92,7 @@ protected:
 	{
 		if (!cgiTagExists(CGI, "qid"))
 		{
-			sendError(IO, "Bad data request. No query id.");
+			sendError(IO, CGI, "Bad data request. No query id.");
 			return WebQueryHandle();
 		}
 		else
@@ -96,8 +100,7 @@ protected:
 			unsigned qid = cgiGetInt(CGI, "qid");
 			if (qid == 0)
 			{
-				sendError(IO, "Bad data request. Invalid query id.");
-				if(LOG) fprintf(LOG,"Query command: %s\n",cgiDump(CGI).c_str());
+				sendError(IO, CGI, "Bad data request. Invalid query id.");
 				return WebQueryHandle();
 			}
 			else
@@ -106,7 +109,7 @@ protected:
 				if (!query)
 				{
 					//presumably garbage collected after a timeout
-					sendError(IO, "Query data no longer available.");
+					sendError(IO, CGI, "Query data no longer available.");
 				}
 				return query;
 			}
@@ -180,7 +183,7 @@ public:
 		if (!cgiTagExists(CGI, "json"))
 		{
 			//no query
-			sendError(IO, "Invalid query syntax. No query data.");
+			sendError(IO, CGI,"Invalid query syntax. No query data.");
 		}
 		else
 		{
@@ -190,7 +193,7 @@ public:
 					"json"), root);
 			if (!parsingSuccessful)
 			{
-				sendError(IO,
+				sendError(IO, CGI,
 						"Invalid query. Could not parse query data.");
 			}
 			else
@@ -220,7 +223,7 @@ public:
 						root), oldqid);
 				if (qid == 0) //invalid query
 				{
-					sendError(IO, "Invalid query.  Three distinct features are required.");
+					sendError(IO, CGI, "Invalid query.  Three distinct features are required.");
 				}
 				else
 				{
@@ -370,7 +373,7 @@ public:
 		vector<PharmaPoint> points;
 		if (!cgiTagExists(CGI,"ligand") || !cgiTagExists(CGI,"ligandname"))
 		{
-			sendError(IO, "No ligand for pharmacophore identification.");
+			sendError(IO, CGI, "No ligand for pharmacophore identification.");
 			return;
 		}
 		else
@@ -399,7 +402,7 @@ public:
 				}
 				else
 				{
-					sendError(IO, "Error parsing query format file.");
+					sendError(IO, CGI,"Error parsing query format file.");
 				}
 			}
 			else //molecular data
@@ -410,7 +413,7 @@ public:
 					err << "Could not understand molecular data in " << filename <<
 							" (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format."
 							<< " Please request support for new formats in the ZINCPharmer forum.";
-					sendError(IO, err.str().c_str());
+					sendError(IO, CGI, err.str().c_str());
 					return;
 				}
 
@@ -434,7 +437,7 @@ public:
 
 				if(!jsonPharmaQuery(*pharmas, val, filedata, format, receptor, rformat))
 				{
-					sendError(IO, "Could not parse molecular data.");
+					sendError(IO, CGI,"Could not parse molecular data.");
 					return;
 				}
 
