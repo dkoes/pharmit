@@ -49,12 +49,16 @@ class ReadMCMol
 		string title;
 		OBMol mol;
 		string data;
+		bool valid;
+
+		MInfo(): valid(false) {}
 
 		bool load(OBConversion& conv)
 		{
 			title.clear();
 			mol.Clear();
 			data.clear();
+			valid = false;
 			//openbabel is SLOW due to (unneccessary I think) perception routines that
 			//get run when construction an obmol from an sdf, so optimize for it separately
 			if(strcmp(conv.GetInFormat()->GetID(), "sdf") == 0)
@@ -78,6 +82,7 @@ class ReadMCMol
 				if(dollarcnt != 4)
 					return false;
 				data = d.str();
+				valid = *in;
 				return *in;
 			}
 			else
@@ -86,6 +91,7 @@ class ReadMCMol
 					return false;
 				title = mol.GetTitle();
 			}
+			valid = true;
 			return true;
 		}
 
@@ -103,7 +109,7 @@ class ReadMCMol
 
 		bool isValid()
 		{
-			return title.length() > 0;
+			return valid;
 		}
 
 	};
@@ -119,6 +125,7 @@ public:
 		//must do a read to setup conv
 		conv.Read(&next.mol, &infile);
 		next.title = next.mol.GetTitle();
+		next.valid = true;
 	}
 
 	//put multi-conformer molecule in mol
