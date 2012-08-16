@@ -73,6 +73,8 @@ cl::opt<unsigned> NThreads("nthreads", cl::desc("utilize n threads; default 1"),
 cl::opt<double> MaxRMSD("max-rmsd",
 		cl::desc("maximum allowed RMSD; default max allowed by query"),
 		cl::init(HUGE_VAL));
+cl::opt<unsigned> MinWeight("min-weight",
+		cl::desc("maximum allowed molecular weight"), cl::init(0));
 cl::opt<unsigned> MaxWeight("max-weight",
 		cl::desc("maximum allowed molecular weight"), cl::init(UINT_MAX));
 cl::opt<unsigned> ReduceConfs("reduceconfs",
@@ -519,6 +521,7 @@ static void handle_dbsearch_cmd()
 	//query parameters
 	QueryParameters params;
 	params.maxRMSD = MaxRMSD;
+	params.minWeight = MinWeight;
 	params.maxWeight = MaxWeight;
 	params.reduceConfs = ReduceConfs;
 	params.orientationsPerConf = MaxOrient;
