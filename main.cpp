@@ -74,9 +74,14 @@ cl::opt<double> MaxRMSD("max-rmsd",
 		cl::desc("maximum allowed RMSD; default max allowed by query"),
 		cl::init(HUGE_VAL));
 cl::opt<unsigned> MinWeight("min-weight",
-		cl::desc("maximum allowed molecular weight"), cl::init(0));
+		cl::desc("minimum allowed molecular weight"), cl::init(0));
 cl::opt<unsigned> MaxWeight("max-weight",
 		cl::desc("maximum allowed molecular weight"), cl::init(UINT_MAX));
+cl::opt<unsigned> MinNRot("min-nrot",
+		cl::desc("minimum allowed rotatable bonds"), cl::init(0));
+cl::opt<unsigned> MaxNRot("max-nrot",
+		cl::desc("maximum allowed rotatable bonds"), cl::init(UINT_MAX));
+
 cl::opt<unsigned> ReduceConfs("reduceconfs",
 		cl::desc("return at most n conformations for each molecule"),
 		cl::value_desc("n"), cl::init(0));
@@ -523,6 +528,8 @@ static void handle_dbsearch_cmd()
 	params.maxRMSD = MaxRMSD;
 	params.minWeight = MinWeight;
 	params.maxWeight = MaxWeight;
+	params.minRot = MinNRot;
+	params.maxRot = MaxNRot;
 	params.reduceConfs = ReduceConfs;
 	params.orientationsPerConf = MaxOrient;
 	params.maxHits = MaxHits;
