@@ -863,7 +863,8 @@ static void genHAcceptorPointVector(const vector<int>& atom_indexes,
 		avebond *= -1;
 		avebond.normalize();
 
-		pnt.vecs.push_back(avebond);
+		if(isfinite(avebond.x()))
+			pnt.vecs.push_back(avebond);
 	}
 }
 
