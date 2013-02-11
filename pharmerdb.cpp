@@ -298,31 +298,31 @@ void PharmerDatabaseCreator::initializeDatabases()
 	filesystem::path ipath = dbpath;
 	ipath /= "info";
 	assert(!filesystem::exists(ipath));
-	info = fopen(ipath.file_string().c_str(), "w+"); //create
+	info = fopen(ipath.string().c_str(), "w+"); //create
 	assert(info);
 
 	//human readable pharmacophore classes
 	filesystem::path lpath = dbpath;
 	lpath /= "lookup";
-	lookup = fopen(lpath.file_string().c_str(), "w"); //create
+	lookup = fopen(lpath.string().c_str(), "w"); //create
 	assert(lookup);
 
 	//mid index (to better support lots of conformers)
 	filesystem::path mpath = dbpath;
 	mpath /= "mids";
-	midList = fopen(mpath.file_string().c_str(), "w"); //create
+	midList = fopen(mpath.string().c_str(), "w"); //create
 	assert(midList);
 
 	//moldata
 	filesystem::path mdpath = dbpath;
 	mdpath /= "molData";
-	molData = fopen(mdpath.file_string().c_str(), "w+");
+	molData = fopen(mdpath.string().c_str(), "w+");
 	assert(molData);
 
 	//bincnts
 	filesystem::path binpath = dbpath;
 	binpath /= "binCnts";
-	binData = fopen(binpath.file_string().c_str(), "w+");
+	binData = fopen(binpath.string().c_str(), "w+");
 	assert(binData);
 
 	//output pharmas
@@ -336,7 +336,7 @@ void PharmerDatabaseCreator::initializeDatabases()
 	{
 		string pname = string("pointData_") + lexical_cast<string> (i);
 		filesystem::path pdpath = dbpath / pname;
-		pointDataFiles[i] = PointDataFile(pdpath.file_string(), i);
+		pointDataFiles[i] = PointDataFile(pdpath.string(), i);
 	}
 
 	//geoData
@@ -746,7 +746,7 @@ void PharmerDatabaseCreator::createIJKSpatialIndex(int p)
 	//open
 	string gname = string("geoData_") + lexical_cast<string> (p);
 	filesystem::path gpath = dbpath / gname;
-	FILE * geoFile= fopen(gpath.file_string().c_str(), "w");
+	FILE * geoFile= fopen(gpath.string().c_str(), "w");
 	geoDataFiles[p] = geoFile;
 	assert(geoFile);
 
@@ -793,12 +793,12 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	//info - and read it in
 	filesystem::path ipath = dbpath;
 	ipath /= "info";
-	info = fopen(ipath.file_string().c_str(), "r");
+	info = fopen(ipath.string().c_str(), "r");
 	assert(info);
 	int read = fread(&stats, sizeof(stats), 1, info);
 	if (read != 1)
 	{
-		cerr << ipath.file_string() << "\n";
+		cerr << ipath.string() << "\n";
 		abort();
 	}
 
@@ -816,17 +816,17 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	//moldata
 	filesystem::path mdpath = dbpath;
 	mdpath /= "molData";
-	molData.map(mdpath.file_string(), true, true);
+	molData.map(mdpath.string(), true, true);
 
 	//mids
 	filesystem::path mpath = dbpath;
 	mpath /= "mids";
 	if(filesystem::exists(mpath)) //back-wards compat
-		midList.map(mpath.file_string(), true, true,true);
+		midList.map(mpath.string(), true, true,true);
 
 	//length histogram
 	filesystem::path binpath = dbpath / "binCnts";
-	binnedCnts.map(binpath.file_string(),true,false);
+	binnedCnts.map(binpath.string(),true,false);
 
 	//pointData
 	unsigned n = tindex.size();
@@ -836,7 +836,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 		string pname = string("pointData_") + lexical_cast<string> (i);
 		filesystem::path pdpath = dbpath / pname;
 		if(filesystem::exists(pdpath))
-			tripletDataArrays[i].map(pdpath.file_string(), true, true);
+			tripletDataArrays[i].map(pdpath.string(), true, true);
 	}
 
 	//geoData
@@ -846,7 +846,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 		string gname = string("geoData_") + lexical_cast<string> (i);
 		filesystem::path gpath = dbpath / gname;
 		if(filesystem::exists(gpath))
-			geoDataArrays[i].map(gpath.file_string(), true, true);
+			geoDataArrays[i].map(gpath.string(), true, true);
 	}
 
 	valid = true;

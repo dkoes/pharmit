@@ -477,7 +477,7 @@ static void ExpandResponseFiles(unsigned argc, char** argv,
       if (filesystem::exists(respFile) && filesystem::file_size(respFile) > 0) {
 
         // mmap the response file into memory.
-    	  iostreams::mapped_file_source respFilePtr(respFile.file_string());
+    	  iostreams::mapped_file_source respFilePtr(respFile.string());
 
         // If we could open the file, parse its contents, otherwise
         // pass the @file option verbatim.
@@ -520,7 +520,7 @@ void cl::ParseCommandLineOptions(int argc, char **argv,
   // Copy the program name into ProgName, making sure not to overflow it.
   if(ProgramName == DEFAULT_PROGRAM_NAME)
   {
-	  ProgramName = filesystem::path(argv[0]).filename();
+	  ProgramName = filesystem::path(argv[0]).filename().string();
   }
 
   if(Overview)
