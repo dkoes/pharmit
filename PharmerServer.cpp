@@ -194,7 +194,7 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 	logdirpath = filesystem::path(logdir);
 	OBConversion conv; //load plugins
 
-	string logname = (logdirpath / "LOG").filename().string();
+	string logname = (logdirpath / "LOG").string();
 	LOG = fopen(logname.c_str(), "a");
 	if (LOG == NULL)
 	{
