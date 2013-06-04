@@ -309,12 +309,25 @@ public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
 			vector<PharmaPoint>& points, Excluder& excluder)
 	{
+		//class to find the first pharmacophore element in a document
+		struct FindPharmVisitor: public TiXmlVisitor {
+			const TiXmlElement *ph;
+
+			FindPharmVisitor(): ph(NULL) {}
+
+			virtual bool VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* at)
+			{
+				ph = elem.FirstChildElement("pharmacophore");
+				return ph == NULL; //keep going if haven't found it
+			}
+		};
+
 		points.clear();
 		TiXmlDocument doc;
 		in >> doc;
 
 		TiXmlElement *base = doc.FirstChildElement("MolecularEnvironment");
-		TiXmlElement *ph = NULL;
+		const TiXmlElement *ph = NULL;
 		if (base == NULL)
 		{
 			base = doc.ToElement();
@@ -326,13 +339,20 @@ public:
 		}
 		else
 			ph = base->FirstChildElement("pharmacophore");
-		if (ph == NULL)
-			return false;
+		if (ph == NULL) {
+			//do a more exhaustive search
+			FindPharmVisitor visit;
+			doc.Accept(&visit);
+			ph = visit.ph;
 
-		TiXmlNode *pt = NULL;
+			if(ph == NULL)
+				return false;
+		}
+
+		const TiXmlNode *pt = NULL;
 		while ((pt = ph->IterateChildren(pt)) != NULL)
 		{
-			TiXmlElement *el = pt->ToElement();
+			const TiXmlElement *el = pt->ToElement();
 			if (el == NULL)
 				continue;
 			const char *n = el->Attribute("name"); //short name
@@ -364,13 +384,13 @@ public:
 										"true") == 0)
 							toligand = true;
 
-						TiXmlElement *orig =
+						const TiXmlElement *orig =
 								toligand ?
 										el->FirstChildElement("target") :
 										el->FirstChildElement("origin");
 						if (orig == NULL)
 						{	//directionless, just a position
-							TiXmlElement *pos = el->FirstChildElement(
+							const TiXmlElement *pos = el->FirstChildElement(
 									"position");
 							if (!pos)
 								break;
@@ -387,7 +407,7 @@ public:
 							orig->Attribute("z3", &point.z);
 							orig->Attribute("tolerance", &point.radius);
 
-							TiXmlElement *targ =
+							const TiXmlElement *targ =
 									toligand ? el->FirstChildElement("origin")
 														:
 												el->FirstChildElement("target");
@@ -409,7 +429,7 @@ public:
 					}
 					else if (n[1] == 0) //hydrophobic
 					{
-						TiXmlElement *pos = el->FirstChildElement("position");
+						const TiXmlElement *pos = el->FirstChildElement("position");
 						if (pos)
 						{
 							point.pharma = pharmas.pharmaFromName(
@@ -427,7 +447,7 @@ public:
 				case 'N': //NI
 					if (n[1] == 'I')
 					{
-						TiXmlElement *pos = el->FirstChildElement("position");
+						const TiXmlElement *pos = el->FirstChildElement("position");
 						if (pos)
 						{
 							point.pharma = pharmas.pharmaFromName(
@@ -445,7 +465,7 @@ public:
 				case 'A':
 					if (n[1] == 'R')
 					{
-						TiXmlElement *pos = el->FirstChildElement("position");
+						const TiXmlElement *pos = el->FirstChildElement("position");
 						if (pos)
 						{
 							point.pharma = pharmas.pharmaFromName("Aromatic");
@@ -454,7 +474,7 @@ public:
 							pos->Attribute("z3", &point.z);
 							pos->Attribute("tolerance", &point.radius);
 
-							TiXmlElement *norm = el->FirstChildElement(
+							const TiXmlElement *norm = el->FirstChildElement(
 									"normal");
 							if (norm != NULL)
 							{
@@ -486,7 +506,7 @@ public:
 				if (n && strcmp(n, "exclusion") == 0
 						&& strcmp(el->Value(), "volume") == 0)
 				{
-					TiXmlElement *pos = el->FirstChildElement("position");
+					const TiXmlElement *pos = el->FirstChildElement("position");
 					if (pos)
 					{
 						double x, y, z, r;

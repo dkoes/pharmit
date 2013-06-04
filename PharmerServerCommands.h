@@ -402,7 +402,7 @@ public:
 				}
 				else
 				{
-					sendError(IO, CGI,"Error parsing query format file.");
+					sendError(IO, CGI,"Error parsing query format file. Note that third party file formats (e.g. pml, ph4) are reverse engineered. Please submit any examples that do not work in the forums so we can improve the parser.");
 				}
 			}
 			else //molecular data
