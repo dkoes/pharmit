@@ -655,6 +655,10 @@ int main(int argc, char *argv[])
 	{
 		handle_pharma_cmd(pharmas);
 	}
+	else if(Cmd == "showpharma")
+	{
+		pharmas.write(cout);
+	}
 	else if (Cmd == "dbcreate")
 	{
 		handle_dbcreate_cmd(pharmas);
