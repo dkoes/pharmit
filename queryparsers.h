@@ -32,6 +32,7 @@
 #include "Excluder.h"
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/function.hpp>
 #include <cstdlib>
 
 //base class of query file parsers
@@ -224,10 +225,30 @@ public:
 		if (!getline(in, line))
 			return false;
 		//then look for #feature, number of points
+		unsigned before_dummies = 0;
+		unsigned after_dummies = 0;
 		while (getline(in, line))
 		{
 			if (line.substr(0, 8) == "#feature")
+			{
+				//support different feature formats by parsing this line -
+				//still assume that x y z r are all in order
+				vector<string> tokens;
+				boost::algorithm::split(tokens, line, isblank);
+				unsigned start = 0, end = 0;
+				for(unsigned i = 0, n = tokens.size()-1; i < n; i++)
+				{
+					if(tokens[i] == "x")
+						start = i;
+					if(tokens[i] == "r" && tokens[i] == "r") //r is both a label of radius and type
+					{
+						end = i;
+					}
+				}
+				before_dummies = (start-4)/2; //hard code feature num expr tt
+				after_dummies = (tokens.size() - end)/2;
 				break;
+			}
 		}
 		if (!in)
 			return false;
@@ -255,13 +276,18 @@ public:
 			string dummy;
 			PharmaPoint point;
 
-			in >> dummy;
+			for(unsigned i = 0; i < before_dummies; i++)
+			{
+				in >> dummy;
+			}
 			in >> point.x;
 			in >> point.y;
 			in >> point.z;
 			in >> point.radius;
-			in >> dummy;
-			in >> dummy;
+			for(unsigned i = 0; i < after_dummies; i++)
+			{
+				in >> dummy;
+			}
 			if (!in)
 				return false;
 
