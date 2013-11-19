@@ -827,7 +827,11 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	//length histogram
 	filesystem::path binpath = dbpath / "binCnts";
 	binnedCnts.map(binpath.string(),true,false);
-
+	if(binnedCnts.length() == 0)
+	{
+		cerr << "Missing binnedCnts " << binpath << "\n";
+		return;
+	}
 	//pointData
 	unsigned n = tindex.size();
 	tripletDataArrays = new MMappedRegion<ThreePointData> [n];
