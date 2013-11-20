@@ -98,6 +98,26 @@ To SEARCH a database:
  pharmer dbsearch -dbdir DB -in query.sdf
  pharmer dbsearch -dbdir DB -in query.ph4
 
+BUGS (Not Really)
+
+When working with large datasets spread across multiple hard drives,
+you will likely run into a number of limits that will result in 
+segmentation faults (type 6 or 11).  These changes need to be in place
+before building the database, or it will silently create incomplete 
+databases that crash when you search them.
+
+Make sure nofile is set high enough (1000000) in /etc/security/limits.conf
+
+Make sure vm.max_map_count is set high enough - add the following to /etc/sysctl.conf
+vm.max_map_count=1000000
+
+Make sure you build against libcurl4-openssl-dev, not gnutls, or you
+will get fortify_fail errors.
+
+
+BUGS (Really)
+
+Send any bug reports to dkoes@pitt.edu with a complete test case.
 
 CITING
 
