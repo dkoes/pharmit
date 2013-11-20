@@ -391,14 +391,23 @@ public:
 				Excluder excluder;
 				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
-					convertPharmaJson(val, points);
-					excluder.addToJSON(val);
-					IO << HTTPPlainHeader();
-					Json::FastWriter writer;
-					val["status"] = 1;
-					val["mol"] = false;
-					//output the json as one line
-					IO << writer.write(val);
+					if(points.size() > 25)
+					{
+						//this many points is a pointless query and at some point
+						//you just generate too many triplets
+						sendError(IO, CGI, "I'm sorry, your query has too many points (more than 25!).");
+					}
+					else
+					{
+						convertPharmaJson(val, points);
+						excluder.addToJSON(val);
+						IO << HTTPPlainHeader();
+						Json::FastWriter writer;
+						val["status"] = 1;
+						val["mol"] = false;
+						//output the json as one line
+						IO << writer.write(val);
+					}
 				}
 				else
 				{
