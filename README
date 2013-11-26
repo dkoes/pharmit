@@ -114,6 +114,12 @@ vm.max_map_count=1000000
 Make sure you build against libcurl4-openssl-dev, not gnutls, or you
 will get fortify_fail errors.
 
+Continuing with curl bugs, DNS timeouts can cause a longjmp error:
+http://stackoverflow.com/questions/9191668/error-longjmp-causes-uninitialized-stack-frame
+to resolve these rebuild curl with --enable-ares
+
+You can ignore all the curl issues entirely if you build with -DSKIP_REGISTERZINC
+which is probably what you want unless you are using the full ZINC database.
 
 BUGS (Really)
 
