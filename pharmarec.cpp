@@ -147,14 +147,12 @@ void Pharmas::initialize(const vector<Pharma>& ps)
 	if (pharmas != NULL)
 		delete[] pharmas;
 	nameLookup.clear();
-	anumLookup.clear();
 	pharmas = new Pharma[ps.size()];
 	numPharmas = ps.size();
 	for (unsigned i = 0; i < numPharmas; i++)
 	{
 		pharmas[i] = ps[i];
 		nameLookup[pharmas[i].name] = i;
-		anumLookup[pharmas[i].atomic_number_label] = i;
 	}
 }
 
@@ -181,21 +179,6 @@ bool Pharma::operator==(const Pharma& rhs) const
 	}
 
 	return true;
-}
-
-//return pharma with anum label
-//represent pharmas externally with atomic number to support compatibility
-const Pharma* Pharmas::pharmaFromAtomicNumber(int anum) const
-{
-	unordered_map<unsigned, unsigned>::const_iterator pos = anumLookup.find(
-			anum);
-
-	if (pos == anumLookup.end())
-	{
-		cerr << "Unknown pharma point\n";
-		return NULL;
-	}
-	return &pharmas[pos->second];
 }
 
 //return pharma from name
@@ -896,11 +879,11 @@ void Pharma::setVectorFn(genPointVectorFn fn)
 	}
 	else
 	{
-		if (name == "Aromatic")
+		if (boost::starts_with(name, "Aromatic"))
 			getVectors = genAromaticPointVector;
-		else if (name == "HydrogenDonor")
+		else if (boost::starts_with(name,"HydrogenDonor"))
 			getVectors = genHDonorPointVector;
-		else if (name == "HydrogenAcceptor")
+		else if (boost::starts_with(name, "HydrogenAcceptor"))
 			getVectors = genHAcceptorPointVector;
 		else
 			getVectors = NULL;

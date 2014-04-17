@@ -130,7 +130,6 @@ protected:
 	Pharma *pharmas;
 	unsigned numPharmas;
 	unordered_map<string, unsigned> nameLookup;
-	unordered_map<unsigned, unsigned> anumLookup;
 	void initialize(const vector<Pharma>& ps);
 
 public:
@@ -156,7 +155,6 @@ public:
 
 	unsigned size() const { return numPharmas; }
 
-	const Pharma* pharmaFromAtomicNumber(int anum) const;
 	const Pharma* pharmaFromName(const string& name) const;
 
 	bool read(istream& in);
