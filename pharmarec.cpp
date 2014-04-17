@@ -952,7 +952,7 @@ bool Pharmas::read(istream& in)
 		str >> p.atomic_number_label;
 		str >> p.index;
 		if (p.index != pharmavec.size())
-			return false;
+			p.index = pharmavec.size(); //making this explicit was really stupid, just use order from file
 		str >> p.defaultSearchRadius;
 		int vecid = 0;
 		str >> vecid;
