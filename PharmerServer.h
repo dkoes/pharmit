@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using namespace std;
 using namespace boost;
 
+#define SERVERTHREADS 16
 void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& databases, const string& logdir, unsigned totalConfs, unsigned totalMols);
 
 

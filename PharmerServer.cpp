@@ -79,8 +79,6 @@ using namespace OpenBabel;
 
 typedef struct sockaddr SA;
 #define LISTENQ 1024
-#define SERVERTHREADS 16
-
 
 //define parsers both here and in PharmaQuery so we can be flexibly about
 //dealing with file mappings
