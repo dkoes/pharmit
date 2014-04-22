@@ -189,6 +189,12 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 	filesystem::path logdirpath;
 	SpinMutex logmutex;
 	SpinMutex recmutex;
+
+        if(databases.size() == 0 || databases.back().size() == 0)
+        {
+                cerr << "No valid databases specified\n";
+                exit(-1);
+        }
 	const Pharmas *pharmas = &databases.back().back().db->getPharmas();
 
 	logdirpath = filesystem::path(logdir);

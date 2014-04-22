@@ -466,7 +466,8 @@ struct LoadDatabase
 			totalConf += db->numConformations();
 			totalMols += db->numMolecules();
 		}
-		databases[i].back().max = HUGE_VAL;
+		if(databases[i].size() > 0) //otherwise we were passed invalid dir
+			databases[i].back().max = HUGE_VAL;
 	}
 };
 static void loadDatabases(vector<vector<MolWeightDatabase> >& databases,
