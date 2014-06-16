@@ -365,7 +365,7 @@ void WebQueryManager::getCounts(unsigned& active, unsigned& inactive,
 		unsigned& defunct)
 {
 	active = inactive = defunct = 0;
-	shared_lock<shared_mutex> L(mutex);
+	unique_lock<mutex> L(lock);
 
 	for (QueryMap::iterator itr = queries.begin(), end = queries.end(); itr
 			!= end; itr++)
