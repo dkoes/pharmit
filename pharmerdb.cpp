@@ -33,6 +33,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "tripletmatching.h"
 #include "BitSetTree.h"
 #include "ReadMCMol.h"
+
+#ifdef OUTPUTSMINA
+#include "SminaConverter.h"
+#endif
+
 using namespace boost;
 using namespace std;
 using namespace OpenBabel;
@@ -108,7 +113,7 @@ void MolDataCreator::processMol(OBMol& mol, double mWeight, unsigned mid)
 	//store each conformation seperately, this results in about 50% more space used,
 	//but as much as 50% performance improvement when retrieving mols
 
-	//generate information for each anchor oriented conformation
+	//generate information for each conformation
 	for (unsigned c = 0, nc = mol.NumConformers(); c < nc; c++)
 	{
 		unsigned confidx = c;
@@ -152,6 +157,7 @@ void MolDataCreator::processMol(OBMol& mol, double mWeight, unsigned mid)
 			}
 		}
 
+		confOffsets.push_back(bufferSize);
 		bufferSize += conf.byteSize();
 		numConfs++;
 	}
@@ -319,6 +325,16 @@ void PharmerDatabaseCreator::initializeDatabases()
 	molData = fopen(mdpath.string().c_str(), "w+");
 	assert(molData);
 
+	//smina data
+#ifdef OUTPUTSMINA
+	filesystem::path smipath = dbpath / "sminaIndex";
+	sminaIndex = fopen(smipath.string().c_str(), "w+");
+	assert(sminaIndex);
+	filesystem::path smdpath = dbpath / "sminaData";
+	sminaData = fopen(smdpath.string().c_str(), "w+");
+	assert(sminaData);
+#endif
+
 	//bincnts
 	filesystem::path binpath = dbpath;
 	binpath /= "binCnts";
@@ -431,6 +447,31 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, double weight)
 	MolDataCreator mdc(pharmas, tindex, mol, weight, stats[NumMols]);
 	unsigned mid = mdc.write(molData, pointDataFiles);
 	mids.push_back(mid);
+
+	//output smina data here
+#ifdef OUTPUTSMINA
+	SminaConverter::MCMolConverter mcsmina(mol);
+	const vector<unsigned>& confOffsets = mdc.ConfOffsets();
+	unsigned long mloc = mid;
+	mloc <<= (TPD_MOLDATA_BITS - TPD_MOLID_BITS);
+	for(unsigned i = 0, n = confOffsets.size(); i < n; i++)
+	{
+		stringstream data;
+		mcsmina.convertConformer(i, data);
+		unsigned sz = data.str().size();
+		unsigned long pos = mloc + confOffsets[i]; //location in molData
+		unsigned long smpos = ftell(sminaData); //location in smina dta
+
+		//output index mapping
+		fwrite(&pos,sizeof(pos),1,sminaIndex);
+		fwrite(&smpos,sizeof(smpos),1,sminaIndex);
+
+		//output actual data
+		fwrite(&sz, sizeof(sz),1, sminaData);
+		fwrite(data.str().c_str(), sizeof(char), sz, sminaData);
+	}
+#endif
+
 	stats[NumMols]++;
 	stats[NumConfs] += mdc.NumConfs();
 	stats[NumDbPoints] += mdc.NumPoints();
@@ -562,7 +603,7 @@ public:
 			return true;
 		if (diff > 0)
 			return false;
-		return random() % 2;
+		return ::random() % 2;
 	}
 };
 
@@ -817,6 +858,15 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	filesystem::path mdpath = dbpath;
 	mdpath /= "molData";
 	molData.map(mdpath.string(), true, true);
+
+	//smina index and data - do not need to exist
+	filesystem::path smIndex = dbpath / "sminaIndex";
+	if(filesystem::exists(smIndex))
+	{
+		sminaIndex.map(smIndex.string(), true, true);
+		filesystem::path smData = dbpath / "sminaData";
+		sminaData.map(smData.string(), true, true);
+	}
 
 	//mids
 	filesystem::path mpath = dbpath;
@@ -1080,4 +1130,34 @@ void PharmerDatabaseSearcher::generateTripletMatches(const vector<vector<
 	}
 }
 
+typedef pair<unsigned long, unsigned long> ulong_pair;
+static bool first_pair_cmp(const ulong_pair& lhs, const ulong_pair& rhs)
+{
+	return lhs.first < rhs.first;
+}
+//find the smina data location given the moldata location and copy the smina
+//data to out
+void PharmerDatabaseSearcher::getSminaData(unsigned long molloc, ostream& out)
+{
+	ulong_pair findit(molloc, 0);
+
+	ulong_pair *pos = lower_bound(sminaIndex.begin(), sminaIndex.end(), findit, first_pair_cmp);
+
+	//molloca may be a little larger than the index molloc (different anchor positions)
+	if(pos == sminaIndex.end())
+	{
+		pos = sminaIndex.end()-1;
+	}
+	else if(pos->first > molloc)
+	{
+		pos--;
+	}
+	assert(pos >= sminaIndex.begin());
+
+	//pos is now the correct spot
+	unsigned long sminaloc = pos->second;
+	unsigned sz = 0;
+	memcpy(&sz, sminaData.begin()+sminaloc, sizeof(unsigned)); //size of smina data
+	out.write(sminaData.begin()+sminaloc+sizeof(unsigned), sz);
+}
 

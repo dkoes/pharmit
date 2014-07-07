@@ -140,6 +140,7 @@ class MolDataCreator
 	const Pharmas& pharmas;
 	const TripleIndexer& tindex;
 	vector<ConfCreator> confs;
+	vector<unsigned> confOffsets; //offset from start of mol for each conformer
 	vector<vector<ThreePointData> > pdatas; //indexed by triplet type
 
 	unsigned mid;
@@ -175,6 +176,8 @@ public:
 	}
 	unsigned NumConfs() const { return numConfs; }
 	static unsigned MaxIndex() { return maxIndex; }
+
+	const vector<unsigned>& ConfOffsets() const { return confOffsets;}
 };
 
 //data for a single conformation, include full mol since this turns out to
@@ -350,6 +353,9 @@ private:
 	FILE *binData; //binned cnts of lengths
 	FILE *midList; //index of mids corresponding to sequential index
 
+	FILE *sminaIndex; //map from mol location to location in sminadata
+	FILE *sminaData; //smina formated molecule
+
 	vector<PointDataFile> pointDataFiles; //just pointdata objects; separate library for every pharma combo; indexed by triplet index
 	MMappedRegion<ThreePointData> *pointDataArrays;
 
@@ -502,6 +508,9 @@ class PharmerDatabaseSearcher
 	MMappedRegion<GeoKDPage> * geoDataArrays;
 	MMappedRegion<unsigned> midList;
 
+	MMappedRegion< pair<unsigned long, unsigned long> > sminaIndex; //maps moldata location to sminadata
+	MMappedRegion<char> sminaData;
+
 	unsigned goodChunkSize;
 
 	void initializeDatabases();
@@ -577,6 +586,9 @@ public:
 	{
 		mdata.readDataOnly(molData.begin(), location);
 	}
+
+	void getSminaData(unsigned long location, ostream& out);
+
 
 	const Pharmas& getPharmas() const { return pharmas; }
 

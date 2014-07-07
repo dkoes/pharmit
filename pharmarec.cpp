@@ -786,7 +786,7 @@ static void genHDonorPointVector(const vector<int>& atom_indexes,
 			vector3 vec1 = atom->GetVector();
 			vector3 vec2 = nbor->GetVector();
 			vector3 vec = vec2 - vec1;
-			;
+
 			if (!isfinite(vec.x()))
 				continue; //sometimes, despite our best efforts, H has same coords as N
 
