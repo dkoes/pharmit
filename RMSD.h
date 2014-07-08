@@ -119,6 +119,9 @@ public:
 		reorient(n, coords);
 	}
 
+	const Matrix3f& rotationMatrix() const { return rotation; }
+	const Vector3f& translationVector() const { return translation; }
+
 	friend ostream& operator<<(ostream& out, const RMSDResult& r);
 };
 

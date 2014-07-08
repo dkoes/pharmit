@@ -181,7 +181,8 @@ static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Co
 
 //start up a server, assumes databases are segregrated by molweight
 void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& databases,
-		const string& logdir, unsigned totalConfs, unsigned totalMols)
+		const string& logdir, unsigned totalConfs, unsigned totalMols,
+		const string& minServer, unsigned minPort)
 {
 	FILE *LOG;
 	filesystem::path logdirpath;
@@ -239,7 +240,11 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 					("echo",shared_ptr<Command>(new Echo(LOG, logmutex)))
 					("savedata",shared_ptr<Command>(new SaveData(LOG, logmutex)))
 					("registerzinc",shared_ptr<Command>(new RegisterZINC(LOG, logmutex,queries)))
-					("getstatus",shared_ptr<Command>(new GetStatus(LOG, logmutex, queries)));
+					("getstatus",shared_ptr<Command>(new GetStatus(LOG, logmutex, queries)))
+					("startsmina",shared_ptr<Command>(new StartSmina(LOG, logmutex, queries, logdirpath, minServer, minPort)))
+					("getsminadata",shared_ptr<Command>(new GetSminaData(LOG, logmutex, queries, minServer, minPort)))
+					("getsminamol", shared_ptr<Command>(new GetSminaMol(LOG, logmutex, queries, minServer, minPort)))
+					("savesmina", shared_ptr<Command>(new SaveSmina(LOG, logmutex, queries, minServer, minPort)));
 
 
 	for (unsigned i = 0; i < SERVERTHREADS; i++)

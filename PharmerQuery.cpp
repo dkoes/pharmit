@@ -30,6 +30,8 @@
 #include "queryparsers.h"
 #include "Timer.h"
 #include <google/malloc_extension.h>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
 using namespace std;
 using namespace boost;
@@ -80,8 +82,9 @@ void PharmerQuery::initializeTriplets()
 PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
 		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
 		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
-				NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
-				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0)
+		NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
+				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0), sminaid(
+				0)
 {
 	if (dbs.size() == 0)
 	{
@@ -121,7 +124,7 @@ PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
 		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
 				false), tripletMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
 				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
-				0), inUseCnt(0)
+				0), inUseCnt(0), sminaid(0)
 {
 	if (dbs.size() == 0)
 	{
@@ -330,9 +333,11 @@ void PharmerQuery::thread_tripletMatch(PharmerQuery *query)
 				query->corrsQs[db].addProducer();
 
 				Timer ct;
-				Corresponder sponder(query->databases[db][i].db,query->dbID(db, i), query->maxID(),
+				Corresponder sponder(query->databases[db][i].db,
+						query->dbID(db, i), query->maxID(),
 						query->points, trips, matches, query->coralloc, 0,
-						query->corrsQs[db], query->params, query->excluder, query->stopQuery);
+						query->corrsQs[db], query->params, query->excluder,
+						query->stopQuery);
 				sponder();
 				if (!Quiet)
 					cout << "CTime " << ct.elapsed() << "\n";
@@ -366,6 +371,11 @@ PharmerQuery::~PharmerQuery()
 void PharmerQuery::cancel()
 {
 	stopQuery = true;
+	if (sminaid > 0 && sminaServer.length() > 0)
+	{
+		boost::asio::ip::tcp::iostream strm(sminaServer, sminaPort);
+		strm << "cancel\n" << sminaid << "\n";
+	}
 }
 
 bool PharmerQuery::finished() //okay to deallocate
@@ -398,7 +408,7 @@ static bool rbndCompare(const QueryResult* lhs, const QueryResult* rhs)
 class ReverseSort
 {
 	QRCompare cmp;
-public:
+	public:
 	ReverseSort(QRCompare c) :
 			cmp(c)
 	{
@@ -697,7 +707,7 @@ void PharmerQuery::getZINCIDs(vector<unsigned>& ids)
 }
 
 void PharmerQuery::print(ostream& out) const
-{
+		{
 	Json::Value root;
 	convertPharmaJson(root, points);
 	out << root;
@@ -751,7 +761,7 @@ static void setBoxMinMax(BoundingBox& box, double min, double max, unsigned i,
 //constrained by the passed range
 bool PharmerQuery::inRange(unsigned i, unsigned j, unsigned p, double minip,
 		double maxip, double minjp, double maxjp) const
-{
+		{
 	const QueryTriplet& trip = triplets[tripIndex[i][j][p]];
 	BoundingBox box;
 
@@ -769,3 +779,57 @@ bool PharmerQuery::inRange(unsigned i, unsigned j, unsigned p, double minip,
 	return trip.inRange(box);
 }
 
+//send smina data, for now do this single threaded - if its a bottleneck
+//we can multithread
+void PharmerQuery::thread_sendSmina(PharmerQuery *query, stream_ptr out,
+		unsigned max)
+{
+	query->incrementUseCnt();
+	SpinLock lock(query->mutex);
+	vector<QueryResult*> rescopy(query->results);
+	lock.release();
+
+	try
+	{
+
+		//limit number of results
+		if (max > 0 && rescopy.size() > max)
+			rescopy.resize(max);
+
+		//sort by location for sequential access
+		sort(rescopy.begin(), rescopy.end(), locationCompare);
+
+		PMolReaderSingleAlloc pread;
+		MolData mdata;
+
+		for (unsigned i = 0, n = rescopy.size(); i < n && *out; i++)
+		{
+			query->access();
+			QueryResult *r = rescopy[i];
+			shared_ptr<PharmerDatabaseSearcher> db;
+			unsigned long loc = query->getLocation(r, db);
+
+			//extract and zip rmsd transform
+			stringstream str; //need to gzip rotation info
+			iostreams::filtering_stream<iostreams::output> filter;
+			filter.push(iostreams::gzip_compressor());
+			filter.push(str);
+			Matrix3d rotmat = r->c->rmsd.rotationMatrix().cast<double>();
+			Vector3d trans = r->c->rmsd.translationVector().cast<double>();
+
+			filter.write((char*) rotmat.data(), sizeof(double) * 9);
+			filter.write((char*) trans.data(), sizeof(double) * 3);
+			filter.flush();
+			filter.pop();
+			filter.pop();
+
+			out->write(str.str().c_str(), str.str().length());
+			db->getSminaData(loc, *out);
+
+		}
+	} catch (...) //don't let exceptions mess up usecnt or crash server
+	{
+
+	}
+	query->decrementUseCnt();
+}

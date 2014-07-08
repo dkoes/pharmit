@@ -37,7 +37,10 @@ using namespace std;
 using namespace boost;
 
 #define SERVERTHREADS 16
-void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& databases, const string& logdir, unsigned totalConfs, unsigned totalMols);
+void pharmer_server(unsigned port,
+		vector<vector<MolWeightDatabase> >& databases, const string& logdir,
+		unsigned totalConfs, unsigned totalMols, const string& minServer,
+		unsigned minPort);
 
 
 //wrapper for webquery that automatically takes care of usecnt

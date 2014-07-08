@@ -101,6 +101,9 @@ cl::opt<bool> SortRMSD("sort-rmsd", cl::desc("Sort results by RMSD."),
 cl::opt<bool> FilePartition("file-partition",
 		cl::desc("Partion database slices based on files"), cl::init(false));
 
+cl::opt<string> MinServer("min-server",cl::desc("minimization server address"));
+cl::opt<unsigned> MinPort("min-port",cl::desc("port for minimization server"));
+
 cl::opt<string> Receptor("receptor",
 		cl::desc("Receptor file for interaction pharmacophroes"));
 
@@ -688,7 +691,7 @@ int main(int argc, char *argv[])
                 {
                         close(reservedFD[i]);
                 }
-		pharmer_server(Port, databases, LogDir, totalC, totalM);
+		pharmer_server(Port, databases, LogDir, totalC, totalM, MinServer, MinPort);
 	}
 	else
 	{

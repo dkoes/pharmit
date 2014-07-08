@@ -45,6 +45,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "cors.h"
 #include "params.h"
 #include "Excluder.h"
+#include <boost/asio.hpp>
+typedef boost::shared_ptr<boost::asio::ip::tcp::iostream> stream_ptr;
 
 using namespace std;
 using namespace boost;
@@ -118,6 +120,14 @@ class PharmerQuery
 	unsigned dbcnt;
 
 	SpinMutex mutex; //for accessing results
+	int inUseCnt;
+
+
+	//smina data
+	unsigned sminaid; //id of smina minimization
+
+	string sminaServer; //store these so we can cancel
+	string sminaPort;
 
 	static void thread_tripletMatches(PharmerQuery *query);
 	static void thread_tripletMatch(PharmerQuery *query);
@@ -128,8 +138,6 @@ class PharmerQuery
 	void checkThreads();
 
 	void setExtraInfo(QueryResult& r);
-
-	int inUseCnt;
 
 	void initializeTriplets();
 
@@ -155,6 +163,8 @@ class PharmerQuery
 	}
 
 	unsigned long getLocation(const QueryResult* r,shared_ptr<PharmerDatabaseSearcher>& db);
+
+	static void thread_sendSmina(PharmerQuery *query, stream_ptr out, unsigned max);
 
 public:
 	//input stream and format specified as extension
@@ -230,6 +240,21 @@ public:
 
 	bool inRange(unsigned i, unsigned j, unsigned p, double minip, double maxip, double minjp, double maxjp) const;
 
+	//smina functions
+	unsigned getSminaID() const
+	{
+		return sminaid;
+	}
+
+
+	//send results smina data, with reorient data, to out
+	void sendSminaResults(const string& s, const string& p, stream_ptr out, unsigned sid, unsigned max)
+	{
+		sminaServer = s;
+		sminaPort = p;
+		sminaid = sid;
+		thread th(thread_sendSmina, this, out, max); //should detach on destruct
+	}
 };
 
 #endif /* PHARMERQUERY_H_ */

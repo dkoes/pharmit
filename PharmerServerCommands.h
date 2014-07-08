@@ -39,6 +39,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <google/malloc_extension.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+
 #ifndef SKIP_REGISTERZINC
 #include <curl/curl.h>
 #endif
@@ -659,6 +660,323 @@ public:
 
 };
 
+//smina commands
+class SminaCommand: public QueryCommand
+{
+protected:
+	//do a buffered copy
+	static void copy_stream(ostream& out, istream& in)
+	{
+		const int BUFFSZ = 4096;
+		char buffer[BUFFSZ];
+		unsigned read = 0;
+		do
+		{
+			in.read(buffer,BUFFSZ);
+			read = in.gcount();
+			if(read) out.write(buffer,read);
+		}
+		while(read > 0 && in);
+	}
 
+	string server;
+	string port;
+
+public:
+	SminaCommand(FILE * l, SpinMutex& lm, WebQueryManager& qs,
+			const string& s, unsigned p): QueryCommand(l, lm, qs),
+				server(s),port(lexical_cast<string>(p))
+	{
+
+	}
+};
+
+//start a smina minimization using the current receptor and query results
+class StartSmina: public SminaCommand
+{
+	boost::asio::io_service my_io_service;
+	filesystem::path logdirpath;
+
+public:
+	StartSmina(FILE * l, SpinMutex& lm, WebQueryManager& qs,
+			const filesystem::path& ldp, const string& s, unsigned p) :
+				SminaCommand(l, lm, qs, s, p), logdirpath(ldp)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		using namespace boost::asio;
+		using namespace boost::asio::ip;
+
+		if(server.length() == 0)
+		{
+			sendError(IO, CGI, "No minimization server configured");
+			return;
+		}
+		WebQueryHandle query = getQuery(CGI, IO);
+		if (query)
+		{
+			SpinLock lock(logmutex);
+			unsigned max = cgiGetInt(CGI, "num");
+			posix_time::ptime t(posix_time::second_clock::local_time());
+			fprintf(LOG, "startmin %s %s %u %u %lu\n",
+					posix_time::to_simple_string(t).c_str(),
+					CGI.getEnvironment().getRemoteHost().c_str(),
+					 query->numResults(), max, cgiGetInt(CGI,"qid"));
+			fflush(LOG);
+			lock.release();
+
+			//need receptor
+			string receptor;
+			string rid = cgiGetString(CGI, "receptorid");
+			if (rid.size() == 0) {
+				sendError(IO, CGI, "Invalid receptor id.");
+				return;
+			}
+
+			//use the passed receptor if it is there
+			filesystem::path rname = logdirpath / rid;
+			if (filesystem::exists(rname))
+			{
+				ifstream rec(rname.string().c_str());
+				stringstream str;
+				str << rec.rdbuf();
+				receptor = str.str();
+			}
+
+			if (receptor.size() == 0) {
+				sendError(IO, CGI, "Missing receptor.");
+				return;
+			}
+
+			string fname = cgiGetString(CGI, "recname"); //need for file extension
+			if (fname.length() == 0) {
+				sendError(IO, CGI, "Missing receptor filename.");
+				return;
+			}
+
+			OBFormat* rformat = OBConversion::FormatFromExt(fname.c_str());
+			OBConversion conv;
+			conv.SetInFormat(rformat);
+			conv.SetOutFormat("PDBQT");
+			conv.SetOptions("r",OBConversion::OUTOPTIONS);  //rigid
+			OBMol rec;
+			conv.ReadString(&rec, receptor);
+			string pdbqtrec = conv.WriteString(&rec);
+
+			//connect to server
+			stream_ptr minstrm(new tcp::iostream(server, port));
+			if(!minstrm) {
+				sendError(IO, CGI,"Could not connect to minimization server.");
+				return;
+			}
+
+			*minstrm << "startmin\n";
+			*minstrm << query->getSminaID() << "\n";
+			*minstrm << "receptor " << pdbqtrec.length() << "\n";
+			*minstrm << pdbqtrec;
+			*minstrm << "1\n"; //reorient on
+
+			unsigned sminaid = 0;
+			*minstrm >> sminaid;
+
+			//start asynchronous sending of ligand data
+			query->sendSminaResults(server, port, minstrm, sminaid, max);
+			IO << HTTPPlainHeader();
+			IO << "{\"status\": 1, \"sminaid\": " << sminaid << "}";
+
+		}
+
+	}
+
+};
+
+class GetSminaMol: public SminaCommand
+{
+public:
+	GetSminaMol(FILE * l, SpinMutex& lm, WebQueryManager& qs,  const string& s, unsigned p) :
+			SminaCommand(l, lm, qs, s, p)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		WebQueryHandle query = getQuery(CGI, IO);
+		if (query)
+		{
+			if (!cgiTagExists(CGI, "molid"))
+			{
+				sendError(IO, CGI, "Missing id.");
+				return;
+			}
+			unsigned mid = cgiGetInt(CGI, "molid");
+			IO << HTTPPlainHeader();
+			unsigned sminaid = query->getSminaID();
+
+			boost::asio::ip::tcp::iostream strm(server, port);
+			if(!strm) {
+				IO << "{\"status\" : 0, \"msg\" : \"Could not connect to minimization server.\"}";
+				return;
+			}
+			strm << "getmol\n" << sminaid << " " << mid << "\n";
+			IO << "{\"status\" : 1}\n";
+			copy_stream(IO, strm); //returns mol
+		}
+
+	}
+};
+
+
+//parameters for retrieving minimization results
+struct SminaParameters
+{
+	double maxScore;
+	double maxRMSD;
+
+	unsigned start; //were to start
+	unsigned num; //how many to include, if zero then all
+
+	unsigned sortType; //score=0,rmsd=1,origpos=2
+
+	bool reverseSort;
+
+	bool unique;
+
+	//need to default to finie numbers for parsing
+	SminaParameters(): maxScore(99999), maxRMSD(99999), start(0), num(0), sortType(0), reverseSort(false), unique(false) {}
+
+	SminaParameters(Cgicc& data): maxScore(99999), maxRMSD(99999), start(0), num(0), sortType(0), reverseSort(false), unique(false)
+	{
+		start = cgiGetInt(data, "startIndex");
+		num = cgiGetInt(data, "results");
+		string sort = cgiGetString(data, "sort");
+		if(sort == "score") sortType = 0;
+		else if(sort == "rmsd") sortType = 1;
+		else sortType = 2;
+
+		string dir = cgiGetString(data, "dir");
+		if (dir == "desc" || dir == "dsc")
+			reverseSort = true;
+		else
+			reverseSort = false;
+
+		if(cgiTagExists(data, "maxscore"))
+			maxScore = cgiGetDouble(data, "maxscore");
+		if(cgiTagExists(data,"maxrmsd"))
+			maxRMSD = cgiGetDouble(data,"maxrmsd");
+
+		if(cgiTagExists(data,"unique"))
+			unique = cgiGetInt(data,"unique");
+
+	}
+
+	void write(ostream& out) const
+	{
+		out << maxRMSD << " ";
+		out << maxScore << " ";
+		out << start << " ";
+		out << num << " ";
+		out << sortType << " ";
+		out << reverseSort << " ";
+		out << unique << "\n";
+	}
+};
+
+class SaveSmina: public SminaCommand
+{
+public:
+	SaveSmina(FILE * l, SpinMutex& lm, WebQueryManager& qs, const string& s, unsigned p) :
+			SminaCommand(l, lm, qs, s, p)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		WebQueryHandle query = getQuery(CGI, IO);
+		if (query)
+		{
+			SpinLock lock(logmutex);
+			unsigned max = cgiGetInt(CGI, "num");
+			posix_time::ptime t(posix_time::second_clock::local_time());
+			fprintf(LOG, "save %s %s %u %u %lu\n",
+					posix_time::to_simple_string(t).c_str(),
+					CGI.getEnvironment().getRemoteHost().c_str(),
+				 query->numResults(), max, cgiGetInt(CGI,
+							"qid"));
+			fflush(LOG);
+			lock.release();
+
+			IO << "Content-Type: text/sdf\n";
+			IO << "Content-Disposition: attachment; filename=minimized_results.sdf.gz\n";
+			IO << endl;
+
+			boost::asio::ip::tcp::iostream strm(server, port);
+			if(!strm) {
+				IO << "ERROR contacting minimization server.\n";
+				return;
+			}
+			strm << "getmols\n" << query->getSminaID() <<  "\n";
+			SminaParameters param(CGI);
+			param.write(strm);
+
+			copy_stream(IO,strm);
+		}
+
+	}
+
+};
+
+//return smina minimization data (scores) for a query
+class GetSminaData: public SminaCommand
+{
+public:
+	GetSminaData(FILE * l, SpinMutex& lm, WebQueryManager& qs, const string& s, unsigned p) :
+		SminaCommand(l, lm, qs, s, p)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		WebQueryHandle query = getQuery(CGI, IO);
+		if (query)
+		{
+			IO << HTTPPlainHeader();
+			unsigned sminaid = query->getSminaID();
+			SminaParameters param(CGI);
+			boost::asio::ip::tcp::iostream strm(server, port);
+			if(!strm) {
+				IO << "{\"status\" : 0, \"msg\" : \"Could not connect to minimization server.\"}";
+				return;
+			}
+
+			strm << "getscores\n";
+			strm << sminaid << "\n";
+			param.write(strm);
+
+			//finished, total, results.size()
+			unsigned finished = 0, total = 0, sz = 0;
+			double mintime = 0;
+			strm >> finished;
+			strm >> total;
+			strm >> sz;
+			strm >> mintime;
+			string str;
+			getline(strm, str);
+			//first line is json status
+			IO << "{\"status\" : 1, \"finished\" : " << finished <<
+					", \"total\" : " << total << ", \"size\" : " << sz << ", \"time\" : " << mintime << "}\n";
+
+			copy_stream(IO, strm);
+		}
+
+	}
+
+	virtual bool isFrequent()
+	{
+		return true;
+	}
+
+};
 
 #endif /* PHARMERSERVERCOMMANDS_H_ */
