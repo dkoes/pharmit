@@ -160,7 +160,7 @@ class PH4Parser: public QueryParser
 			if (moename[1] != 'o' || moename[2] != 'n')
 				return NULL;
 			if (len > 3 && moename[3] == '2') //projected point, not yet supported
-				return false;
+				return NULL;
 			return pharmas.pharmaFromName("HydrogenDonor");
 			break;
 		case 'A': //acceptor or aromatic or anion
@@ -168,16 +168,16 @@ class PH4Parser: public QueryParser
 			{
 				//acceptor
 				if (moename[2] != 'c')
-					return false;
+					return NULL;
 				if (len > 3 && moename[3] == '2') //projected point, not yet supported
-					return false;
+					return NULL;
 				return pharmas.pharmaFromName("HydrogenAcceptor");
 			}
 			else if (moename[1] == 'r')
 			{
 				//aromatic
 				if (moename[2] != 'o')
-					return false;
+					return NULL;
 				return pharmas.pharmaFromName("Aromatic");
 
 			}
@@ -185,7 +185,7 @@ class PH4Parser: public QueryParser
 			{
 				//anion (neg)
 				if (moename[2] != 'i')
-					return false;
+					return NULL;
 				return pharmas.pharmaFromName("NegativeIon");
 			}
 			else
