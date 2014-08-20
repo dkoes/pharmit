@@ -196,7 +196,6 @@ void PharmerQuery::generateQueryTriplets(PharmerDatabaseSearcher& pharmdb,
 		{
 			QueryTriplet& prev = trips.back();
 			mintrip = 0;
-			unsigned besti = 0;
 			unsigned bestj = 0;
 			unsigned bestkindex = 0;
 			double minval = HUGE_VAL;
@@ -224,7 +223,6 @@ void PharmerQuery::generateQueryTriplets(PharmerDatabaseSearcher& pharmdb,
 							{
 								mintrip = tindex;
 								minval = ranking[tindex];
-								besti = i;
 								bestj = j;
 								bestkindex = kindex;
 							}
@@ -359,11 +357,14 @@ void PharmerQuery::execute(bool block)
 	if (block) //wait for completion
 	{
 		tripletMatchThread->join();
+		delete tripletMatchThread;
+		tripletMatchThread = NULL;
 	}
 }
 
 PharmerQuery::~PharmerQuery()
 {
+	checkThreads();
 	if (tripletMatchThread != NULL)
 		abort(); //threds must be done before we can destruct the results array
 }

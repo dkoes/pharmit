@@ -121,6 +121,14 @@ to resolve these rebuild curl with --enable-ares
 You can ignore all the curl issues entirely if you build with -DSKIP_REGISTERZINC
 which is probably what you want unless you are using the full ZINC database.
 
+Some versions of eigen3 will trigger an assert, OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG, at compile time.
+This can be ignored in the latest versions of eigen3 with -DEIGEN_DISABLE_STACK_SIZE_ASSERT
+If your version hasn't had this patch applied (which is currently true with Ubuntu 14.04),
+then you will have to modify Eigen/src/Core/DenseStorage.h appropriately.
+
+Currently, on Ubuntu 14.04, g++ 4.8 experiences an internal compiler error.
+Use g++-4.6 to get around this.
+
 BUGS (Really)
 
 Send any bug reports to dkoes@pitt.edu with a complete test case.
