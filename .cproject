@@ -25,6 +25,7 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1605142182" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.677293852" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/openbabel-2.0"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/smina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/jsoncpp"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
@@ -104,6 +105,7 @@
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.639190497" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1817638343" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/openbabel-2.0"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/smina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/jsoncpp"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
@@ -184,6 +186,7 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.218061725" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.452399024" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/openbabel-2.0"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/smina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/jsoncpp"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
