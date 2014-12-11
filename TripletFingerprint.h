@@ -37,7 +37,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "CommandLine2/CommandLine.h"
 
 using namespace std;
-using namespace boost;
 
 extern cl::opt<unsigned> BloomBitsLarge;
 extern cl::opt<unsigned> BloomBitsSmall;

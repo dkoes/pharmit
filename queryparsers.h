@@ -50,6 +50,7 @@ public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
 			vector<PharmaPoint>& points, Excluder& excluder)
 	{
+		using namespace boost;
 		points.clear();
 		string line;
 		while (in.peek() == '#')
@@ -335,6 +336,7 @@ public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
 			vector<PharmaPoint>& points, Excluder& excluder)
 	{
+		using namespace OpenBabel;
 		//class to find the first pharmacophore element in a document
 		struct FindPharmVisitor: public TiXmlVisitor {
 			const TiXmlElement *ph;

@@ -38,7 +38,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "ThreePointData.h"
 
 using namespace std;
-using namespace boost;
 
 namespace SortType {
 enum SortType {Undefined, RMSD, MolWeight, NRBnds};

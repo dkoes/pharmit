@@ -41,7 +41,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
+
 using namespace boost;
+using namespace OpenBabel;
 
 cl::opt<bool> DKoesTest("dkoes", cl::Hidden);
 

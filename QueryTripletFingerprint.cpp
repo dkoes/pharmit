@@ -24,13 +24,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
+#include "PharmerQuery.h"
 #include "QueryTripletFingerprint.h"
 #include "CommandLine2/CommandLine.h"
 #include "BoundingBox.h"
 #include "Triplet.h"
-#include "PharmerQuery.h"
 #include "BitSetTree.h"
 #include "basis.h"
+
+using namespace OpenBabel;
 
 extern cl::opt<bool> Quiet;
 cl::opt<bool> SkipFingers("skip-fingers", cl::desc("don't check triplet fingerprints"), cl::Hidden);

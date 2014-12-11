@@ -35,7 +35,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <set>
 
 using namespace std;
-using namespace boost;
 
 namespace boost {
 static size_t hash_value(const array<unsigned,3>& x)
@@ -50,20 +49,21 @@ static size_t hash_value(const array<unsigned,3>& x)
 
 class TripleIndexer
 {
-	vector< array<unsigned,3> > reverse;
-	multi_array<unsigned, 3> lookup; //n*n*n matrix with indices for any ordering
+	vector< boost::array<unsigned,3> > reverse;
+	boost::multi_array<unsigned, 3> lookup; //n*n*n matrix with indices for any ordering
 	unsigned sz;
 public:
 
 	TripleIndexer() {}
 
-	TripleIndexer(unsigned n): lookup(extents[n][n][n])
+	TripleIndexer(unsigned n): lookup(boost::extents[n][n][n])
 	{
 		set(n);
 	}
 
 	void set(unsigned n)
 	{
+		using namespace boost;
 		lookup.resize(extents[n][n][n]);
 		//there are (n+2)!/(3!) sets of triples
 		//for fast lookup, we create a table of all n^3 orderings

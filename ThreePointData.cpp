@@ -29,6 +29,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "basis.h"
 #include "SphereGrid.h"
 
+using namespace boost;
+using namespace OpenBabel;
+
 //multplier for float values in reduction
 #define REDUCED_FLOAT_SIG (1000.0)
 //reduce down to accuracy of a short

@@ -38,7 +38,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "RMSD.h"
 #include "BumpAllocator.h"
 
-using namespace OpenBabel;
 
 #define MAX_BONDS 3
 
@@ -97,7 +96,7 @@ public:
 	PMolCreator()
 	{
 	}
-	PMolCreator(OBMol& mol, bool deleteH=false) :
+	PMolCreator(OpenBabel::OBMol& mol, bool deleteH=false) :
 		numAtoms(0), nSrcs(0), nDsts(0)
 	{
 		memset(bndSize, 0, sizeof(bndSize));
@@ -107,7 +106,7 @@ public:
 	{
 	}
 
-	void copyFrom(OBMol& mol, bool deleteH=false);
+	void copyFrom(OpenBabel::OBMol& mol, bool deleteH=false);
 
 	//write custom binary data
 	bool writeBinary(ostream& out);

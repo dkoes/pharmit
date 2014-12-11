@@ -29,8 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #ifndef SPSCQUEUE_H_
 #define SPSCQUEUE_H_
 
-using namespace boost;
-
+using namespace std;
 template < typename T, unsigned N>
 class SPSCQueue
 {

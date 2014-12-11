@@ -36,28 +36,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/format.hpp>
 #include <boost/progress.hpp>
 #include <sstream>
-#include "boost/filesystem.hpp"
-#include "boost/thread.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/thread.hpp>
 
+#include <openbabel/mol.h>
+
+#include "MMappedRegion.h"
+#include "CommandLine2/CommandLine.h"
 #include "pharmarec.h"
 #include "ThreePointData.h"
 #include "FloatCoord.h"
-#include "PMol.h"
-#include "MMappedRegion.h"
 #include "ThreadCounter.h"
 #include "BoundingBox.h"
-#include "MTQueue.h"
-#include "TripleIndexer.h"
 #include "Triplet.h"
-#include <openbabel/mol.h>
-#include "CommandLine2/CommandLine.h"
-#include "SPSCQueue.h"
 #include "SimpleFingers.h"
-#include "MolFilter.h"
+#include "MTQueue.h"
+#include "PMol.h"
+#include "TripleIndexer.h"
 
 using namespace std;
-using namespace boost;
-using namespace OpenBabel;
 
 class TripletMatches;
 extern cl::opt<bool> Quiet;
@@ -131,7 +128,7 @@ class MolDataCreator
 			return sizeof(header) + molData.size();
 		}
 
-		ConfCreator(unsigned mid, float mw, unsigned cid, OBMol& m);
+		ConfCreator(unsigned mid, float mw, unsigned cid, OpenBabel::OBMol& m);
 
 		unsigned write(unsigned char *buf);
 		bool isValid() const { return molData.length() > 0; }
@@ -149,7 +146,7 @@ class MolDataCreator
 
 	unsigned numConfs;
 
-	void processMol(OBMol& mol, double mWeight, unsigned mid);
+	void processMol(OpenBabel::OBMol& mol, double mWeight, unsigned mid);
 	void createBuffer();
 
 	static unsigned maxIndex;
@@ -157,7 +154,7 @@ class MolDataCreator
 
 public:
 
-	MolDataCreator(const Pharmas& ps, const TripleIndexer& t, OBMol& mol, double mw, unsigned m):
+	MolDataCreator(const Pharmas& ps, const TripleIndexer& t, OpenBabel::OBMol& mol, double mw, unsigned m):
 		pharmas(ps), tindex(t),
 		pdatas(t.size()),
 		mid(m), buffer(NULL), bufferSize(0), numConfs(0)
@@ -345,7 +342,7 @@ typedef vector<vector<PharmaPoint> > MCPoints;
 class PharmerDatabaseCreator
 {
 private:
-	filesystem::path dbpath; //path to database directory
+	boost::filesystem::path dbpath; //path to database directory
 
 	FILE *info; //small amount of metadata
 	FILE *lookup; //human readable pharmacophore classes for my own benefit
@@ -362,7 +359,7 @@ private:
 	vector<FILE*> geoDataFiles; //spatial indexes; indexed  by trip index
 
 	//coarsely track length distributions using simple binning
-	vector<array<array<array<unsigned, LENGTH_BINS>, LENGTH_BINS>, LENGTH_BINS> > binnedCnts;
+	vector<boost::array<boost::array<boost::array<unsigned, LENGTH_BINS>, LENGTH_BINS>, LENGTH_BINS> > binnedCnts;
 
 	void initPointDataArrays();
 	void initializeDatabases();
@@ -388,7 +385,7 @@ private:
 	const Pharmas& pharmas;
 	TripleIndexer tindex;
 
-	shared_mutex fileAccessLock;
+	boost::shared_mutex fileAccessLock;
 	long pdatasFitInMemory;
 	ThreadCounter tcnt;
 
@@ -398,7 +395,7 @@ private:
 	unsigned nThreads;
 
 public:
-	PharmerDatabaseCreator(const Pharmas& ps, const filesystem::path& dbp,
+	PharmerDatabaseCreator(const Pharmas& ps, const boost::filesystem::path& dbp,
 			 unsigned nt) :
 				dbpath(dbp), info(NULL), molData(NULL), midList(NULL), pointDataArrays(NULL),
 				  pharmas(ps), tindex(ps.size()),
@@ -407,7 +404,7 @@ public:
 	{
 		memset(&stats, 0, sizeof(stats));
 
-		array<array<array<unsigned, LENGTH_BINS>, LENGTH_BINS>, LENGTH_BINS> zero;
+		boost::array<boost::array<boost::array<unsigned, LENGTH_BINS>, LENGTH_BINS>, LENGTH_BINS> zero;
 		memset(zero.c_array(), 0, LENGTH_BINS*LENGTH_BINS*LENGTH_BINS*sizeof(unsigned));
 		binnedCnts.resize(tindex.size(), zero);
 		//create databases
@@ -450,10 +447,10 @@ public:
 		if(pointDataArrays != NULL) delete [] pointDataArrays;
 	}
 
-	void addMolToDatabase(OBMol& mol, double weight);
+	void addMolToDatabase(OpenBabel::OBMol& mol, double weight);
 	//add all the conformations from infile into the database
 	void addMolsToDatabase(istream& infile,
-			OBFormat *format, unsigned start, unsigned stride,
+			OpenBabel::OBFormat *format, unsigned start, unsigned stride,
 			unsigned long readBytes, unsigned long lastByte);
 	//create the spatial index
 	//requirs pointdata to have been filled out
@@ -500,7 +497,7 @@ class PharmerDatabaseSearcher
 	Pharmas pharmas;
 	TripleIndexer tindex;
 
-	filesystem::path dbpath; //path to database directory
+	boost::filesystem::path dbpath; //path to database directory
 
 	FILE *info;
 	MMappedRegion<unsigned char> molData;
@@ -532,7 +529,7 @@ class PharmerDatabaseSearcher
 	unsigned processCnt;
 	unsigned matchedCnt;
 public:
-	PharmerDatabaseSearcher(const filesystem::path& dbp) :
+	PharmerDatabaseSearcher(const boost::filesystem::path& dbp) :
 		dbpath(dbp), info(NULL),  valid(false), emptyCnt(0), processCnt(0), matchedCnt(0)
 	{
 		goodChunkSize = 100000; //what's life without a little magic (numbers)? - should probably be related to cache size

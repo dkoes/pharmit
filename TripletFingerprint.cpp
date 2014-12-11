@@ -28,6 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "openbabel/math/vector3.h"
 #include "CommandLine2/CommandLine.h"
 
+using namespace OpenBabel;
+
 const double TripletFingerprint::MAXDISTS[2] = {15, 32.0};
 const double TripletFingerprint::DISTSPACES[2] = {4.0, 1.0};
 const unsigned TripletFingerprint::NUMDISTSPACES = 2;

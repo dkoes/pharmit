@@ -28,6 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "SphereGrid.h"
 #include <queue>
 
+using namespace OpenBabel;
+
 #define ADDPT(x,y,z) pts.push_back(vector3(x,y,z))
 
 //twenty uniformly spaced points

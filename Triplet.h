@@ -28,16 +28,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #ifndef TRIPLET_H_
 #define TRIPLET_H_
+
+#include "RMSD.h"
 #include "pharmarec.h"
 #include "ThreePointData.h"
 #include <boost/array.hpp>
 #include "BoundingBox.h"
-#include "RMSD.h"
 #include "QueryTripletFingerprint.h"
 #include "SimpleFingers.h"
 #include "basis.h"
 #include "SphereGrid.h"
-using namespace boost;
 
 
 //convenience class for dealing with indexed pharma points
@@ -72,8 +72,8 @@ struct TripletRange
 class Triplet
 {
 protected:
-	array<PharmaIndex, 3> PIs;
-	array<TripletRange, 3> range;
+	boost::array<PharmaIndex, 3> PIs;
+	boost::array<TripletRange, 3> range;
 	unsigned nextUnconnectIndex; //vertex not connect to very next triplet
 	unsigned prevUnconnectIndex; //vertex not conneted to previous triplet
 
@@ -257,7 +257,7 @@ protected:
 			abort(); //huh?
 	}
 
-	Triplet(const array<PharmaIndex, 3>& pis, const array<TripletRange, 3>& r,
+	Triplet(const boost::array<PharmaIndex, 3>& pis, const boost::array<TripletRange, 3>& r,
 			unsigned nc, unsigned pc) :
 		PIs(pis), range(r), nextUnconnectIndex(nc), prevUnconnectIndex(pc)
 	{
@@ -315,11 +315,11 @@ public:
 		return prevUnconnectIndex;
 	}
 
-	const array<PharmaIndex, 3>& getPoints() const
+	const boost::array<PharmaIndex, 3>& getPoints() const
 	{
 		return PIs;
 	}
-	const array<TripletRange, 3>& getRanges() const
+	const boost::array<TripletRange, 3>& getRanges() const
 	{
 		return range;
 	}
@@ -362,7 +362,7 @@ class QueryTriplet: public Triplet
 protected:
 	//used by search
 	BoundingBox mybox;
-	array<double, 9> ref;
+	boost::array<double, 9> ref;
 	double a, b, c; //lengths, shortest to longest
 	double aang, bang, cang; //opposing angle
 	double r0, r1, r2;
@@ -412,11 +412,11 @@ protected:
 			if(basis.hasValidBasis())
 			{
 				hasExtra = true;
-				vector3 v = p->vecs[0];
+				OpenBabel::vector3 v = p->vecs[0];
 				float x = 0;
 				float y = 0;
 				float z = 0;
-				basis.setTranslate(vector3(0,0,0));
+				basis.setTranslate(OpenBabel::vector3(0,0,0));
 				basis.replot(v.x(), v.y(), v.z(), x, y, z);
 
 				unsigned g = sphereGrid.pointToGrid(x ,y, z);
@@ -622,8 +622,8 @@ protected:
 
 	}
 
-	QueryTriplet(const array<PharmaIndex, 3>& pis,
-			const array<TripletRange, 3>& r, unsigned nc, unsigned pc) :
+	QueryTriplet(const boost::array<PharmaIndex, 3>& pis,
+			const boost::array<TripletRange, 3>& r, unsigned nc, unsigned pc) :
 		Triplet(pis, r, nc, pc), aang(0), bang(0), cang(0),minkdistsq(0), maxkdistsq(0), skipfingers(false)
 	{
 		computeSearchData();

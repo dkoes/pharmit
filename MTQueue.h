@@ -41,7 +41,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "SpinLock.h"
 
 using namespace std;
-using namespace boost;
 
 template <class T>
 class MTQueue
@@ -105,7 +104,7 @@ public:
 			{
 				while (num >= maxSize)
 				{
-					this_thread::yield();
+					boost::this_thread::yield();
 				}
 				lock.acquire();
 				if (num < maxSize)
@@ -136,7 +135,7 @@ public:
 			{
 				if (registeredProducers == 0 && num == 0) //nothing is producing
 					return false;
-				this_thread::yield();
+				boost::this_thread::yield();
 			}
 			lock.acquire();
 			if (num != 0)

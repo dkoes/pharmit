@@ -29,13 +29,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <openbabel/mol.h>
 using namespace std;
-using namespace boost;
-using namespace OpenBabel;
 
 //base class for specifying to creator to skip certain mols
 class MolFilter {
 public:
-	virtual bool skip(OBMol& mol) = 0;
+	virtual bool skip(OpenBabel::OBMol& mol) = 0;
 
 };
 
@@ -60,7 +58,7 @@ public:
 		return false;
 	}
 	//include min, not max
-	bool skip(OBMol& mol)
+	bool skip(OpenBabel::OBMol& mol)
 	{
 		return badWeight(mol.GetMolWt());
 	}

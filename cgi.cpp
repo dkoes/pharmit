@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <sstream>
 #include "cgi.h"
 
+using namespace std;
+
 namespace cgicc {
 //dkoes - return true if there is data with name
 bool cgiTagExists(Cgicc& cgi, const string& name)

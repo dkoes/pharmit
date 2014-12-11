@@ -51,6 +51,8 @@
 #include "Excluder.h"
 
 using namespace boost;
+using namespace OpenBabel;
+
 cl::opt<bool> SeparateWeight("separate-weight",
 		cl::desc("Segregate database based on molecular weight"),
 		cl::init(true));

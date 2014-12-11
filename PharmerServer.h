@@ -34,7 +34,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "PharmerQuery.h"
 
 using namespace std;
-using namespace boost;
 
 #define SERVERTHREADS 16
 void pharmer_server(unsigned port,
@@ -76,11 +75,11 @@ public:
 class WebQueryManager
 {
 	unsigned nextID; //counter to generate unique IDs
-	typedef unordered_map<unsigned, PharmerQuery*> QueryMap;
+	typedef boost::unordered_map<unsigned, PharmerQuery*> QueryMap;
 	QueryMap queries;
 	vector<vector<MolWeightDatabase> > databases;
 
-	mutex lock;
+	boost::mutex lock;
 public:
 	WebQueryManager(vector<vector<MolWeightDatabase> >& dbs): nextID(1), databases(dbs)
 	{

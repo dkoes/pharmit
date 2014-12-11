@@ -32,15 +32,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <openbabel/math/vector3.h>
 #include <openbabel/math/matrix3x3.h>
 
-using namespace OpenBabel;
-
 
 //given a trip of points, constructs a new basis and then can
 //reposition passed coordinates
 class CoordinateBasis
 {
-	vector3 origin;
-	matrix3x3 transform;
+	OpenBabel::vector3 origin;
+	OpenBabel::matrix3x3 transform;
 	int basisOrder[3]; //canonicalized order of basis points
 	float basisDistances[3];
 	bool valid;
@@ -62,8 +60,8 @@ public:
 	void makeIdentity()
 	{
 		valid = true;
-		origin = vector3(0,0,0);
-		transform = matrix3x3(1.0);
+		origin = OpenBabel::vector3(0,0,0);
+		transform = OpenBabel::matrix3x3(1.0);
 	}
 
 	bool constructBasis(const PharmaPoint&i, const PharmaPoint& j,
@@ -74,8 +72,8 @@ public:
 		return valid;
 	}
 
-	vector3 getTranslate() const { return origin; }
-	void setTranslate(vector3 o) { origin = o; }
+	OpenBabel::vector3 getTranslate() const { return origin; }
+	void setTranslate(OpenBabel::vector3 o) { origin = o; }
 
 	int basisPoint(int i)
 	{

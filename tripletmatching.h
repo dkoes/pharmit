@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define TRIPLEMATCHING_H_
 
 
+#include "Triplet.h"
 #include "BumpAllocator.h"
 #include "ThreePointData.h"
 #include <boost/thread.hpp>
@@ -37,11 +38,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/array.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/pool/object_pool.hpp>
-#include "Triplet.h"
 #include "params.h"
 using namespace std;
-using namespace boost;
-
 
 
 struct PointCoords
@@ -116,8 +114,8 @@ public:
 //info of a single corresponding triplet
 struct TripletMatchInfo
 {
-	array<PointCoords, 3> coords;
-	array<unsigned char, 3> indices;
+	boost::array<PointCoords, 3> coords;
+	boost::array<unsigned char, 3> indices;
 	unsigned char whichTripOrder:4;
 	unsigned char unconnectedNextIndex:2; //0,1,2; which coord is not connected to the next x
 	unsigned char unconnectedPrevIndex:2; //0,1,2: which oord is not connected to prev trip

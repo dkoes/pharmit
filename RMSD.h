@@ -27,31 +27,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #ifndef RMSD_H_
 #define RMSD_H_
 
-#include <openbabel/mol.h>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Eigenvalues>
 #include <iostream>
-using namespace Eigen;
-using namespace OpenBabel;
+#include <openbabel/mol.h>
+
 using namespace std;
 
 typedef double FloatType;
-typedef Matrix4d Mat4x4;
-typedef Vector4d Vec4;
-typedef Vector3d Vec3;
-typedef Matrix3d Mat3x3;
+typedef Eigen::Matrix4d Mat4x4;
+typedef Eigen::Vector4d Vec4;
+typedef Eigen::Vector3d Vec3;
+typedef Eigen::Matrix3d Mat3x3;
 
 class RMSDResult
 {
 	//floats to save space, actual computation must be done in double precision though
 	float val;
 
-	Matrix3f rotation;
-	Vector3f translation;
+	Eigen::Matrix3f rotation;
+	Eigen::Vector3f translation;
 
 	friend class RMSDCalculator;
 public:
-	RMSDResult(): val(0), rotation(Matrix3f::Identity()),translation(Vector3f::Zero())
+	RMSDResult(): val(0), rotation(Eigen::Matrix3f::Identity()),translation(Eigen::Vector3f::Zero())
 	{
 
 	}
@@ -60,6 +59,7 @@ public:
 
 	void clear()
 	{
+		using namespace Eigen;
 		val = 0;
 		rotation = Matrix3f::Identity();
 		translation = Vector3f::Zero();
@@ -68,7 +68,7 @@ public:
 	double value() const { return val; }
 
 	//modify points by rot/trans
-	void reorient(vector<Vector3f>& pnts) const
+	void reorient(vector<Eigen::Vector3f>& pnts) const
 	{
 		for(unsigned i = 0, n = pnts.size(); i < n; i++)
 		{
@@ -78,6 +78,7 @@ public:
 
 	void reorient(unsigned n, double *coords) const
 	{
+		using namespace Eigen;
 		vector<Vector3f> pnts(n);
 		for(unsigned i = 0; i < n; i++)
 		{
@@ -96,6 +97,7 @@ public:
 
 	void reorient(unsigned n, float *coords) const
 	{
+		using namespace Eigen;
 		vector<Vector3f> pnts(n);
 		for(unsigned i = 0; i < n; i++)
 		{
@@ -112,15 +114,15 @@ public:
 		}
 	}
 
-	void reorient(OBMol &mol) const
+	void reorient(OpenBabel::OBMol &mol) const
 	{
 		unsigned n = mol.NumAtoms();
 		double *coords = mol.GetCoordinates();
 		reorient(n, coords);
 	}
 
-	const Matrix3f& rotationMatrix() const { return rotation; }
-	const Vector3f& translationVector() const { return translation; }
+	const Eigen::Matrix3f& rotationMatrix() const { return rotation; }
+	const Eigen::Vector3f& translationVector() const { return translation; }
 
 	friend ostream& operator<<(ostream& out, const RMSDResult& r);
 };

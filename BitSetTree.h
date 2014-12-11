@@ -37,10 +37,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "Timer.h"
 #include <boost/foreach.hpp>
 
-using namespace Eigen;
-using namespace boost;
-using namespace std;
-
 class BitSetTree
 {
 	struct Node {
@@ -295,8 +291,8 @@ class BitSetTree
 
 	}
 
-	typedef Matrix<float, 256, 256> M;
-	typedef Matrix<float, 256, 1> V;
+	typedef Eigen::Matrix<float, 256, 256> M;
+	typedef Eigen::Matrix<float, 256, 1> V;
 
 	struct FInfo
 	{
@@ -341,7 +337,7 @@ class BitSetTree
 		M C = c - mc - mc.transpose() + (N * (mean * mean.transpose()));
 		C /= (N-1);
 
-		SelfAdjointEigenSolver<M> eigensolver(C);
+		Eigen::SelfAdjointEigenSolver<M> eigensolver(C);
 		//we'll assume the largest is the last
 		V evec = eigensolver.eigenvectors().col(eigensolver.eigenvectors().cols()-1);
 

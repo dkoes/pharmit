@@ -32,6 +32,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <cstdio>
 #include <fcntl.h>
 #include <unistd.h>
+#include <boost/filesystem.hpp>
+#include <string>
+
+using namespace std;
 
 //a memory mapped file viewed as an array of T
 template<class T>
@@ -51,7 +55,7 @@ public:
 	{
 	}
 
-	MMappedRegion(string fname, bool readOnly)
+	MMappedRegion(const string& fname, bool readOnly)
 	{
 		map(fname, readOnly);
 	}
@@ -64,8 +68,9 @@ public:
 
 	//creating mapping to filename fname
 	//readOnly should be set if only for reading
-	void map(string fname, bool readOnly, bool sequential, bool populate=false, bool readonce=false)
+	void map(const string& fname, bool readOnly, bool sequential=true, bool populate=false, bool readonce=false)
 	{
+		using namespace boost;
 		if (data != NULL)
 			munmap(data, size);
 		unsigned flags = readOnly ? O_RDONLY : O_RDWR;

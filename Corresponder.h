@@ -36,12 +36,13 @@
 #include "CommandLine2/CommandLine.h"
 #include "Excluder.h"
 
+using namespace std;
 extern cl::opt<bool> UnWeightedRMSD;
 typedef long int128_t __attribute__((mode(TI)));
 
 class Corresponder
 {
-	shared_ptr<PharmerDatabaseSearcher> dbptr;
+	boost::shared_ptr<PharmerDatabaseSearcher> dbptr;
 	unsigned dbid;
 	unsigned numdbids;
 	const vector<PharmaPoint>& points;
@@ -261,7 +262,7 @@ class Corresponder
 	}
 
 public:
-	Corresponder(shared_ptr<PharmerDatabaseSearcher>& dptr, unsigned dbid_,
+	Corresponder(boost::shared_ptr<PharmerDatabaseSearcher>& dptr, unsigned dbid_,
 			unsigned ndbids, const vector<PharmaPoint>& pts,
 			const vector<vector<QueryTriplet> >& trips, TripletMatches& m,
 			CorAllocator& ca, unsigned t, MTQueue<CorrespondenceResult*> & Q,

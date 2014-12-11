@@ -26,6 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "RMSD.h"
 
+using namespace Eigen;
+
 ostream& operator<<(ostream& out, const RMSDResult& r)
 {
 	out << r.rotation << "\n";

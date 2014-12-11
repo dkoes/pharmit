@@ -23,16 +23,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *  Created on: Aug 2, 2010
  *      Author: dkoes
  */
-#include "pharmerdb.h"
-#include "Timer.h"
+
+#include "tripletmatching.h"
 #include <boost/lexical_cast.hpp>
 #include <fcntl.h>
 #include <openbabel/mol.h>
 #include "CommandLine2/CommandLine.h"
 #include "Triplet.h"
-#include "tripletmatching.h"
 #include "BitSetTree.h"
 #include "ReadMCMol.h"
+#include "Timer.h"
+#include "pharmerdb.h"
+#include "TripleIndexer.h"
+#include "PMol.h"
 
 #ifdef OUTPUTSMINA
 #include "SminaConverter.h"

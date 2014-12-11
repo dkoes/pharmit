@@ -28,9 +28,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define READMCMOL_H_
 #include <openbabel/mol.h>
 
-using namespace boost;
-using namespace std;
-using namespace OpenBabel;
 
 //openbabel currently doesn't have native support of multiple conformer input
 //this just assumes sequential mols with the same name are conformers
@@ -41,19 +38,19 @@ class ReadMCMol
 	unsigned stride;
 	unsigned offset;
 	unsigned reduceConfs;
-	OBConversion conv;
+	OpenBabel::OBConversion conv;
 	unsigned molcnt;
 
 	struct MInfo
 	{
 		string title;
-		OBMol mol;
+		OpenBabel::OBMol mol;
 		string data;
 		bool valid;
 
 		MInfo(): valid(false) {}
 
-		bool load(OBConversion& conv)
+		bool load(OpenBabel::OBConversion& conv)
 		{
 			title.clear();
 			mol.Clear();
@@ -95,11 +92,11 @@ class ReadMCMol
 			return true;
 		}
 
-		OBMol& getMol()
+		OpenBabel::OBMol& getMol()
 		{
 			if(data.length() > 0)
 			{
-				OBConversion strconv;
+				OpenBabel::OBConversion strconv;
 				strconv.SetInFormat("sdf");
 				strconv.ReadString(&mol, data);
 				data.clear();
@@ -117,7 +114,7 @@ class ReadMCMol
 	MInfo next;
 
 public:
-	ReadMCMol(istream& in, OBFormat* f, unsigned st, unsigned o, unsigned reduce) :
+	ReadMCMol(istream& in, OpenBabel::OBFormat* f, unsigned st, unsigned o, unsigned reduce) :
 		infile(in), stride(st), offset(o), reduceConfs(reduce > 0 ? reduce : UINT_MAX), molcnt(0)
 	{
 		conv.SetInFormat(f);
@@ -130,7 +127,7 @@ public:
 
 	//put multi-conformer molecule in mol
 	//include weight to ensure value used for filtering matches stored value
-	bool read(OBMol& mol)
+	bool read(OpenBabel::OBMol& mol)
 	{
 		mol.Clear();
 		if (!next.isValid())

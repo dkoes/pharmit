@@ -24,17 +24,20 @@
  *      Author: dkoes
  */
 
-#include "PharmerQuery.h"
-#include <boost/assign/list_of.hpp>
-#include "Corresponder.h"
-#include "queryparsers.h"
-#include "Timer.h"
+
 #include <google/malloc_extension.h>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <boost/assign/list_of.hpp>
+#include "PharmerQuery.h"
+#include "Corresponder.h"
+#include "queryparsers.h"
+#include "Timer.h"
 
 using namespace std;
 using namespace boost;
+using namespace Eigen;
+using namespace OpenBabel;
 
 static TextQueryParser textParser;
 static JSonQueryParser jsonParser;

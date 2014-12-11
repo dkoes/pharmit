@@ -31,7 +31,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <vector>
 #include <openbabel/math/vector3.h>
 
-using namespace OpenBabel;
 using namespace std;
 
 #define SPHEREGRID_BITS (5)
@@ -41,7 +40,7 @@ class SphereGrid
 	{
 		unsigned index;
 		vector<unsigned> neighbors;
-		vector3 pnt;
+		OpenBabel::vector3 pnt;
 
 		SphereGridPoint(): index(0) {}
 		SphereGridPoint(unsigned i, double X, double Y, double Z): index(i), pnt(X,Y,Z) {}
@@ -55,7 +54,7 @@ class SphereGrid
 
 	vector<SphereGridPoint> points; //indexed by index
 
-	void addCoords(const vector<vector3>& coords);
+	void addCoords(const vector<OpenBabel::vector3>& coords);
 	void makeDodecahedron(); //20 points
 	void makeIcosahedron(); //12 points, dual of dodecahedron
 	void connectPoints();

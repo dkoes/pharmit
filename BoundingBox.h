@@ -34,7 +34,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <iostream>
 
 using namespace std;
-using namespace boost;
 
 enum SplitType
 {
@@ -45,7 +44,7 @@ enum SplitType
 //z axis
 };
 
-typedef tuple<int, int, int> TripleInt;
+typedef boost::tuple<int, int, int> TripleInt;
 
 //maintain a bounding box
 struct BoundingBox

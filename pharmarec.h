@@ -40,8 +40,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "CommandLine2/CommandLine.h"
 
 using namespace std;
-using namespace boost;
-using namespace OpenBabel;
 
 extern cl::opt<bool> DKoesTest;
 
@@ -51,7 +49,7 @@ extern cl::opt<bool> DKoesTest;
 //generate a vector corresponding to pharma point (hbonds, aromatic?)
 struct PharmaPoint;
 typedef void (*genPointVectorFn)(const vector<int>& atoms_indexes,
-		const OBMol& mol, PharmaPoint& pnt);
+		const OpenBabel::OBMol& mol, PharmaPoint& pnt);
 
 //description of interaction features
 struct PharmaInteract
@@ -69,7 +67,7 @@ struct Pharma {
 	string name;
 	int atomic_number_label;
 	unsigned index; //position in pharmas array
-	vector<OBSmartsPattern> smarts;
+	vector<OpenBabel::OBSmartsPattern> smarts;
 	float defaultSearchRadius;
 	genPointVectorFn getVectors;
 	float clusterLimit;
@@ -87,7 +85,7 @@ struct Pharma {
 		{
 			while(*sm != NULL)
 			{
-				smarts.push_back(OBSmartsPattern());
+				smarts.push_back(OpenBabel::OBSmartsPattern());
 				smarts.back().Init(*sm);
 				sm++;
 			}
@@ -129,7 +127,7 @@ private:
 protected:
 	Pharma *pharmas;
 	unsigned numPharmas;
-	unordered_map<string, unsigned> nameLookup;
+	boost::unordered_map<string, unsigned> nameLookup;
 	void initialize(const vector<Pharma>& ps);
 
 public:
@@ -168,7 +166,7 @@ struct PharmaPoint {
 	double x;
 	double y;
 	double z;
-	vector<vector3> vecs; //directionality, can have multiple
+	vector<OpenBabel::vector3> vecs; //directionality, can have multiple
 	unsigned size;
 	const Pharma *pharma; //pharmacophore descriptor
 
@@ -240,14 +238,14 @@ extern bool readPharmaPointsJSON(const Pharmas& pharma, Json::Value& data, vecto
 bool isPharmaGist(const Pharmas& pharmas, const string& mol, vector<PharmaPoint>& points);
 
 //identify all pharma points in mol
-extern void getPharmaPoints(const Pharmas& pharmas, OBMol& mol, vector<PharmaPoint>& points);
+extern void getPharmaPoints(const Pharmas& pharmas, OpenBabel::OBMol& mol, vector<PharmaPoint>& points);
 //identify all pharma points in a multi-conformer molecule
-extern void getPharmaPointsMC(const Pharmas& pharmas, OBMol& mol, vector< vector<PharmaPoint> >& points);
+extern void getPharmaPointsMC(const Pharmas& pharmas, OpenBabel::OBMol& mol, vector< vector<PharmaPoint> >& points);
 
 //accelerated pharma point recognition for proteins
-extern void getProteinPharmaPoints(const Pharmas& pharmas, OBMol& protein, vector<PharmaPoint>& points);
+extern void getProteinPharmaPoints(const Pharmas& pharmas, OpenBabel::OBMol& protein, vector<PharmaPoint>& points);
 
-extern void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor, OBMol& ligand,
+extern void getInteractionPoints(const Pharmas& pharmas, OpenBabel::OBMol& receptor, OpenBabel::OBMol& ligand,
 		vector<PharmaPoint>& points, vector<PharmaPoint>& screenedout);
 
 //translate a point vector into json
@@ -255,11 +253,11 @@ extern bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& poin
 
 
 //add artificial pharma "atoms" to mol
-extern void addPharmaPoints(OBMol& mol, vector<PharmaPoint>& points);
+extern void addPharmaPoints(OpenBabel::OBMol& mol, vector<PharmaPoint>& points);
 
 //extract pharmacophore points into json from moldata in format
 extern bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
-		const string& moldata, OBFormat *format, const string& recdata, OBFormat *rformat);
+		const string& moldata, OpenBabel::OBFormat *format, const string& recdata, OpenBabel::OBFormat *rformat);
 
 
 #endif /* PHARMAREC_H_ */

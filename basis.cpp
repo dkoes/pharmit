@@ -26,6 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "basis.h"
 
+using namespace OpenBabel;
+
 const double minDist = .2; //minimum distance between basis points
 
 

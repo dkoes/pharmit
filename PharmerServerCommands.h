@@ -38,6 +38,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <cstdio>
 #include <google/malloc_extension.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/unordered_map.hpp>
 
 
 #ifndef SKIP_REGISTERZINC
@@ -46,8 +47,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using namespace std;
 using namespace cgicc;
-using namespace boost;
-using namespace OpenBabel;
 
 class Command
 {
@@ -59,6 +58,7 @@ protected:
 	//send a full JSON error message
 	void sendError(FastCgiIO& IO, Cgicc& CGI, const char *msg)
 	{
+		using namespace boost;
 		IO << HTTPPlainHeader();
 		IO << "{\"status\" : 0, \"msg\": \"";
 		IO << msg << "\"}\n";
@@ -127,11 +127,11 @@ public:
 //set receptor key
 class SetReceptor : public Command
 {
-	filesystem::path logdirpath;
+	boost::filesystem::path logdirpath;
 	SpinMutex recmutex;
 
 public:
-	SetReceptor(FILE * l, SpinMutex& lm, const filesystem::path& ldp) :
+	SetReceptor(FILE * l, SpinMutex& lm, const boost::filesystem::path& ldp) :
 		Command(l, lm), logdirpath(ldp)
 	{
 	}
@@ -140,11 +140,11 @@ public:
 	{
 		string key = cgiGetString(CGI, "key");
 		string recstr = cgiGetString(CGI,"receptor");
-		filesystem::path rname = logdirpath/ key;
+		boost::filesystem::path rname = logdirpath/ key;
 		IO << HTTPPlainHeader();
 
 		SpinLock lock(recmutex);
-		if (filesystem::exists(rname))
+		if (boost::filesystem::exists(rname))
 		{
 			//exists already, but set it again anyway
 			IO << "exists";
@@ -165,7 +165,7 @@ public:
 class StartQuery : public Command
 {
 	WebQueryManager& queries;
-	filesystem::path logdirpath;
+	boost::filesystem::path logdirpath;
 	SpinMutex recmutex;
 
 	const Pharmas *pharmas;
@@ -174,13 +174,14 @@ class StartQuery : public Command
 
 public:
 	StartQuery(WebQueryManager& qs, FILE * l, SpinMutex& lm,
-			const filesystem::path& ldp, const Pharmas *ph, unsigned tc, unsigned tm) :
+			const boost::filesystem::path& ldp, const Pharmas *ph, unsigned tc, unsigned tm) :
 		Command(l, lm), queries(qs), logdirpath(ldp), pharmas(ph), totalConfs(tc), totalMols(tm)
 	{
 	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
+		using namespace boost;
 		if (!cgiTagExists(CGI, "json"))
 		{
 			//no query
@@ -257,10 +258,10 @@ public:
 
 class HasReceptor : public Command
 {
-	filesystem::path logdirpath;
+	boost::filesystem::path logdirpath;
 
 public:
-	HasReceptor(FILE * l, SpinMutex& lm, const filesystem::path& ldp) :
+	HasReceptor(FILE * l, SpinMutex& lm, const boost::filesystem::path& ldp) :
 		Command(l, lm), logdirpath(ldp)
 	{
 	}
@@ -269,7 +270,7 @@ public:
 	{
 		string key = cgiGetString(CGI,"key");
 		IO << HTTPPlainHeader();
-		if(filesystem::exists(logdirpath / key))
+		if(boost::filesystem::exists(logdirpath / key))
 		{
 			IO << "{\"recavail\": 1 }";
 		}
@@ -359,18 +360,20 @@ public:
 class GetPharma : public Command
 {
 	const Pharmas *pharmas;
-	unordered_map<string, QueryParser*>& parsers;
-	const filesystem::path logdirpath;
+	boost::unordered_map<string, QueryParser*>& parsers;
+	const boost::filesystem::path logdirpath;
 
 public:
 	GetPharma(FILE * l, SpinMutex& lm, const Pharmas *ph,
-			unordered_map<string, QueryParser*>& p, const filesystem::path& ldp) :
+			boost::unordered_map<string, QueryParser*>& p, const boost::filesystem::path& ldp) :
 		Command(l, lm), pharmas(ph), parsers(p), logdirpath(ldp)
 	{
 	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
+		using namespace boost;
+		using namespace OpenBabel;
 		vector<PharmaPoint> points;
 		if (!cgiTagExists(CGI,"ligand") || !cgiTagExists(CGI,"ligandname"))
 		{
@@ -493,6 +496,7 @@ public:
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
+		using namespace boost;
 		WebQueryHandle query = getQuery(CGI, IO);
 		if (query)
 		{
@@ -685,7 +689,7 @@ protected:
 public:
 	SminaCommand(FILE * l, SpinMutex& lm, WebQueryManager& qs,
 			const string& s, unsigned p): QueryCommand(l, lm, qs),
-				server(s),port(lexical_cast<string>(p))
+				server(s),port(boost::lexical_cast<string>(p))
 	{
 
 	}
@@ -695,19 +699,21 @@ public:
 class StartSmina: public SminaCommand
 {
 	boost::asio::io_service my_io_service;
-	filesystem::path logdirpath;
+	boost::filesystem::path logdirpath;
 
 public:
 	StartSmina(FILE * l, SpinMutex& lm, WebQueryManager& qs,
-			const filesystem::path& ldp, const string& s, unsigned p) :
+			const boost::filesystem::path& ldp, const string& s, unsigned p) :
 				SminaCommand(l, lm, qs, s, p), logdirpath(ldp)
 	{
 	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
+		using namespace boost;
 		using namespace boost::asio;
 		using namespace boost::asio::ip;
+		using namespace OpenBabel;
 
 		if(server.length() == 0)
 		{
@@ -893,6 +899,7 @@ public:
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
+		using namespace boost;
 		WebQueryHandle query = getQuery(CGI, IO);
 		if (query)
 		{

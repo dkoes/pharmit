@@ -31,26 +31,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define PHARMERQUERY_H_
 
 #include <iostream>
-#include "pharmarec.h"
-#include "pharmerdb.h"
+#include <ctime>
+#include <vector>
+#include <boost/thread.hpp>
+#include <boost/asio.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
-#include <vector>
 #include <json/json.h>
-#include <boost/thread.hpp>
-#include <ctime>
 #include "Triplet.h"
 #include "tripletmatching.h"
 #include "cors.h"
 #include "params.h"
 #include "Excluder.h"
-#include <boost/asio.hpp>
+#include "pharmarec.h"
+#include "pharmerdb.h"
+
 typedef boost::shared_ptr<boost::asio::ip::tcp::iostream> stream_ptr;
 
 using namespace std;
-using namespace boost;
-
 
 //stores additional cache info (name)
 #define QR_NAME_SIZE 32
@@ -76,9 +75,9 @@ struct MolWeightDatabase
 {
 	double min; // >=
 	double max; // <
-	shared_ptr<PharmerDatabaseSearcher> db;
+	boost::shared_ptr<PharmerDatabaseSearcher> db;
 
-	MolWeightDatabase(shared_ptr<PharmerDatabaseSearcher> d, double _min): min(_min), max(HUGE_VAL), db(d)
+	MolWeightDatabase(boost::shared_ptr<PharmerDatabaseSearcher> d, double _min): min(_min), max(HUGE_VAL), db(d)
 	{
 
 	}
@@ -98,14 +97,14 @@ class PharmerQuery
 
 	vector<PharmaPoint> points;
 	vector<QueryTriplet> triplets; //all n^3 triangles
-	multi_array<unsigned, 3> tripIndex; //for any (i,j,k), the index of the corresponding triplet
+	boost::multi_array<unsigned, 3> tripIndex; //for any (i,j,k), the index of the corresponding triplet
 	QueryParameters params;
 	Excluder excluder;
 
 	bool valid;
 	bool stopQuery;
 
-	thread *tripletMatchThread; //performs triplet matching
+	boost::thread *tripletMatchThread; //performs triplet matching
 	time_t lastAccessed;
 
 	MTQueue<unsigned> dbSearchQ;
@@ -162,7 +161,7 @@ class PharmerQuery
 		return dbcnt;
 	}
 
-	unsigned long getLocation(const QueryResult* r,shared_ptr<PharmerDatabaseSearcher>& db);
+	unsigned long getLocation(const QueryResult* r,boost::shared_ptr<PharmerDatabaseSearcher>& db);
 
 	static void thread_sendSmina(PharmerQuery *query, stream_ptr out, unsigned max);
 
@@ -171,7 +170,7 @@ public:
 	PharmerQuery(const vector< vector<MolWeightDatabase> >& dbs,
 			istream& in, const string& ext, const QueryParameters& qp =
 					QueryParameters(), unsigned nth =
-					thread::hardware_concurrency());
+					boost::thread::hardware_concurrency());
 
 	PharmerQuery(const vector< vector<MolWeightDatabase> >& dbs,
 			const vector<PharmaPoint>& pts, const QueryParameters& qp =
@@ -253,7 +252,7 @@ public:
 		sminaServer = s;
 		sminaPort = p;
 		sminaid = sid;
-		thread th(thread_sendSmina, this, out, max); //should detach on destruct
+		boost::thread th(thread_sendSmina, this, out, max); //should detach on destruct
 	}
 };
 
