@@ -535,28 +535,36 @@ public:
 	{
 	}
 
+	//run this in its own thread because is is slow slow slow
+	//and we don't want to use up the server threads
+	static void register_zinc_thread(WebQueryHandle query) {
+		if(!query) return;
+		CURL *h = curl_easy_init();
+		vector<unsigned> ids;
+		query->getZINCIDs(ids);
+
+                for(unsigned i = 0, n = ids.size(); i < n; i++)
+                 {
+                 	unsigned id = ids[i];
+                        stringstream url;
+                        url << "http://zinc.docking.org/apps/ZINCPharmer.php?";
+                        url << id;
+                        curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
+                        curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
+                        curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 3);
+                        curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, curlDummyWrite);
+                        curl_easy_perform(h);
+                 }
+                 curl_easy_cleanup(h);
+	}
+
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
 #ifndef SKIP_REGISTERZINC
 		WebQueryHandle query = getQuery(CGI, IO);
 		if (query)
 		{
-			vector<unsigned> ids;
-			query->getZINCIDs(ids);
-			CURL *h = curl_easy_init();
-			for(unsigned i = 0, n = ids.size(); i < n; i++)
-			{
-				unsigned id = ids[i];
-				stringstream url;
-				url << "http://zinc.docking.org/apps/ZINCPharmer.php?";
-				url << id;
-				curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
-				curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
-				curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 3);
-				curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, curlDummyWrite);
-				curl_easy_perform(h);
-			}
-			curl_easy_cleanup(h);
+			boost::thread t(register_zinc_thread, query);
 		}
 #endif
 	}
