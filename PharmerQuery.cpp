@@ -182,7 +182,6 @@ void PharmerQuery::generateQueryTriplets(PharmerDatabaseSearcher& pharmdb,
 	//is presumably correlated to frequency)
 	vector<double> ranking;
 	unsigned mintrip = pharmdb.rankTriplets(triplets, ranking);
-
 	unsigned degrees[points.size()];
 	memset(degrees, 0, sizeof(degrees));
 

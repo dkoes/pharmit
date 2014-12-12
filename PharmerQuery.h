@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #ifndef PHARMERQUERY_H_
 #define PHARMERQUERY_H_
 
+#include "cors.h"
 #include <iostream>
 #include <ctime>
 #include <vector>
@@ -41,7 +42,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <json/json.h>
 #include "Triplet.h"
 #include "tripletmatching.h"
-#include "cors.h"
 #include "params.h"
 #include "Excluder.h"
 #include "pharmarec.h"

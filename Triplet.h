@@ -474,7 +474,6 @@ protected:
 	double computeTangDMin(double ra, double rb, double ab, double theta, double ac)
 	{
 		//find distance between circle and plane (from maple);
-
 		double t1, t3, t4, t8, t10, t11, t12, t15, t16, t19, t22, t25, t28;
 		double x3 = cos(theta)*ac;
 		double y3 = sin(theta)*ac;
@@ -490,11 +489,22 @@ protected:
 		t16 = t15 * ra;
 		t19 = t15 * rb - t16;
 		t22 = (double) t12 * (t8 * (x3 - t4) + t19 * (y3 - t16));
-		t25 = x3 - t4 - t8 * t22;
+		double x = t4 + t8*t22;
+		t25 = x3 - x;
+		double y = t16 + t19 * t22;
+		t28 = y3 - y;
+		//figure out distance from centerline to d and c
+		double a = atan2(t28, t25);
+		double x2 = y/tan(a);
+
+		double ddist = sqrt(x2*x2 + y*y);
+		double cdist = sqrt((x3-x+x2)*(x3-x+x2)+y3*y3);
+		if(cdist < ddist)
+			return 0;
 		t25 *= t25;
-		t28 = y3 - t16 - t19 * t22;
 		t28 *= t28;
-		return sqrt(t25 + t28);
+		double d = sqrt(t25 + t28);
+		return d;
 	}
 
 	double computeTangDMax(double ra, double rb, double ab, double theta, double ac)
@@ -514,11 +524,14 @@ protected:
 		t16 = t15 * ra;
 		t19 = -t15 * rb + t16;
 		t22 = (t8 * (x3 - t4) + (y3 + t16) * t19) * (double) t12;
-		t25 = x3 - t4 - t8 * t22;
+		double x = t4 + t8 * t22;
+		t25 = x3 - x;
 		t25 *= t25;
-		t28 = y3 + t16 - t19 * t22;
+		double y = -t16 + t19 * t22;
+		t28 = y3 - y;
 		t28 *= t28;
-		return sqrt(t25 + t28);
+		double d = sqrt(t25 + t28);
+		return d;
 	}
 	//cache data used by search, but not creation
 	void computeSearchData()
@@ -570,9 +583,10 @@ protected:
 		tangd[0] = computeTangDMin(r1,r2,b,cang,a)-r0;
 		tangd[1] = computeTangDMin(r2,r0,c,aang,b)-r1;
 
-		tangdM[2] = computeTangDMax(r0,r1,a,bang,c)+r2;
-		tangdM[0] = computeTangDMax(r1,r2,b,cang,a)+r0;
-		tangdM[1] = computeTangDMax(r2,r0,c,aang,b)+r1;
+		//don't compute max if within tangent range
+		tangdM[2] = tangd[2] > -r2 ? computeTangDMax(r0,r1,a,bang,c)+r2 : HUGE_VAL;
+		tangdM[0] = tangd[0] > -r0 ? computeTangDMax(r1,r2,b,cang,a)+r0 : HUGE_VAL;
+		tangdM[1] = tangd[1] > -r1 ? computeTangDMax(r2,r0,c,aang,b)+r1 : HUGE_VAL;
 
 		//if a is short enough, it provides a lower bound on the other distances
 		//must be shorter than connecting to other distances shortest point

@@ -152,8 +152,8 @@ public:
 							if (next.getMol().NumAtoms() != N)
 							{
 								cerr
-										<< "Invalid Input. Sequential molecules with the same name must be conformers.\n";
-								continue; //don't fail, just ignore
+										<< "Warning: Invalid Input. Sequential molecules with the same name should be conformers.\n";
+								break; //don't fail, just ignore
 							}
 
 							double *confdata = new double[N * 3];

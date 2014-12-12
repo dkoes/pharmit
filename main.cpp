@@ -55,9 +55,9 @@ using namespace OpenBabel;
 
 cl::opt<bool> SeparateWeight("separate-weight",
 		cl::desc("Segregate database based on molecular weight"),
-		cl::init(true));
-cl::opt<bool> Quiet("q", cl::desc("quiet; suppress informational messages"),
 		cl::init(false));
+cl::opt<bool> Quiet("q", cl::desc("quiet; suppress informational messages"),
+		cl::init(true));
 cl::opt<bool> ShowQuery("show-query", cl::desc("print query points"),
 		cl::init(false));
 cl::opt<bool> Print("print", cl::desc("print results"), cl::init(true));

@@ -929,8 +929,7 @@ unsigned PharmerDatabaseSearcher::rankTriplets(const
 {
 	double minval = HUGE_VAL;
 	unsigned besttrip = 0;
-	ranking.resize(triplets.size());
-
+	ranking.resize(triplets.size(), 0);
 
 	//add up values from histogram
 	for (unsigned i = 0, n = triplets.size(); i < n; i++)
@@ -985,6 +984,11 @@ static void getMinMax(const Triplet& t, SplitType split, int& min, int& max)
 	}
 }
 
+inline void dump(ostream& out, const ThreePointData& tpd)
+{
+	out << tpd.molPos << ": " << tpd.l1 <<" " << tpd.l2 << " " << tpd.l3 << "\n";
+}
+
 void PharmerDatabaseSearcher::queryProcessPoints(QueryInfo& t,
 		unsigned long startLoc, unsigned long endLoc)
 {
@@ -997,6 +1001,7 @@ void PharmerDatabaseSearcher::queryProcessPoints(QueryInfo& t,
 	for (const ThreePointData *itr = start; itr != end; itr++)
 	{
 		unsigned mid = getBaseMID(itr->molID());
+//cout << " Match "; dump(cout, *itr);
 		if (t.M.add(mid, *itr, t.triplet, t.which))
 		{
 			cnt++;
