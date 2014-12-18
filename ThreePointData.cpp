@@ -167,8 +167,8 @@ ThreePointData::ThreePointData(unsigned offset, double w, unsigned nr, const vec
 	i2 = PIs[1].index;
 	i3 = PIs[2].index;
 
-//	printf("P(%d,%d,%d)  I(%d,%d,%d)  L(%d,%d,%d)\n",PIs[0].pharmaIndex,
-//			PIs[1].pharmaIndex,PIs[2].pharmaIndex, (int)i1, (int)i2, (int)i3, (int)l1,(int)l2,(int)l3);
+	//printf("P(%d,%d,%d)  I(%d,%d,%d)  L(%d,%d,%d)\n",PIs[0].pharmaIndex,
+	//		PIs[1].pharmaIndex,PIs[2].pharmaIndex, (int)i1, (int)i2, (int)i3, (int)l1,(int)l2,(int)l3);
 
 	double X = PIs[0].point->x;
 	double Y = PIs[0].point->y;

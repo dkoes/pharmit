@@ -251,8 +251,21 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 				}
 			}
 
+        		OBAromaticTyper aromatics;
+        		OBAtomTyper atyper;
 			while (conv.Read(&mol, &in))
 			{
+				//perform exactly the same analyses as dbcreate
+        			mol.AddHydrogens();
+
+        			mol.FindRingAtomsAndBonds();
+				mol.FindChiralCenters();
+				mol.PerceiveBondOrders();
+				aromatics.AssignAromaticFlags(mol);
+				mol.FindSSSR();
+				atyper.AssignTypes(mol);
+				atyper.AssignHyb(mol);
+
 				if (receptor.NumAtoms() > 0)
 				{
 					vector<PharmaPoint> screenedout;

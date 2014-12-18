@@ -101,6 +101,7 @@ class ReadMCMol
 				strconv.ReadString(&mol, data);
 				data.clear();
 			}
+
 			return mol;
 		}
 
@@ -121,6 +122,7 @@ public:
 		conv.SetOutFormat("sdf");
 		//must do a read to setup conv
 		conv.Read(&next.mol, &infile);
+
 		next.title = next.mol.GetTitle();
 		next.valid = true;
 	}
