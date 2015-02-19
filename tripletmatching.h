@@ -244,14 +244,14 @@ public:
 };
 
 
-typedef long int128_t __attribute__((mode(TI))) __attribute__((aligned(8)));
+typedef long int128_t_a8 __attribute__((mode(TI))) __attribute__((aligned(8)));
 
 //stores all the matching triples for a unique conformer
 struct TripletMatch
 {
 	//these can all probably be reduced to 64bits..
-	int128_t	 mustMatch; //indices the current triple must contain two of
-	int128_t	nextMustMatch; //indices for the next triple
+	int128_t_a8	 mustMatch; //indices the current triple must contain two of
+	int128_t_a8	nextMustMatch; //indices for the next triple
 
 	unsigned long id:TPD_MOLDATA_BITS; //mol we are matching
 	unsigned molid:TPD_MOLID_BITS;
@@ -280,7 +280,7 @@ struct TripletMatch
 
 	bool hasValidConnections(const ThreePointData& tdata, const QueryTriplet& trip, int tripIndex)
 	{
-		static int128_t one = 1;
+		static int128_t_a8 one = 1;
 		if(tripIndex == currIndex+1)
 		{
 			mustMatch = nextMustMatch;
@@ -306,7 +306,7 @@ struct TripletMatch
 
 	bool add(const TripletMatchInfo& tminfo, const QueryTriplet& trip, int tripIndex, TripletMatchAllocator& alloc)
 	{
-		static int128_t one = 1;
+		static int128_t_a8 one = 1;
 		if(tripIndex == currIndex+1)
 		{
 			mustMatch = nextMustMatch;

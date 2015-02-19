@@ -256,9 +256,9 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 			while (conv.Read(&mol, &in))
 			{
 				//perform exactly the same analyses as dbcreate
-        			mol.AddHydrogens();
+				mol.AddHydrogens();
 
-        			mol.FindRingAtomsAndBonds();
+				mol.FindRingAtomsAndBonds();
 				mol.FindChiralCenters();
 				mol.PerceiveBondOrders();
 				aromatics.AssignAromaticFlags(mol);
@@ -692,20 +692,20 @@ int main(int argc, char *argv[])
 		unsigned totalC = 0;
 		unsigned totalM = 0;
                 //total hack time - fcgi uses select which can't
-                //deal with file descriptors higher than 1024, so let's reserve some
-                #define MAXRESERVEDFD (SERVERTHREADS*2) 
-                int reservedFD[MAXRESERVEDFD] = {0,};
-                for(unsigned i = 0; i < MAXRESERVEDFD; i++)
-                {
-                        reservedFD[i] = open("/dev/null",O_RDONLY);
-                }
-                //loadDatabases will open a whole bunch of files
-                loadDatabases(databases, totalC, totalM);
-                //now free reserved fds
-                for(unsigned i = 0; i < MAXRESERVEDFD; i++)
-                {
-                        close(reservedFD[i]);
-                }
+		//deal with file descriptors higher than 1024, so let's reserve some
+		#define MAXRESERVEDFD (SERVERTHREADS*2)
+		int reservedFD[MAXRESERVEDFD] = {0,};
+		for(unsigned i = 0; i < MAXRESERVEDFD; i++)
+		{
+				reservedFD[i] = open("/dev/null",O_RDONLY);
+		}
+		//loadDatabases will open a whole bunch of files
+		loadDatabases(databases, totalC, totalM);
+		//now free reserved fds
+		for(unsigned i = 0; i < MAXRESERVEDFD; i++)
+		{
+				close(reservedFD[i]);
+		}
 		pharmer_server(Port, databases, LogDir, totalC, totalM, MinServer, MinPort);
 	}
 	else
