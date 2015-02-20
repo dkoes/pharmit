@@ -1,0 +1,187 @@
+Pharmer: Efficient and Exact 3D Pharmacophore Search
+Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+
+LICENSE
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+BUILDING
+
+Currently, the easiest way to build pharmer is to checkout the source code
+using Eclipse and build it with the automatically generated make files.
+The contribution of a standard autoconf/make build system would be greatly
+appreciated.
+
+There are several dependencies on third party libraries:
+Boost (currently building against version 1.45)
+http://www.boost.org/
+
+JsonCpp
+http://jsoncpp.sourceforge.net/
+
+FastCGI
+http://www.fastcgi.com
+
+cgicc
+http://www.gnu.org/software/cgicc/
+
+tcmalloc (google performance tools)
+http://code.google.com/p/google-perftools/
+
+OpenBabel
+http://openbabel.org/
+
+
+USING
+
+The --help option will provide the following:
+
+USAGE: pharmer [options] --cmd command [pharma, dbcreate, dbsearch, server]
+
+OPTIONS:
+  -bloom-large=<uint>  - Number of bits for coarse discretization fingerprint.
+  -bloom-small=<uint>  - Number of bits for fine discretization fingerprint.
+  -cmd=<string>        - command [pharma, dbcreate, dbsearch, server]
+  -dbdir=<string>      - database directory(s)
+  -extra-info          - Output additional molecular properties.  Slower.
+  -file-partition      - Partion database slices based on files
+  -help                - Display available options (--help-hidden for more)
+  -in=<string>         - input file(s)
+  -logdir=<string>     - log directory for server
+  -max-hits=<n>        - return at most n results
+  -max-orient=<n>      - return at most n orientations of each conformation
+  -max-rmsd=<number>   - maximum allowed RMSD; default max allowed by query
+  -max-weight=<uint>   - maximum allowed molecular weight
+  -nthreads=<n>        - utilize n threads; default 1
+  -out=<string>        - output file
+  -pharmaspec=<string> - pharmacophore specification
+  -port=<uint>         - port for server to listen on
+  -print               - print results
+  -q                   - quiet; suppress informational messages
+  -reduceconfs=<n>     - return at most n conformations for each molecule
+  -separate-weight     - Segregate database based on molecular weight
+  -show-query          - print query points
+  -sort-rmsd           - Sort results by RMSD.
+  -unweighted-rmsd     - Compute minimal RMSD without radius weights
+
+To IDENTIFY the pharmacophore features of a molecule ex.pdb:
+ pharmer pharma -in ex.pdb
+ pharmer pharma -in ex.pdb -out out.sdf
+ pharmer pharma -in ex.pdb -out out.json
+For interactive, graphical editting of pharmacophore features, try
+http://zincpharmer.csb.pitt.edu
+The saved session file is a json file that can be used as input for Pharmer.
+
+To CREATE a database DB from library.sdf:
+ pharmer dbcreate -dbdir DB -in library.sdf
+If you have multiple disk drives, you can improve performance by striping the
+database across the drives:
+ pharmer dbcreate -dbdir /drive1/DB -dbdir /drive2/DB -in library.sdf
+If you pre-split the input file things will go faster:
+ pharmer dbcreate -dbdir /drive1/DB -dbdir /drive2/DB -file-partition -in library1.sdf -in library2.sdf
+
+To SEARCH a database:
+ pharmer dbsearch -dbdir DB -in query.json
+ pharmer dbsearch -dbdir DB -in query.sdf
+ pharmer dbsearch -dbdir DB -in query.ph4
+
+BUGS (Not Really)
+
+When working with large datasets spread across multiple hard drives,
+you will likely run into a number of limits that will result in 
+segmentation faults (type 6 or 11).  These changes need to be in place
+before building the database, or it will silently create incomplete 
+databases that crash when you search them.
+
+Make sure nofile is set high enough (1000000) in /etc/security/limits.conf
+
+Make sure vm.max_map_count is set high enough - add the following to /etc/sysctl.conf
+vm.max_map_count=1000000
+
+Make sure you build against libcurl4-openssl-dev, not gnutls, or you
+will get fortify_fail errors.
+
+Continuing with curl bugs, DNS timeouts can cause a longjmp error:
+http://stackoverflow.com/questions/9191668/error-longjmp-causes-uninitialized-stack-frame
+to resolve these rebuild curl with --enable-ares
+
+You can ignore all the curl issues entirely if you build with -DSKIP_REGISTERZINC
+which is probably what you want unless you are using the full ZINC database.
+
+Some versions of eigen3 will trigger an assert, OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG, at compile time.
+This can be ignored in the latest versions of eigen3 with -DEIGEN_DISABLE_STACK_SIZE_ASSERT
+If your version hasn't had this patch applied (which is currently true with Ubuntu 14.04),
+then you will have to modify Eigen/src/Core/DenseStorage.h appropriately.
+
+Currently, on Ubuntu 14.04, g++ 4.8 experiences an internal compiler error.
+Use g++-4.6 to get around this.
+
+BUGS (Really)
+
+Send any bug reports to dkoes@pitt.edu with a complete test case.
+
+CITING
+
+Please use the citation from http://pubs.acs.org/doi/abs/10.1021/ci200097m
+
+DEFAULT PHARMACOPHORE DEFINITIONS
+Aromatic 18 0 1.1 1 0.1 
+a1aaaaa1
+a1aaaa1
+
+HydrogenDonor 1 1 0.5 1 0.1 
+[#7!H0&!$(N-[SX4](=O)(=O)[CX4](F)(F)F)]
+[#8!H0&!$([OH][C,S,P]=O)]
+[#16!H0]
+
+HydrogenAcceptor 89 2 0.5 1 0.1 
+[#7&!$([nX3])&!$([NX3]-*=[!#6])&!$([NX3]-[a])&!$([NX4])&!$(N=C([C,N])N)]
+[$([O])&!$([OX2](C)C=O)&!$(*(~a)~a)]
+
+PositiveIon 7 3 0.75 0 0.1 
+[+,+2,+3,+4]
+[$(CC)](=N)N
+[$(C(N)(N)=N)]
+[$(n1cc[nH]c1)]
+
+NegativeIon 8 4 0.75 0 0.1 
+[-,-2,-3,-4]
+C(=O)[O-,OH,OX1]
+[$([S,P](=O)[O-,OH,OX1])]
+c1[nH1]nnn1
+c1nn[nH1]n1
+C(=O)N[OH1,O-,OX1]
+C(=O)N[OH1,O-]
+CO(=N[OH1,O-])
+[$(N-[SX4](=O)(=O)[CX4](F)(F)F)]
+
+Hydrophobic 6 5 1 0 2 
+a1aaaaa1
+a1aaaa1
+[$([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])&!$(**[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])]
+[$(*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])&!$(*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I])]([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]
+*([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])([CH3X4,CH2X3,CH1X2,F,Cl,Br,I])[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]
+[C&r3]1~[C&r3]~[C&r3]1
+[C&r4]1~[C&r4]~[C&r4]~[C&r4]1
+[C&r5]1~[C&r5]~[C&r5]~[C&r5]~[C&r5]1
+[C&r6]1~[C&r6]~[C&r6]~[C&r6]~[C&r6]~[C&r6]1
+[C&r7]1~[C&r7]~[C&r7]~[C&r7]~[C&r7]~[C&r7]~[C&r7]1
+[C&r8]1~[C&r8]~[C&r8]~[C&r8]~[C&r8]~[C&r8]~[C&r8]~[C&r8]1
+[CH2X4,CH1X3,CH0X2]~[CH3X4,CH2X3,CH1X2,F,Cl,Br,I]
+[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]
+[$([CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]
+[$([S]~[#6])&!$(S~[!#6])]
+
