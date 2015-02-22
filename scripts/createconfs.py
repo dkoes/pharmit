@@ -133,8 +133,9 @@ if __name__ == '__main__':
         try: #catch any rdkit problems
             mol = Chem.MolFromSmiles(smile)
             Chem.SanitizeMol(mol)
-            #to be sure, canonicalize smile
-            can = Chem.MolToSmiles(mol)
+            #to be sure, canonicalize smile (with iso)
+            can = Chem.MolToSmiles(mol,isomericSmiles=True)
+            print can
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM structures WHERE smile = %s', (can,))
             #if smile is not in structures
