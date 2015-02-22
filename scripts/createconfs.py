@@ -163,7 +163,7 @@ if __name__ == '__main__':
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
-            print e,smile
+            print e,smile,name
     
     #clear out queues
     for _ in xrange(numt):
