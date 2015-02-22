@@ -4,24 +4,39 @@
 #Each line of the smiles file is of the form 
 #[smiles] [name]
 #and name is assumed to be of a form that uniquely indicates the vendor
+#Structure files (sdf.gz) are stored in the file system, not internally
+#in the database.  Must provide a prefix file of acceptable directory trees.
+#Can also specify a subdirmod option for determining when to create subdirectories
+#to keep the number of files in each directory reasonable
 
-import sys,subprocess, re, MySQLdb, cStringIO
+import sys,subprocess, re, MySQLdb, os, multiprocessing, gzip
 from rdkit.Chem import AllChem as Chem
 from optparse import OptionParser
-import multiprocessing
 
 def getRMS(mol, c1,c2):
     (rms,trans) = Chem.GetAlignmentTransform(mol,mol,c1,c2)
     return rms
 
-def createconfs(uniqueid, smile, mol, options):
+def createconfs(uniqueid, smile, mol, dirpath, options):
     maxconfs = options.maxconfs
     sample = int(options.sample*options.maxconfs)
     rmsdcut = options.rms
     energycut = options.energy
     cids = Chem.EmbedMultipleConfs(mol, sample,randomSeed=1301979)
     cenergy = []           
-    output = cStringIO.StringIO()
+    #setup directory
+    if options.subdirmod:
+        subdir = int(uniqueid/options.subdirmod)        
+        dirpath = '%s/%s' % (dirpath,subdir)
+        #make subdir if it doesn't exist already
+        if not os.path.exists(dirpath):
+            try:
+                os.makedirs(dirpath)
+            except OSError as e:
+                pass
+                
+    fname = '%s/%d.sdf.gz' % (dirpath,uniqueid)
+    output = gzip.open(fname,'w') #overwrite
     sdwriter = Chem.SDWriter(output) 
     mol.SetProp("_Name",str(uniqueid)) #the id should be the name 
 
@@ -54,10 +69,11 @@ def createconfs(uniqueid, smile, mol, options):
             sdwriter.write(mol,conf)
 
     sdwriter.close()
+    output.close()
     #add conformers to database
     conn = MySQLdb.connect (host = "localhost",user = "pharmit",db="conformers")
     cursor = conn.cursor()
-    cursor.execute('UPDATE structures SET sdfs=COMPRESS(%s) WHERE `id`=%s AND smile=%s',(output.getvalue(),uniqueid, smile))
+    cursor.execute('UPDATE structures SET nconfs=%s,sdfloc=%s WHERE `id`=%s AND smile=%s',(len(written),fname,uniqueid, smile))
     conn.commit()
     cursor.close()
     conn.close()
@@ -92,13 +108,34 @@ if __name__ == '__main__':
                       help="replace already computed conformers")
     parser.add_option("--threads", dest="threads",action="store",
           help="number of threads to use", default="0", type="int", metavar="N")
+    parser.add_option("--subdirmod", dest="subdirmod",action="store",
+          help="number to partition files into directories by", default="10000", type="int", metavar="N")
+    parser.add_option('-p','--prefixes', dest="prefixfile", action="store", 
+            help="file containing path prefixes for storing conformers", default="",metavar="FILE")
     parser.add_option("-v","--verbose", dest="verbose",action="store_true",default=False,
                   help="verbose output")
     
     (options, args) = parser.parse_args()
-    if(len(args) != 1):
+    if len(args) != 1:
         parser.error("Need input smiles")
         sys.exit(-1)
+    if not options.prefixfile or not os.path.isfile(options.prefixfile):
+        print "Require prefix file for storing structures"
+        sys.exit(-1)
+    
+    #read prefixes
+    prefixes = []
+    pfile = open(options.prefixfile)    
+    for line in pfile:
+        line = line.strip()
+        if os.path.isdir(line):
+            prefixes.append(line)
+        else:
+            print line,"is not a directory"
+    if len(prefixes) == 0:
+        print "No valid prefixes provided"
+        sys.exit(-1)
+    whichprefix = 0
     
     conn = MySQLdb.connect (host = "localhost",user = "pharmit",db="conformers")
     
@@ -106,6 +143,7 @@ if __name__ == '__main__':
         f = open(args[0])
     except IOError:
         print "Could not read file",sys.argv[1]
+        sys.exit(-1)
         
     #setup multiprocessing queues
     numt = multiprocessing.cpu_count()
@@ -135,14 +173,14 @@ if __name__ == '__main__':
             Chem.SanitizeMol(mol)
             #to be sure, canonicalize smile (with iso)
             can = Chem.MolToSmiles(mol,isomericSmiles=True)
-            print can
+
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM structures WHERE smile = %s', (can,))
             #if smile is not in structures
             isnew = cursor.fetchone() == None
             if isnew:
                 #insert without sdfs to get unique id 
-                cursor.execute('INSERT INTO structures (smile,weight,sdfs) VALUES(%s,%s,\'\') ', (can, Chem.CalcExactMolWt(mol)))
+                cursor.execute('INSERT INTO structures (smile,weight) VALUES(%s,%s) ', (can, Chem.CalcExactMolWt(mol)))
                 
             #get unique id
             cursor.execute('SELECT id FROM structures WHERE smile = %s', (can,))
@@ -157,7 +195,8 @@ if __name__ == '__main__':
                             
             if isnew or options.replace:
                 #create conformers and insert them
-                queue.put((uniqueid, can, mol, options))
+                queue.put((uniqueid, can, mol, prefixes[whichprefix], options))
+                whichprefix = (whichprefix + 1) % len(prefixes)
                 
             
         except (KeyboardInterrupt, SystemExit):

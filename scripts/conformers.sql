@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: porky
--- Generation Time: Feb 20, 2015 at 01:44 PM
+-- Generation Time: Feb 22, 2015 at 09:19 AM
 -- Server version: 5.5.41-0ubuntu0.14.04.1
 -- PHP Version: 5.5.9-1ubuntu4.6
 
@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS `structures` (
   `smile` varchar(256) NOT NULL,
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `weight` float NOT NULL,
-  `sdfs` mediumblob NOT NULL,
+  `nconfs` int(11) NOT NULL DEFAULT '0',
+  `sdfloc` varchar(256) DEFAULT NULL COMMENT 'file path to sdf.gz file',
   PRIMARY KEY (`smile`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
