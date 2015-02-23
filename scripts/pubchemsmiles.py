@@ -12,6 +12,8 @@ ftp.cwd('pubchem/Compound/CURRENT-Full/SDF')
 files = ftp.nlst()
 
 for f in files:
+    if not f.endswith('.sdf.gz'):
+        continue
     #it would be nice to be fancy and stream download and parsing,
     #but for simplicity we will download each file whole and then parse
     #which requires sufficient disk space in /tmp
@@ -33,4 +35,7 @@ for f in files:
             smile = None
             cid = None
         line = data.readline()
+    temp.close()
+    
+ftp.close()
         
