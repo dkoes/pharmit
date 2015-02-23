@@ -5,7 +5,6 @@
 #latest snapshots
 
 import ftplib,sys,tempfile,gzip,re
-from reportlab.pdfbase.cidfonts import CIDEncoding
 
 ftp = ftplib.FTP('ftp.ncbi.nih.gov')
 ftp.login()
