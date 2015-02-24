@@ -1,0 +1,24 @@
+{
+  "name": "pharmit",
+  "version": "0.0.0",
+  "description": "Pharmit Web Search Interface",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.8.11"
+  },
+  "devDependencies": {
+    "gulp-concat": "^2.5.2",
+    "gulp-jshint": "^1.9.2",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://git.code.sf.net/p/pharmit/code"
+  },
+  "author": "David R Koes",
+  "license": "GPL"
+}

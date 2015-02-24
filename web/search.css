@@ -1,0 +1,67 @@
+html {
+	height: 100%;
+}
+
+body {
+    background: white;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+}
+
+
+#pharmit {
+	height: 100%;
+	width: 100%;
+}
+
+.pharmit_query {
+	height: 100%;
+	float: left;
+	position: absolute;
+	background-color: rgba(255,255,255,.9);
+	border-right: 1px solid black;
+	z-index: 10;
+	overflow: hidden;
+}
+
+.pharmit_query .queryheader {
+	
+}
+
+.pharmit_query .querybody {
+    padding-bottom: 3em; /* height of footer */
+}
+
+.pharmit_query .queryfooter {
+    position:absolute;
+    bottom:0;
+    width: 100%;
+    height: 3em; /* height of footer */
+    text-align: center;
+}
+
+.pharmit_results {
+	height: 100%;
+	float: right;
+}
+
+.searchdiv {
+	text-align: center;
+}
+.searchdiv .ui-button-text {
+	width: 14em;
+}
+
+.filterrow input {
+	width: 4em;
+}
+
+.headingsummary {
+	font-size: x-small;
+	color: gray;
+}
+
+.stylelabel {
+	display:block;
+}
