@@ -1,1 +1,0 @@
-javanto-jquery-fileinput-c94c693/dist/jquery.fileinput.js

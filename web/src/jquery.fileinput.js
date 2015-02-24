@@ -23,16 +23,12 @@
 
     $.fn.fileinput = function(replacement) {
         var selector = this;
-        var replacementHtml = "<button class=\"fileinput\">Browse...</button>";
-        if (replacement) {
-            if (replacement instanceof jQuery)
-                replacementHtml = $(replacement).wrap("<div />").parent().html();
-            else
-                replacementHtml = replacement;
+        if (!replacement) {
+        	replacement = "<button class=\"fileinput\">Browse...</button>";
         }
         selector.each(function() {
             var element = $(this);
-            element.wrap("<div class=\"fileinput-wrapper\" style=\"overflow:hidden; position: relative; display: inline-block;\" />");
+            element.wrap("<div class=\"fileinput-wrapper\" style=\" position: relative; display: inline-block;\" />");
 
             element.parent().mousemove(function(e) {
                 var offL, offT, el = $(this);
@@ -43,11 +39,11 @@
                 el.find("input").css({
                     "left":e.pageX - offL - el.find("input[type=file]").width() + 30,
                     "top":e.pageY - offT - 10
-                })
+                });
             });
 
             element.attr("tabindex", "-1").css({filter: "alpha(opacity=0)", "-moz-opacity": 0, opacity: 0, position: "absolute", "z-index": -1});
-            element.before(replacementHtml);
+            element.before(replacement);
             element.prev().addClass("fileinput");
             if (!$.support.cssPseudoClasses) {
                 element.css({"z-index":"auto", "cursor":"pointer"});

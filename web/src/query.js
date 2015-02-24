@@ -20,24 +20,11 @@ var Pharmit = Pharmit || {};
 
 Pharmit.Query = (function() {
 	
-	function Query(element) {
+	function Query(element, viewer) {
 		//private variables and functions
 		var querydiv = $('<div>').addClass('pharmit_query');
 		var features = null;
-		var ec = $3Dmol.elementColors;
-		var colorStyles =  [//each element has name and color (3dmol)
-		                    {name: "None", color: null},
-		                    {name: "RasMol", color: ec.rasmol},
-		                    {name: "White", color: ec.whiteCarbon},
-		                    {name: "Green", color: ec.greenCarbon},
-		                    {name: "Cyan", color: ec.cyanCarbon},
-		                    {name: "Magenta", color: ec.magentaCarbon},
-		                    {name: "Yellow", color: ec.yellowCarbon},
-		                    {name: "Orange", color: ec.orangeCarbon},
-		                    {name: "Purple", color: ec.purpleCarbon},
-		                    {name: "Blue", color: ec.blueCarbon}
-		                    ];
-		
+
 		
 		var doSearch = function() {
 			
@@ -48,10 +35,21 @@ Pharmit.Query = (function() {
 		};
 		
 		var loadReceptor = function() {
-			
+			if(this.files.length > 0) {
+				var file = this.files[0];
+				var reader = new FileReader();
+			    reader.onload = function(evt) {
+			        viewer.setReceptor(evt.target.result,file.name);
+			    };
+			    reader.readAsText(file);
+			}
 		};
 		
 		var addFeature = function() {
+			
+		};
+		
+		var sortFeatures = function() {
 			
 		};
 		
@@ -63,23 +61,6 @@ Pharmit.Query = (function() {
 			
 		};
 		
-		
-		//create jquery selection object for picking molecule style
-		var createStyleSelector = function(name, defaultval, callback) {
-			var ret = $('<div>');
-			var id = name+"MolStyleSelect";
-			$('<label for="'+id+'">'+name+' Style</label>').appendTo(ret).addClass('stylelabel');
-			
-			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(ret).addClass('styleselector');
-			for(var i = 0, n = colorStyles.length; i < n; i++) {
-				$('<option value="'+i+'">'+colorStyles[i].name+'</option>').appendTo(select);
-			}
-			
-			select.val(defaultval);
-			select.selectmenu({width: 120});
-
-			return ret;
-		};
 		
 		//create a split button from a list of vendors and prepend it to header
 		var createSearchButton = function(header,vendors) {
@@ -130,9 +111,15 @@ Pharmit.Query = (function() {
 		
 		//load features and load receptor
 		var loaders = $('<div>').appendTo(header);
-		var loadfeatures = $('<button>Load Features...</button>').appendTo(loaders).button().click(loadFeatures);
-		var loadrec = $('<input type="button">Load Receptor...</input>').appendTo(loaders).button().click(loadReceptor);
-		$('<input type="file"').fileinput(loadrec);
+		var loadfeatures = $('<button>Load Features...</button>').button();
+		var loadrec = $('<button>Load Receptor...</button>').button();
+		
+		//fileinput needs the file inputs in the dom
+		element.append(querydiv);
+		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(loadFeatures);		
+		var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(loadReceptor);
+		
+		querydiv.detach();
 		
 		//query features
 		var body = $('<div>').appendTo(querydiv).addClass("querybody");
@@ -142,7 +129,8 @@ Pharmit.Query = (function() {
 		features.accordion({animate: true, collapsible: true,heightStyle:'content'});
 		
 		var addbutton = $('<button>Add</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon-circle-plus"}}).click(addFeature);
-		
+		var sortbutton = $('<button>Sort</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
+
 		//filters
 		var filtergroup = $('<div>').appendTo(body);
 		$('<div>Filters</div>').appendTo(filtergroup).addClass('queryheading');
@@ -186,19 +174,18 @@ Pharmit.Query = (function() {
 		var vizgroup = $('<div>').appendTo(body);
 		$('<div>Visualization</div>').appendTo(vizgroup).addClass('queryheading');
 		
-		createStyleSelector("Ligand",1, null).appendTo(vizgroup);
-		createStyleSelector("Results",1, null).appendTo(vizgroup);
-		createStyleSelector("Receptor",2, null).appendTo(vizgroup);
-		
-		//surface
+		viewer.appendViewerControls(vizgroup);
+
 		
 		//load/save session
 		var footer = $('<div>').appendTo(querydiv).addClass("queryfooter");
-		var loadsession = $('<button>Load Session...</button>').appendTo(footer).button().click(loadSession);
-		var savesession = $('<button>Save Session...</button>').appendTo(footer).button().click(saveSession);
-		
-		
 		element.append(querydiv);
+
+		var loadsession = $('<button>Load Session...</button>').button();
+		
+		var loadsessionfile = $('<input type="file">').appendTo(footer).fileinput(loadsession).change(loadSession);	
+		var savesession = $('<button>Save Session...</button>').appendTo(footer).button().click(saveSession);		
+				
 	}
 
 	return Query;

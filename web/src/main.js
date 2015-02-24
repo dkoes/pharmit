@@ -17,6 +17,10 @@ $(document).ready(function() {
 	var viewer = new Pharmit.Viewer(element);
 	var phresults = new Pharmit.PharmaResults(element, viewer);
 	var query = new Pharmit.Query(element, viewer);
-	
-	viewer.setPickCallback(query.pickCallback);
+		
+	//work around jquery bug
+	$("button, input[type='button'], input[type='submit']").button()
+    .bind('mouseup', function() {
+        $(this).blur();     // prevent jquery ui button from remaining in the active state
+    });	
 });
