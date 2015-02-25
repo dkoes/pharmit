@@ -8,7 +8,7 @@ body {
     padding: 0;
     height: 100vh;
 }
-
+.ui-widget{font-size:12px;}
 
 #pharmit {
 	height: 100%;

@@ -20,60 +20,256 @@ var Pharmit = Pharmit || {};
 
 Pharmit.Query = (function() {
 	
-	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null};
-
+	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
+	var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': 'white', 'HydrogenAcceptor': 'orange', 
+			'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue'};
+	var featureNames = ['Aromatic','HydrogenDonor', 'HydrogenAcceptor', 
+			'Hydrophobic', 'NegativeIon', 'PositiveIon'];
 	/* object representing a single pharmacophore feature*/
-	function Feature(features, fobj) {
+	function Feature(viewer, features, fobj) {
 		
 		//setup html
+		var F = this;
+		this.obj = {}; //set in setFeature
+		
+		//updateViewer will update the viewer's visualization of this feature,
+		//mask the prototype so we don't make unnecessary calls
+		//while constructing the object - after setFeature we will create the shape
+		//and make updateViewer functional
+		this.updateViewer = function() {};
+		
 		this.container = $('<div>').appendTo(features).addClass('featurediv');
-		var heading = $('<h3>'+fobj.name+'<br></h3>').appendTo(this.container);
-		this.summary = $('<span>').appendTo(heading).addClasS('featuresummary');
+		this.container.feature = this;
+		
+		//header has checkbox for enable, name, and a close icon
+		var heading = $('<h3></h3>').appendTo(this.container);
+		this.enabled = $('<input type="checkbox">').appendTo(heading).click(
+				function(e) {
+					if($(this).prop( "checked")) {
+						F.obj.enabled = true;
+					}
+					else {
+						F.obj.enabled = false;					
+					}
+					F.updateViewer();
+					e.stopPropagation(); //otherwise does not stay checked
+				}
+				);	
+		var namespan = $('<span>').addClass('featurenameheading').appendTo(heading);
+		var close = $('<span>').addClass('ui-icon-circle-close ui-icon').appendTo(heading).click(function() {
+				//remove from viewer
+				
+				//remove from dom
+				F.container.feature = null;
+				F.container.remove();
+		});
+		heading.append($('<br>'));
+		
+		//summary has (x,y,z) Radius r
+		var summary = $('<span>').appendTo(heading).addClass('featuresummary');		
+		summary.append($(document.createTextNode('(')));
+		this.xsummary = $('<span>').appendTo(summary);
+		summary.append($(document.createTextNode(',')));
+		this.ysummary = $('<span>').appendTo(summary);
+		summary.append($(document.createTextNode(',')));
+		this.zsummary = $('<span>').appendTo(summary);
+		summary.append($(document.createTextNode(') Radius ')));
+		this.rsummary = $('<span>').appendTo(summary);
+
 		var editdiv = $('<div>').appendTo(this.container);
-		var locationdiv = $('<div>').appendTo(this.editdiv).addClass('locationdiv');
+		
+		//feature kind selection (name)
+		var select = this.select = $('<select name="featurename">').addClass('featureselect').appendTo(editdiv);
+		$.each(featureNames, function(key,val) {
+			$('<option value="'+val+'">'+val+'</option>').appendTo(select);
+		});
+		select.change(function() {
+			var n = this.value;
+			F.obj.name = n;
+			namespan.text(n);
+			if(n == "Aromatic" || n == "HydrogenDonor" || n == "HydrogenAcceptor") {
+				F.orientdiv.show();
+				F.sizediv.hide();
+				F.obj.hasvec = true;  //indicate vector is actually relevant to feature
+			}
+			else if(n == "Hydrophobic") {
+				F.orientdiv.hide();
+				F.sizediv.show();
+				F.obj.hasvec = false; //but in case we change kind of feature leave vector_on at current setting
+			}
+			else { //charges
+				F.orientdiv.hide();
+				F.sizediv.hide();
+				F.obj.hasvec = false;
+			}
+			F.updateViewer();
+			});
+		select.selectmenu({change: function() {select.trigger('change');}});
+		
+		//position (x,y,z)
+		var locationdiv = $('<div>').appendTo(editdiv).addClass('locationdiv');
+		
+		//because spinners are insane and don't trigger a change event on the
+		//underlying element and split up spinning and stopping and changing...
+		var spinObject = function(elem, init) {
+			var change = function() {elem.change();};
+			init.spin = init.stop = init.change = change;
+			return init;
+		};
 		
 		$('<label>x:</label>').appendTo(locationdiv);
-		this.x = $('<input>').appendTo(locationDiv).addClass('coordinput');
-		this.x.spinner({step: 0.1, numberFormat: 'n'});
+		this.x = $('<input>').appendTo(locationdiv).addClass('coordinput').change(function() {
+			//change x value
+			F.xsummary.text(this.value);
+			F.obj.x = this.value;
+			F.updateViewer();
+			});
+		this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
+		
 		
 		$('<label>y:</label>').appendTo(locationdiv);
-		this.y = $('<input>').appendTo(locationDiv).addClass('coordinput');
-		this.y.spinner({step: 0.1, numberFormat: 'n'});
+		this.y = $('<input>').appendTo(locationdiv).addClass('coordinput');
+		this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
+			//change y value
+			F.ysummary.text(this.value);
+			F.obj.y = this.value;
+			F.updateViewer();
+			});
 
 		$('<label>z:</label>').appendTo(locationdiv);
-		this.z = $('<input>').appendTo(locationDiv).addClass('coordinput');
-		this.z.spinner({step: 0.1, numberFormat: 'n'});
+		this.z = $('<input>').appendTo(locationdiv).addClass('coordinput');
+		this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
+			F.zsummary.text(this.value);
+			F.obj.z = this.value;
+			F.updateViewer();
+			});
 
+		//radius
 		$('<label>Radius:</label>').appendTo(locationdiv);
-		this.radius = $('<input>').appendTo(locationDiv).addClass('radiusinput');
-		this.radius.spinner({step: 0.1, numberFormat: 'n'});
+		this.radius = $('<input>').appendTo(locationdiv).addClass('radiusinput');
+		this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
+			F.rsummary.text(this.value);
+			F.obj.r = this.value;
+			F.updateViewer();
+			});
 
-		var orientdiv = this.orientdiv = $('<div>').appendTo(this.editdiv).addClass('orientdiv');
+		//orientation (for hbonds and aromatic)
+		var orientdiv = this.orientdiv = $('<div>').appendTo(editdiv).addClass('orientdiv');
+		var theta = null, phi = null;
 		
-		$('<input type="checkbox"').appendTo(orientdiv);
+		
+		var setVector = function(t, p) {
+			//t and p are in degrees, create svector i nobj
+			var theta = t*Math.PI/180;
+			var psi = p*Math.PI/180;
+			F.obj.svector = {
+				x: Math.sin(theta)*Math.cos(psi),
+				y: Math.sin(theta)*Math.sin(psi),
+				z: Math.cos(theta)
+			};
+		};
+		
+		this.orientenabled = $('<input type="checkbox">').appendTo(orientdiv).change(
+				function() {
+					if($(this).prop( "checked")) {
+						theta.spinner('option','disabled',false);
+						phi.spinner('option','disabled',false);
+						F.obj.vector_on = 0;
+					}
+					else {
+						theta.spinner('option','disabled',true);
+						phi.spinner('option','disabled',true);
+						F.obj.vector_on = 1;
+						setVector(theta.val(), phi.val());						
+					}
+					F.updateViewer();
+				}
+				);
 		
 		$('<label>&theta;:</label>').appendTo(orientdiv);
-		this.theta = $('<input>').appendTo(orientdiv).addClass('orientinput');
-		this.theta.spinner({step: 1, numberFormat: 'n'});
+		theta = this.theta = $('<input>').appendTo(orientdiv).addClass('orientinput');
+		this.theta.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(function() {
+			setVector(theta.val(), phi.val());
+			F.updateViewer();
+			});
 		
 		$('<label>&phi;:</label>').appendTo(orientdiv);
-		this.phi = $('<input>').appendTo(orientdiv).addClass('orientinput');
-		this.phi.spinner({step: 1, numberFormat: 'n'});
+		phi = this.phi = $('<input>').appendTo(orientdiv).addClass('orientinput');
+		this.phi.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(function() {			
+			setVector(theta.val(), phi.val());
+			F.updateViewer();
+			});
 		
 		this.orientdiv.hide();
 		
+		//size for hydrophobic
+		var sizediv = this.sizediv = $('<div>').appendTo(editdiv).addClass('sizediv');		
+		
+		this.minsize = $('<input>').appendTo(sizediv).addClass('sizeinput');
+		this.minsize.spinner(spinObject(F.minsize,{step: 1, numberFormat: 'n'})).change(function() {
+			F.obj.minsize = this.value;
+			F.updateViewer();
+		});
+		
+		$('<label> &le; #Atoms &le;</label>').appendTo(sizediv);
+		this.maxsize = $('<input>').appendTo(sizediv).addClass('sizeinput');
+		this.maxsize.spinner(spinObject(F.maxsize,{step: 1, numberFormat: 'n'})).change(function() {
+			F.obj.maxsize = this.value;
+			F.updateViewer();
+		});
+		this.sizediv.hide();
+		
 		this.setFeature(fobj);
-	}
+		
+		delete this.updateViewer;
+		this.viewer = viewer;
+		this.updateViewer(); //call prototype to actually draw feature
+		
+		features.accordion( "refresh" ); //update accordian
 
-	//return feature values
-	Feature.prototype.getFeature = function() {
-		return this.obj;
+	}
+	
+	//set the feature to fobj, fill in ui
+	Feature.prototype.setFeature = function(fobj) {
+		//this.obj will be set by the change handlers
+		this.select.val(fobj.name).trigger('change');
+		this.select.selectmenu("refresh");
+		this.x.val(fobj.x).trigger('change');
+		this.y.val(fobj.y).trigger('change');
+		this.z.val(fobj.z).trigger('change');
+		this.radius.val(fobj.radius).trigger('change');
+		this.enabled.val(fobj.enabled).trigger('change');
+		this.orientenabled.prop('checked', fobj.vector_on == 1).trigger('change');
+		
+		if(!$.isNumeric(fobj.minsize))
+			this.obj.minsize = "";
+		else
+			this.minsize.val(fobj.minsize).trigger('change');
+		
+		if(!$.isNumeric(fobj.maxsize))
+			this.obj.maxsize = "";
+		else
+			this.maxsize.val(fobj.maxsize).trigger('change');
+		
+		if(!fobj.svector) {
+			this.obj.svector = {x:1,y:0,z:0};
+		}
+		else {
+			var x = fobj.svector.x;
+			var y = fobj.svector.y;
+			var z = fobj.svector.z;
+			var theta = 180*Math.acos(z/(Math.sqrt(x*x+y*y+z*z)))/Math.PI;
+			var phi = 180*Math.atan2(y,x)/Math.PI;
+			this.theta.val(theta).trigger('change');
+			this.phi.val(phi).trigger('change');
+		}
 	};
 	
-	//set the feature to fobj
-	Feature.prototype.setFeature = function(fobj) {
+	Feature.prototype.updateViewer = function() {
 		
-	} ;
+	};
+	
+	
 	//disable feature (remove from viewer, grey out)
 	Feature.prototype.disable = function() {
 		
@@ -124,9 +320,7 @@ Pharmit.Query = (function() {
 			}
 		};
 		
-		var addFeature = function() {
-			
-		};
+
 		
 		var sortFeatures = function() {
 			
@@ -177,11 +371,6 @@ Pharmit.Query = (function() {
 		
 		//public variables and functions
 		
-		//called when user picks a pharmacophore
-		this.pickCallback = function(pharm) {
-			
-		};
-		
 		
 		//initialization code
 		querydiv.resizable({handles: "e"});
@@ -218,7 +407,9 @@ Pharmit.Query = (function() {
 				}
 				});
 		
-		var addbutton = $('<button>Add</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon-circle-plus"}}).click(addFeature);
+		var addbutton = $('<button>Add</button>').appendTo(featuregroup)
+			.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
+			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
 		var sortbutton = $('<button>Sort</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
 
 		//filters
