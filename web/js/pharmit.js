@@ -157,6 +157,85 @@ var Pharmit = Pharmit || {};
 
 Pharmit.Query = (function() {
 	
+	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null};
+
+	/* object representing a single pharmacophore feature*/
+	function Feature(features, fobj) {
+		
+		//setup html
+		this.container = $('<div>').appendTo(features).addClass('featurediv');
+		var heading = $('<h3>'+fobj.name+'<br></h3>').appendTo(this.container);
+		this.summary = $('<span>').appendTo(heading).addClasS('featuresummary');
+		var editdiv = $('<div>').appendTo(this.container);
+		var locationdiv = $('<div>').appendTo(this.editdiv).addClass('locationdiv');
+		
+		$('<label>x:</label>').appendTo(locationdiv);
+		this.x = $('<input>').appendTo(locationDiv).addClass('coordinput');
+		this.x.spinner({step: 0.1, numberFormat: 'n'});
+		
+		$('<label>y:</label>').appendTo(locationdiv);
+		this.y = $('<input>').appendTo(locationDiv).addClass('coordinput');
+		this.y.spinner({step: 0.1, numberFormat: 'n'});
+
+		$('<label>z:</label>').appendTo(locationdiv);
+		this.z = $('<input>').appendTo(locationDiv).addClass('coordinput');
+		this.z.spinner({step: 0.1, numberFormat: 'n'});
+
+		$('<label>Radius:</label>').appendTo(locationdiv);
+		this.radius = $('<input>').appendTo(locationDiv).addClass('radiusinput');
+		this.radius.spinner({step: 0.1, numberFormat: 'n'});
+
+		var orientdiv = this.orientdiv = $('<div>').appendTo(this.editdiv).addClass('orientdiv');
+		
+		$('<input type="checkbox"').appendTo(orientdiv);
+		
+		$('<label>&theta;:</label>').appendTo(orientdiv);
+		this.theta = $('<input>').appendTo(orientdiv).addClass('orientinput');
+		this.theta.spinner({step: 1, numberFormat: 'n'});
+		
+		$('<label>&phi;:</label>').appendTo(orientdiv);
+		this.phi = $('<input>').appendTo(orientdiv).addClass('orientinput');
+		this.phi.spinner({step: 1, numberFormat: 'n'});
+		
+		this.orientdiv.hide();
+		
+		this.setFeature(fobj);
+	}
+
+	//return feature values
+	Feature.prototype.getFeature = function() {
+		return this.obj;
+	};
+	
+	//set the feature to fobj
+	Feature.prototype.setFeature = function(fobj) {
+		
+	} ;
+	//disable feature (remove from viewer, grey out)
+	Feature.prototype.disable = function() {
+		
+	};
+	
+	//enable - show in viewer, style appropriately
+	Feature.prototype.enable = function() {
+		
+	};
+	
+	//display in selected style
+	Feature.prototype.select = function() {
+		
+	};
+	
+	//remove selection style
+	Feature.prototype.deselect = function() {
+		
+	};
+	
+	//remove completely
+	Feature.prototype.remove = function() {
+		
+	};
+	
 	function Query(element, viewer) {
 		//private variables and functions
 		var querydiv = $('<div>').addClass('pharmit_query');
@@ -263,7 +342,18 @@ Pharmit.Query = (function() {
 		var featuregroup = $('<div>').appendTo(body);
 		$('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('queryheading');
 		features = $('<div>').appendTo(featuregroup);
-		features.accordion({animate: true, collapsible: true,heightStyle:'content'});
+		features.accordion({header: "> div > h3", animate: true, collapsible: true,heightStyle:'content'})
+			.sortable({ //from jquery ui example
+				axis: "y",
+				handle: "h3",
+				stop: function( event, ui ) {
+				// IE doesn't register the blur when sorting
+				// so trigger focusout handlers to remove .ui-state-focus
+				ui.item.children( "h3" ).triggerHandler( "focusout" );
+				// Refresh accordion to handle new order
+				$( this ).accordion( "refresh" );
+				}
+				});
 		
 		var addbutton = $('<button>Add</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon-circle-plus"}}).click(addFeature);
 		var sortbutton = $('<button>Sort</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
