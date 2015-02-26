@@ -30,6 +30,15 @@ body {
 .pharmit_query .queryheader {
 }
 
+.floatmenu {
+	display: inline-block;
+	z-index: 20;
+	position: absolute;
+}
+.queryheader li {
+	text-align: left;
+}
+
 .pharmit_query .querybody {
 	flex:1;
     overflow-y: auto;
@@ -74,4 +83,43 @@ body {
 .surfacetransparencydiv div {
 	margin-left: 1em;
 	margin-right: 1em;
+}
+
+.togglediv {
+    display: inline-block;
+    height: 22px;
+    width: 60px;
+    text-align: center;
+}
+
+.togglediv .toggle-on {
+	font-weight: bold;
+	background-color:  #2E0854;
+}
+
+.featurenamediv {
+	display: inline-block;
+}
+.featurenamediv>span {
+	display: block;
+}
+.featurediv>h3 {
+	position: relative;
+}
+.featureclose{
+	display: inline-block;
+	position: absolute;
+	right: 0;
+    height: 100%;
+    width: 2.5em;
+    margin-top: -.5em; /* counteract padding */
+    vertical-align: middle;	
+}
+.featureclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	margin-left: .5em;
+	position: absolute;
+	top: 50%;	
 }

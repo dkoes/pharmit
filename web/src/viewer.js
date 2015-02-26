@@ -62,7 +62,7 @@ Pharmit.Viewer = (function() {
 			
 			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(ret).addClass('styleselector');
 			for(var i = 0, n = colorStyles.length; i < n; i++) {
-				$('<option value="'+i+'">'+colorStyles[i].name+'</option>').appendTo(select);
+				$('<option value="'+colorStyles[i].name.toLowerCase()+'">'+colorStyles[i].name+'</option>').appendTo(select);
 			}
 			
 			select.val(defaultval);
@@ -100,7 +100,29 @@ Pharmit.Viewer = (function() {
 			viewer.render();
 		};
 
+		this.setLigand = function(ligstr) {
+			
+			if(!recstr) {
+				//clear receptor
+				if(receptor) viewer.removeModel(receptor);
+				receptor = null;
+			}
+			else {
+				var ext = getExt(recname);
+				receptor = viewer.addModel(recstr, ext);
+			}
+			viewer.zoomTo();
+			viewer.render();
+		};
+
 		
+		this.setView = function(view) {
+			if(view) viewer.setView(view);
+		};
+		
+		this.getView = function() {
+			return viewer.getView();
+		};
 		
 		//initialization code
 		viewer = new $3Dmol.GLViewer(element);

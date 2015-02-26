@@ -177,33 +177,34 @@ Pharmit.Query = (function() {
 		
 		this.container = $('<div>').appendTo(features).addClass('featurediv');
 		this.container.feature = this;
+		this.container.disableSelection();
 		
 		//header has checkbox for enable, name, and a close icon
 		var heading = $('<h3></h3>').appendTo(this.container);
-		this.enabled = $('<input type="checkbox">').appendTo(heading).click(
-				function(e) {
-					if($(this).prop( "checked")) {
+		this.enabled = $('<div>').addClass('toggle toggle-light togglediv').appendTo(heading).toggles().on('toggle',
+				function(e, active) {
+					if(active) {
 						F.obj.enabled = true;
 					}
 					else {
 						F.obj.enabled = false;					
 					}
 					F.updateViewer();
-					e.stopPropagation(); //otherwise does not stay checked
 				}
-				);	
-		var namespan = $('<span>').addClass('featurenameheading').appendTo(heading);
-		var close = $('<span>').addClass('ui-icon-circle-close ui-icon').appendTo(heading).click(function() {
-				//remove from viewer
-				
-				//remove from dom
-				F.container.feature = null;
-				F.container.remove();
+				).click(function(e) {return false;}); //needed to stop clickthrue
+		var namediv = $('<div>').addClass('featurenamediv').appendTo(heading);
+		var namespan = $('<span>').addClass('featurenameheading').appendTo(namediv);
+		var closediv = $('<div>').addClass('featureclose').appendTo(heading).click(function() {
+			//remove from viewer
+			
+			//remove from dom
+			F.container.feature = null;
+			F.container.remove();
 		});
-		heading.append($('<br>'));
+		var close = $('<span>').addClass('ui-icon-circle-close ui-icon').appendTo(closediv);
 		
 		//summary has (x,y,z) Radius r
-		var summary = $('<span>').appendTo(heading).addClass('featuresummary');		
+		var summary = $('<span>').appendTo(namediv).addClass('featuresummary');		
 		summary.append($(document.createTextNode('(')));
 		this.xsummary = $('<span>').appendTo(summary);
 		summary.append($(document.createTextNode(',')));
@@ -257,8 +258,9 @@ Pharmit.Query = (function() {
 		$('<label>x:</label>').appendTo(locationdiv);
 		this.x = $('<input>').appendTo(locationdiv).addClass('coordinput').change(function() {
 			//change x value
-			F.xsummary.text(this.value);
-			F.obj.x = this.value;
+			var x = parseFloat(this.value);
+			F.xsummary.text(x.toFixed(2));
+			F.obj.x = x;
 			F.updateViewer();
 			});
 		this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
@@ -268,16 +270,18 @@ Pharmit.Query = (function() {
 		this.y = $('<input>').appendTo(locationdiv).addClass('coordinput');
 		this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
 			//change y value
-			F.ysummary.text(this.value);
-			F.obj.y = this.value;
+			var y = parseFloat(this.value);
+			F.ysummary.text(y.toFixed(2));
+			F.obj.y = y;
 			F.updateViewer();
 			});
 
 		$('<label>z:</label>').appendTo(locationdiv);
 		this.z = $('<input>').appendTo(locationdiv).addClass('coordinput');
 		this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
-			F.zsummary.text(this.value);
-			F.obj.z = this.value;
+			var z = parseFloat(this.value);
+			F.zsummary.text(z.toFixed(2));
+			F.obj.z = z;
 			F.updateViewer();
 			});
 
@@ -363,6 +367,7 @@ Pharmit.Query = (function() {
 		this.updateViewer(); //call prototype to actually draw feature
 		
 		features.accordion( "refresh" ); //update accordian
+		features.accordion("option","active",features.children().length-1);
 
 	}
 	
@@ -375,7 +380,7 @@ Pharmit.Query = (function() {
 		this.y.val(fobj.y).trigger('change');
 		this.z.val(fobj.z).trigger('change');
 		this.radius.val(fobj.radius).trigger('change');
-		this.enabled.val(fobj.enabled).trigger('change');
+		this.enabled.toggles(fobj.enabled);
 		this.orientenabled.prop('checked', fobj.vector_on == 1).trigger('change');
 		
 		if(!$.isNumeric(fobj.minsize))
@@ -407,16 +412,6 @@ Pharmit.Query = (function() {
 	};
 	
 	
-	//disable feature (remove from viewer, grey out)
-	Feature.prototype.disable = function() {
-		
-	};
-	
-	//enable - show in viewer, style appropriately
-	Feature.prototype.enable = function() {
-		
-	};
-	
 	//display in selected style
 	Feature.prototype.select = function() {
 		
@@ -427,34 +422,43 @@ Pharmit.Query = (function() {
 		
 	};
 	
-	//remove completely
-	Feature.prototype.remove = function() {
-		
-	};
+
 	
 	function Query(element, viewer) {
 		//private variables and functions
 		var querydiv = $('<div>').addClass('pharmit_query');
+		var vizgroup = null;
 		var features = null;
-
+		var featureheading = null;
+		var receptorData = null;
+		var receptorName = null; //filename (need ext)
+		var ligandData = null;
+		var ligandFormat = null;
 		
 		var doSearch = function() {
 			
+		};
+		
+		//boiler plate for asynchronously extracting text from a file input
+		var readText = function(input,func) {
+			if(input.files.length > 0) {
+				var file = input.files[0];
+				var reader = new FileReader();
+			    reader.onload = function(evt) {
+			    	func(evt.target.result,file.name);
+			    };
+			    reader.readAsText(file);
+			}
 		};
 		
 		var loadFeatures = function() {
 			
 		};
 		
-		var loadReceptor = function() {
-			if(this.files.length > 0) {
-				var file = this.files[0];
-				var reader = new FileReader();
-			    reader.onload = function(evt) {
-			        viewer.setReceptor(evt.target.result,file.name);
-			    };
-			    reader.readAsText(file);
-			}
+		var loadReceptor = function(data, fname) {
+			receptorData = data;
+			receptorName = fname;
+			viewer.setReceptor(data, fname);
 		};
 		
 
@@ -463,8 +467,54 @@ Pharmit.Query = (function() {
 			
 		};
 		
-		var loadSession = function() {
+		var loadSession = function(data) {
+			var query = $.parseJSON(data);
 			
+			features.detach();
+			//replace features
+			features.empty();
+			if(query.points) {
+				$.each(query.points, function(i, pt) {
+					new Feature(viewer, features, pt);
+				});
+			}
+			features.accordion("option","active",false);
+			features.accordion("refresh");
+
+			featureheading.after(features); 
+			
+			//get named settings, including visualization
+			$.each(query, function(key,value) {
+				var i = $('input[name='+key+']');
+				if(i.length) {
+					i.val(value);
+				}
+			});
+			receptorData = query.receptor;
+			receptorName = query.recname;			
+			
+			viewer.setReceptor(receptorData, receptorName);
+			
+			if(viewer.sdf) { //backwards compat with zincpharmer
+				ligandData = decodeURIComponent(query.sdf);
+				//try to guess format
+				if(ligandData.match(/^@<TRIPOS>MOLECULE/)) {
+					ligandFormat = "mol2";
+				} else if(ligandData.match(/^HETATM/) || ligandData.match(/^ATOM/)) {
+					ligandFormat = "pdb";
+				} else if(ligandData.match(/^.*\n.*\n.\s*(\d+)\s+(\d+)/)){
+					ligandFormat = "sdf"; //could look at line 3
+				} else {
+					ligandFormat = "xyz";
+				}
+			} else {
+				ligandData = query.ligand;
+				ligandFormat = query.ligandFormat;
+			}
+			viewer.setLigand(ligandData, ligandFormat);
+			
+			viewer.setView(query.view);			
+
 		};
 		
 		var saveSession = function() {
@@ -479,7 +529,7 @@ Pharmit.Query = (function() {
 			var select = $('<button>Select subset to search</button>').appendTo(buttons).button({text: false, icons: {primary: "ui-icon-triangle-1-s"}});
 			
 			buttons.buttonset();
-			var ul = $('<ul>').appendTo(buttons);
+			var ul = $('<ul>').appendTo($('body')).addClass('floatmenu'); //can't be in query div because of overflow truncation
 			var lis = [];
 			for(var i = 0, n = vendors.length; i < n; i++) {
 				lis[i] = '<li>'+vendors[i]+'</li>';
@@ -511,6 +561,8 @@ Pharmit.Query = (function() {
 		
 		//initialization code
 		querydiv.resizable({handles: "e"});
+		querydiv.disableSelection();
+		
 		var header = $('<div>').appendTo(querydiv).addClass("queryheader");
 		createSearchButton(header,['MolPort','ZINC']);
 		
@@ -522,14 +574,14 @@ Pharmit.Query = (function() {
 		//fileinput needs the file inputs in the dom
 		element.append(querydiv);
 		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(loadFeatures);		
-		var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(loadReceptor);
+		var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(function(e) {readText(this, loadReceptor);});
 		
 		querydiv.detach();
 		
 		//query features
 		var body = $('<div>').appendTo(querydiv).addClass("querybody");
 		var featuregroup = $('<div>').appendTo(body);
-		$('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('queryheading');
+		featureheading = $('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('queryheading');
 		features = $('<div>').appendTo(featuregroup);
 		features.accordion({header: "> div > h3", animate: true, collapsible: true,heightStyle:'content'})
 			.sortable({ //from jquery ui example
@@ -589,7 +641,7 @@ Pharmit.Query = (function() {
 		
 		
 		//viewer settings
-		var vizgroup = $('<div>').appendTo(body);
+		vizgroup = $('<div>').appendTo(body);
 		$('<div>Visualization</div>').appendTo(vizgroup).addClass('queryheading');
 		
 		viewer.appendViewerControls(vizgroup);
@@ -601,7 +653,7 @@ Pharmit.Query = (function() {
 
 		var loadsession = $('<button>Load Session...</button>').button();
 		
-		var loadsessionfile = $('<input type="file">').appendTo(footer).fileinput(loadsession).change(loadSession);	
+		var loadsessionfile = $('<input type="file">').appendTo(footer).fileinput(loadsession).change(function() {readText(this,loadSession);});	
 		var savesession = $('<button>Save Session...</button>').appendTo(footer).button().click(saveSession);		
 				
 	}
@@ -672,7 +724,7 @@ Pharmit.Viewer = (function() {
 			
 			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(ret).addClass('styleselector');
 			for(var i = 0, n = colorStyles.length; i < n; i++) {
-				$('<option value="'+i+'">'+colorStyles[i].name+'</option>').appendTo(select);
+				$('<option value="'+colorStyles[i].name.toLowerCase()+'">'+colorStyles[i].name+'</option>').appendTo(select);
 			}
 			
 			select.val(defaultval);
@@ -710,7 +762,29 @@ Pharmit.Viewer = (function() {
 			viewer.render();
 		};
 
+		this.setLigand = function(ligstr) {
+			
+			if(!recstr) {
+				//clear receptor
+				if(receptor) viewer.removeModel(receptor);
+				receptor = null;
+			}
+			else {
+				var ext = getExt(recname);
+				receptor = viewer.addModel(recstr, ext);
+			}
+			viewer.zoomTo();
+			viewer.render();
+		};
+
 		
+		this.setView = function(view) {
+			if(view) viewer.setView(view);
+		};
+		
+		this.getView = function() {
+			return viewer.getView();
+		};
 		
 		//initialization code
 		viewer = new $3Dmol.GLViewer(element);
