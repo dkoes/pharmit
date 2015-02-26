@@ -122,7 +122,7 @@ Pharmit.Query = (function() {
 		this.x = $('<input>').appendTo(locationdiv).addClass('coordinput').change(function() {
 			//change x value
 			var x = parseFloat(this.value);
-			F.xsummary.text(x.toFixed(2));
+			F.xsummary.text(numeral(x).format('0.[00]'));
 			F.obj.x = x;
 			F.updateViewer();
 			});
@@ -134,7 +134,7 @@ Pharmit.Query = (function() {
 		this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
 			//change y value
 			var y = parseFloat(this.value);
-			F.ysummary.text(y.toFixed(2));
+			F.ysummary.text(numeral(y).format('0.[00]'));
 			F.obj.y = y;
 			F.updateViewer();
 			});
@@ -143,7 +143,7 @@ Pharmit.Query = (function() {
 		this.z = $('<input>').appendTo(locationdiv).addClass('coordinput');
 		this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
 			var z = parseFloat(this.value);
-			F.zsummary.text(z.toFixed(2));
+			F.zsummary.text(numeral(z).format('0.[00]'));
 			F.obj.z = z;
 			F.updateViewer();
 			});
@@ -152,7 +152,7 @@ Pharmit.Query = (function() {
 		$('<label>Radius:</label>').appendTo(locationdiv);
 		this.radius = $('<input>').appendTo(locationdiv).addClass('radiusinput');
 		this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
-			F.rsummary.text(this.value);
+			F.rsummary.text(numeral(this.value).format('0.[00]'));
 			F.obj.r = this.value;
 			F.updateViewer();
 			});
@@ -296,7 +296,7 @@ Pharmit.Query = (function() {
 		var receptorData = null;
 		var receptorName = null; //filename (need ext)
 		var ligandData = null;
-		var ligandFormat = null;
+		var ligandName = null;
 		
 		var doSearch = function() {
 			
@@ -311,6 +311,7 @@ Pharmit.Query = (function() {
 			    	func(evt.target.result,file.name);
 			    };
 			    reader.readAsText(file);
+			    $(input).val('');
 			}
 		};
 		
@@ -358,23 +359,23 @@ Pharmit.Query = (function() {
 			
 			viewer.setReceptor(receptorData, receptorName);
 			
-			if(viewer.sdf) { //backwards compat with zincpharmer
+			if(query.sdf) { //backwards compat with zincpharmer
 				ligandData = decodeURIComponent(query.sdf);
 				//try to guess format
 				if(ligandData.match(/^@<TRIPOS>MOLECULE/)) {
-					ligandFormat = "mol2";
+					ligandName = ".mol2";
 				} else if(ligandData.match(/^HETATM/) || ligandData.match(/^ATOM/)) {
-					ligandFormat = "pdb";
+					ligandName = ".pdb";
 				} else if(ligandData.match(/^.*\n.*\n.\s*(\d+)\s+(\d+)/)){
-					ligandFormat = "sdf"; //could look at line 3
+					ligandName = ".sdf"; //could look at line 3
 				} else {
-					ligandFormat = "xyz";
+					ligandName = ".xyz";
 				}
 			} else {
 				ligandData = query.ligand;
-				ligandFormat = query.ligandFormat;
+				ligandName = query.ligandFormat;
 			}
-			viewer.setLigand(ligandData, ligandFormat);
+			viewer.setLigand(ligandData, ligandName);
 			
 			viewer.setView(query.view);			
 

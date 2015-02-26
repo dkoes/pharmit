@@ -18,7 +18,8 @@ body {
 .pharmit_query {
 	float: left;
 	position: absolute;
-	background-color: rgba(255,255,255,.9);
+	background-color: white;
+	opacity: 0.9;
 	border-right: 1px solid black;
 	z-index: 10;
 	overflow: hidden;
@@ -74,6 +75,9 @@ body {
 .stylelabel {
 	display:block;
 }
+.styleselector {
+	width: 10em;
+}
 
 .surfacetransparencydiv {
 	width: 100%;
@@ -99,6 +103,7 @@ body {
 
 .featurenamediv {
 	display: inline-block;
+	padding-right: 2.5em; /* space for feature close */
 }
 .featurenamediv>span {
 	display: block;
