@@ -38,6 +38,10 @@ Pharmit.Viewer = (function() {
                 blueCarbon:  "Blue"
 		};
 		
+		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': 'white', 'HydrogenAcceptor': 'orange', 
+							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue'};
+
+		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
 					style: {stick:{radius: 0.15}}
@@ -78,7 +82,12 @@ Pharmit.Viewer = (function() {
 			});
 			
 			select.val(defaultval);
-			select.selectmenu({width: '8em', appendTo: vizgroup, change: function() {select.change();}});
+			select.selectmenu({
+				width: '8em', 
+				appendTo: vizgroup, 
+				change: function() {select.change();},
+				position: {my: "left top", at: "left bottom", collision: "flip"}
+			});
 			select.change(function() {
 				var scheme = this.value;
 				var style = modelsAndStyles[name].style;
@@ -99,7 +108,7 @@ Pharmit.Viewer = (function() {
 		this.appendViewerControls = function(vizgroup) {
 			createStyleSelector("Ligand",'rasmol', vizgroup, null);
 			createStyleSelector("Results",'rasmol', vizgroup, null);
-			createStyleSelector("Receptor",'whiteCarbon', vizgroup, null);
+			createStyleSelector("Receptor",'rasmol', vizgroup, null);
 			
 			//surface transparency
 			$('<label for="surfaceopacity">Receptor Surface Opacity</label>').appendTo(vizgroup);
@@ -156,8 +165,8 @@ Pharmit.Viewer = (function() {
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, 
 						{model:receptor}, {bonds:0, invert:true});
+				viewer.zoomTo();
 			}
-			viewer.zoomTo();
 			viewer.render();
 		};
 
@@ -173,8 +182,8 @@ Pharmit.Viewer = (function() {
 				ligand = viewer.addModel(ligstr, ext);
 				ligand.setStyle({}, modelsAndStyles.Ligand.style);
 				modelsAndStyles.Ligand.model = ligand;
+				viewer.zoomTo({model: ligand});
 			}
-			viewer.zoomTo({model: ligand});
 			viewer.render();
 		};
 
@@ -185,6 +194,60 @@ Pharmit.Viewer = (function() {
 		
 		this.getView = function() {
 			return viewer.getView();
+		};
+		
+		//add a feature as specified by fobj
+		//returns an identifier for referencing the feature later (e.g., removeFeature)
+		this.addFeature = function(fobj, clickHandler) {
+			var sphere = {
+				center: {x: fobj.x,
+				y: fobj.y,
+				z: fobj.z},
+				radius: fobj.radius,
+				color: featureColors[fobj.name],
+				wireframe: true,
+				clickable: true,
+				callback: clickHandler
+			};
+			
+			var shape = {sphere: null, arrows: [], label: null};
+			shape.sphere = viewer.addSphere(sphere);
+			viewer.render();
+			shapes.push(shape);
+			return shapes.length-1;
+		};
+		
+		//change style of feature
+		this.selectFeature = function(s) {
+			var shape = shapes[s];
+			if(shape && shape.sphere) {
+				shape.sphere.updateStyle({wireframe: false, alpha: 0.8});
+				viewer.render();
+			}
+		};
+		
+		this.unselectFeature = function(s) {
+			var shape = shapes[s];
+			if(shape && shape.sphere) {
+				shape.sphere.updateStyle({wireframe: true, alpha: 0});
+				viewer.render();
+			}
+		};
+		
+		this.removeFeature = function(s) {
+			var shape = shapes[s];
+			if(shape) {
+				if(shape.sphere) viewer.removeShape(shape.sphere);
+				$.each(shape.arrows, function(i, arrow) {
+					viewer.removeShape(arrow);
+				});
+				if(shape.label) viewer.removeLabel(shape.label);
+				viewer.render();
+			}
+			delete shapes[s];
+			//clear back of array 
+			while (shapes.length > 0 && typeof (shapes[shapes.length - 1]) === "undefined")
+				shapes.pop();
 		};
 		
 		//initialization code

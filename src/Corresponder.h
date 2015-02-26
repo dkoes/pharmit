@@ -24,8 +24,8 @@
  *      Author: dkoes
  */
 
-#ifndef CORRESPONDER_H_
-#define CORRESPONDER_H_
+#ifndef PHARMITSERVER_CORRESPONDER_H_
+#define PHARMITSERVER_CORRESPONDER_H_
 
 #include "pharmerdb.h"
 #include "Triplet.h"
@@ -317,4 +317,4 @@ public:
 	}
 };
 
-#endif /* CORRESPONDER_H_ */
+#endif /* PHARMITSERVER_CORRESPONDER_H_ */

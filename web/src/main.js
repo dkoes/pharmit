@@ -13,6 +13,7 @@
 var Pharmit = {};
 $(document).ready(function() {
 	
+	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
 	var element = $('#pharmit');
 	var viewer = new Pharmit.Viewer(element);
 	var phresults = new Pharmit.PharmaResults(element, viewer);

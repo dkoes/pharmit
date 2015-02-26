@@ -27,8 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      actually measures wall clock time.
  */
 
-#ifndef TIMER_H_
-#define TIMER_H_
+#ifndef PHARMITSERVER_TIMER_H_
+#define PHARMITSERVER_TIMER_H_
 
 #include <sys/times.h>
 #include <sys/time.h>
@@ -102,4 +102,4 @@ public:
 };
 
 
-#endif /* TIMER_H_ */
+#endif /* PHARMITSERVER_TIMER_H_ */

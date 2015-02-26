@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *  per each molecule since this makes lookup faster.
  */
 
-#ifndef PMOL_H_
-#define PMOL_H_
+#ifndef PHARMITSERVER_PMOL_H_
+#define PHARMITSERVER_PMOL_H_
 
 
 #include <boost/unordered_map.hpp>
@@ -251,4 +251,4 @@ public:
 
 };
 
-#endif /* PMOL_H_ */
+#endif /* PHARMITSERVER_PMOL_H_ */

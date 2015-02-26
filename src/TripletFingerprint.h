@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *  triplet.
  */
 
-#ifndef TRIPLETFINGERPRINT_H_
-#define TRIPLETFINGERPRINT_H_
+#ifndef PHARMITSERVER_TRIPLETFINGERPRINT_H_
+#define PHARMITSERVER_TRIPLETFINGERPRINT_H_
 #include <vector>
 
 #include "pharmarec.h"
@@ -268,4 +268,4 @@ public:
 
 extern ThresholdComputer thresholdComputer;
 
-#endif /* TRIPLETFINGERPRINT_H_ */
+#endif /* PHARMITSERVER_TRIPLETFINGERPRINT_H_ */

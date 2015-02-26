@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      A simple coordinate class
  */
 
-#ifndef FLOATCOORD_H_
-#define FLOATCOORD_H_
+#ifndef PHARMITSERVER_FLOATCOORD_H_
+#define PHARMITSERVER_FLOATCOORD_H_
 
 struct FloatCoord
 {
@@ -89,4 +89,4 @@ struct FloatCoord
 };
 
 
-#endif /* FLOATCOORD_H_ */
+#endif /* PHARMITSERVER_FLOATCOORD_H_ */

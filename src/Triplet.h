@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *   Three points make a triplet.  Has a canonical form.
  */
 
-#ifndef TRIPLET_H_
-#define TRIPLET_H_
+#ifndef PHARMITSERVER_TRIPLET_H_
+#define PHARMITSERVER_TRIPLET_H_
 
 #include "RMSD.h"
 #include "pharmarec.h"
@@ -1287,4 +1287,4 @@ public:
 	}
 };
 
-#endif /* TRIPLET_H_ */
+#endif /* PHARMITSERVER_TRIPLET_H_ */

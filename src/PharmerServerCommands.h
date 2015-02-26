@@ -27,8 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
 
-#ifndef PHARMERSERVERCOMMANDS_H_
-#define PHARMERSERVERCOMMANDS_H_
+#ifndef PHARMITSERVER_PHARMERSERVERCOMMANDS_H_
+#define PHARMITSERVER_PHARMERSERVERCOMMANDS_H_
 
 #include "cgi.h"
 #include "PharmerQuery.h"
@@ -997,4 +997,4 @@ public:
 
 };
 
-#endif /* PHARMERSERVERCOMMANDS_H_ */
+#endif /* PHARMITSERVER_PHARMERSERVERCOMMANDS_H_ */

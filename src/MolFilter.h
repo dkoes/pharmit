@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef MOLFILTER_H_
-#define MOLFILTER_H_
+#ifndef PHARMITSERVER_MOLFILTER_H_
+#define PHARMITSERVER_MOLFILTER_H_
 
 #include <openbabel/mol.h>
 using namespace std;
@@ -66,4 +66,4 @@ public:
 };
 
 
-#endif /* MOLFILTER_H_ */
+#endif /* PHARMITSERVER_MOLFILTER_H_ */

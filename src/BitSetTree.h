@@ -27,8 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef BITSETTREE_H_
-#define BITSETTREE_H_
+#ifndef PHARMITSERVER_BITSETTREE_H_
+#define PHARMITSERVER_BITSETTREE_H_
 
 #include "TripletFingerprint.h"
 #include "QueryTripletFingerprint.h"
@@ -661,4 +661,4 @@ public:
 	}
 };
 
-#endif /* BITSETTREE_H_ */
+#endif /* PHARMITSERVER_BITSETTREE_H_ */

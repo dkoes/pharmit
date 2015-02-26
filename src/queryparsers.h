@@ -24,8 +24,8 @@
  *      Author: dkoes
  */
 
-#ifndef QUERYPARSERS_H_
-#define QUERYPARSERS_H_
+#ifndef PHARMITSERVER_QUERYPARSERS_H_
+#define PHARMITSERVER_QUERYPARSERS_H_
 
 #include "pharmarec.h"
 #include "tinyxml/tinyxml.h"
@@ -594,4 +594,4 @@ public:
 	}
 };
 
-#endif /* QUERYPARSERS_H_ */
+#endif /* PHARMITSERVER_QUERYPARSERS_H_ */

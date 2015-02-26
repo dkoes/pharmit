@@ -1,6 +1,8 @@
 #!/usr/local/bin/python
 
 #extract smiles for DTP/NCI compounds from PubChem with NSC identifiers
+#if you are extracting all of pubchem anyway, it might be more efficient
+#to use nscids.py and pubchemsmiles.py
 
 import sys,urllib2,json
 

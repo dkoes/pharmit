@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      A thread-safe bump allocator templatized on the chunk size.
  */
 
-#ifndef BUMPALLOCATOR_H_
-#define BUMPALLOCATOR_H_
+#ifndef PHARMITSERVER_BUMPALLOCATOR_H_
+#define PHARMITSERVER_BUMPALLOCATOR_H_
 
 #include <vector>
 #include <boost/foreach.hpp>
@@ -100,4 +100,4 @@ public:
 	}
 };
 
-#endif /* BUMPALLOCATOR_H_ */
+#endif /* PHARMITSERVER_BUMPALLOCATOR_H_ */

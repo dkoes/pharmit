@@ -27,8 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Designed for both synchronous and asynchroous querying.
  */
 
-#ifndef PHARMERQUERY_H_
-#define PHARMERQUERY_H_
+#ifndef PHARMITSERVER_PHARMERQUERY_H_
+#define PHARMITSERVER_PHARMERQUERY_H_
 
 #include "cors.h"
 #include <iostream>
@@ -256,4 +256,4 @@ public:
 	}
 };
 
-#endif /* PHARMERQUERY_H_ */
+#endif /* PHARMITSERVER_PHARMERQUERY_H_ */

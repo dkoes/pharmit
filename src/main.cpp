@@ -92,7 +92,7 @@ cl::opt<unsigned> MaxOrient("max-orient",
 		cl::value_desc("n"), cl::init(UINT_MAX));
 cl::opt<unsigned> MaxHits("max-hits", cl::desc("return at most n results"),
 		cl::value_desc("n"), cl::init(UINT_MAX));
-cl::opt<unsigned> Port("port", cl::desc("port for server to listen on"));
+cl::opt<unsigned> Port("port", cl::desc("port for server to listen on"),cl::init(17000));
 cl::opt<string> LogDir("logdir", cl::desc("log directory for server"),
 		cl::init("."));
 cl::opt<bool> ExtraInfo("extra-info",
@@ -488,6 +488,8 @@ struct LoadDatabase
 			databases[i].back().max = HUGE_VAL;
 	}
 };
+
+//load databases based on commandline arguments
 static void loadDatabases(vector<vector<MolWeightDatabase> >& databases,
 		unsigned& totalConf, unsigned& totalMols)
 {

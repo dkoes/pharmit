@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef THREADCOUNTER_H_
-#define THREADCOUNTER_H_
+#ifndef PHARMITSERVER_THREADCOUNTER_H_
+#define PHARMITSERVER_THREADCOUNTER_H_
 
 //thread safe counter for running threads (upto hardware supported)
 class ThreadCounter
@@ -60,4 +60,4 @@ public:
 	}
 };
 
-#endif /* THREADCOUNTER_H_ */
+#endif /* PHARMITSERVER_THREADCOUNTER_H_ */

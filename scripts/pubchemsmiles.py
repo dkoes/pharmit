@@ -1,11 +1,25 @@
 #!/usr/local/bin/python
 
 #extract smiles from PubChem (not sure why this isn't easier)
-#defaults to getting everything, will eventually supprot getting
+#defaults to getting everything, will eventually support getting
 #latest snapshots
+
+#optionally take two arguments: a cid/names file and the name of an output file
+#if provided, the cid/names file will be used to output a subset to the specified output
 
 import ftplib,sys,tempfile,gzip,re
 
+nscids = {}
+nscout = None
+if len(sys.argv) == 3:
+    #providing an nsc ids files (cid,nscname) and output 
+    nscf = open(sys.argv[1])
+    nscout = open(sys.argv[2],'w')
+    for line in nscf:
+        print line.strip().split()
+        (cid,name) = line.strip().split()
+        nscids[cid] = name
+        
 ftp = ftplib.FTP('ftp.ncbi.nih.gov')
 ftp.login()
 ftp.cwd('pubchem/Compound/CURRENT-Full/SDF')
@@ -32,6 +46,9 @@ for f in files:
             smile = data.readline().strip()
         elif line.startswith('$$$$'):
             print '%s\tPubChem-%s'% (smile,cid) 
+            if cid in nscids:
+                nscout.write('%s\t%s' % (smile,nscids[cid]))
+                sys.stderr.write('%s\t%s',(smile,nscids[cid]))
             smile = None
             cid = None
         line = data.readline()

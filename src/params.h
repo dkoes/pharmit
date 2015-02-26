@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Simple parameter storing classes.
  */
 
-#ifndef PARAMS_H_
-#define PARAMS_H_
+#ifndef PHARMITSERVER_PARAMS_H_
+#define PHARMITSERVER_PARAMS_H_
 #include <iostream>
 #include <boost/tuple/tuple.hpp>
 #include <boost/shared_ptr.hpp>
@@ -124,4 +124,4 @@ struct DataParameters
 };
 
 
-#endif /* PARAMS_H_ */
+#endif /* PHARMITSERVER_PARAMS_H_ */

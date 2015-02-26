@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef RMSD_H_
-#define RMSD_H_
+#ifndef PHARMITSERVER_RMSD_H_
+#define PHARMITSERVER_RMSD_H_
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Eigenvalues>
@@ -133,4 +133,4 @@ RMSDResult calculateRMSD(const double *ref, const double *fit, const double *wei
 
 
 
-#endif /* RMSD_H_ */
+#endif /* PHARMITSERVER_RMSD_H_ */
