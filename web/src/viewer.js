@@ -38,7 +38,9 @@ Pharmit.Viewer = (function() {
                 blueCarbon:  "Blue"
 		};
 		
-		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': 'white', 'HydrogenAcceptor': 'orange', 
+		var margins = {left: 0, right: 0}; 
+		
+		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xeeeeee', 'HydrogenAcceptor': 'orange', 
 							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue'};
 
 		
@@ -161,7 +163,7 @@ Pharmit.Viewer = (function() {
 				modelsAndStyles.Receptor.model = receptor;
 				viewer.render();
 				//surface
-				viewer.mapAtomProperties($3Dmol.partialCharges);
+				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, 
 						{model:receptor}, {bonds:0, invert:true});
@@ -206,6 +208,7 @@ Pharmit.Viewer = (function() {
 				radius: fobj.radius,
 				color: featureColors[fobj.name],
 				wireframe: true,
+				linewidth: 1.5,
 				clickable: true,
 				callback: clickHandler
 			};
@@ -221,7 +224,7 @@ Pharmit.Viewer = (function() {
 		this.selectFeature = function(s) {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
-				shape.sphere.updateStyle({wireframe: false, alpha: 0.8});
+				shape.sphere.updateStyle({wireframe: false});
 				viewer.render();
 			}
 		};
@@ -229,7 +232,7 @@ Pharmit.Viewer = (function() {
 		this.unselectFeature = function(s) {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
-				shape.sphere.updateStyle({wireframe: true, alpha: 0});
+				shape.sphere.updateStyle({wireframe: true});
 				viewer.render();
 			}
 		};
@@ -248,6 +251,20 @@ Pharmit.Viewer = (function() {
 			//clear back of array 
 			while (shapes.length > 0 && typeof (shapes[shapes.length - 1]) === "undefined")
 				shapes.pop();
+		};
+		
+		//specify size of left div so we can move the center point of the viewer
+		this.setLeft = function(x) {
+			var dx = x-margins.left;
+			margins.left = x;
+			viewer.translate(dx, 0);
+		};
+		
+		//specify size of right div so we can move the center point of the viewer
+		this.setRight = function(x) {
+			var dx = margins.right-x;
+			margins.right = x;
+			viewer.translate(dx, 0);
 		};
 		
 		//initialization code

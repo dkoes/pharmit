@@ -26,6 +26,7 @@ body {
 	height:100vh;
   	display:flex;
   	flex-direction: column;
+  	width: 20em;
 }
 
 .pharmit_query .queryheader {
@@ -104,12 +105,38 @@ body {
 .featurenamediv {
 	display: inline-block;
 	padding-right: 2.5em; /* space for feature close */
+	padding-left: 0.5em;
 }
+
+.featurenameheading {
+	font-weight: bold;
+	font-size: 110%;
+}
+
+.selectedFeature.enabledfeature h3 {
+	border-color: purple;
+}
+
+.selectedFeature.enabledfeature .ui-accordion-content-active {
+		border-color: purple;
+}
+
+.enabledfeature .featurenameheading {
+	color: black;
+}
+
+
+
 .featurenamediv>span {
 	display: block;
 }
 .featurediv>h3 {
 	position: relative;
+	white-space: nowrap;
+}
+
+.featuresummary {
+	font-size: 75%;
 }
 .featureclose{
 	display: inline-block;

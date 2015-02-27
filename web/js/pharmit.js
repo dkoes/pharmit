@@ -24,9 +24,11 @@ function Feature(viewer, features, fobj) {
 			function(e, active) {
 				if(active) {
 					F.obj.enabled = true;
+					F.container.addClass("enabledfeature");
 				}
 				else {
-					F.obj.enabled = false;					
+					F.obj.enabled = false;	
+					F.container.removeClass("enabledfeature");
 				}
 				F.updateViewer();
 			}
@@ -35,7 +37,7 @@ function Feature(viewer, features, fobj) {
 	var namespan = $('<span>').addClass('featurenameheading').appendTo(namediv);
 	var closediv = $('<div>').addClass('featureclose').appendTo(heading).click(function() {
 		//remove from viewer
-		
+		if(F.shape) viewer.removeFeature(F.shape);
 		//remove from dom
 		F.container.feature = null;
 		F.container.remove();
@@ -255,19 +257,15 @@ Feature.prototype.updateViewer = function() {
 	//(position, arrow orientation, radius)
 	
 	if(this.shape !== null) {
-		this.viewer.removeShape(this.shape);
+		this.viewer.removeFeature(this.shape);
 	}
 	if(this.obj.enabled) {
 		var F = this;
 		this.shape = this.viewer.addFeature(this.obj, function() {
 			if(F.selected) {
-				F.viewer.unselectFeature(F.shape);
-				F.container.removeClass("selectedFeature");
-				F.selected = false;
+				F.deselectFeature();
 			} else {
-				F.viewer.selectFeature(F.shape);
-				F.container.addClass("selectedFeature");
-				F.selected = true;
+				F.selectFeature();
 			}
 		});
 	}
@@ -275,13 +273,17 @@ Feature.prototype.updateViewer = function() {
 
 
 //display in selected style
-Feature.prototype.select = function() {
-	
+Feature.prototype.selectFeature = function() {
+	this.viewer.selectFeature(this.shape);
+	this.container.addClass("selectedFeature");
+	this.selected = true;
 };
 
 //remove selection style
-Feature.prototype.deselect = function() {
-	
+Feature.prototype.deselectFeature = function() {
+	this.viewer.unselectFeature(this.shape);
+	this.container.removeClass("selectedFeature");
+	this.selected = false;
 };
 
 
@@ -377,13 +379,35 @@ Feature.prototype.deselect = function() {
 
 var Pharmit = {};
 $(document).ready(function() {
+	var gup = function( name )
+	{
+	  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+	  var regexS = "[\\?&]"+name+"=([^&#]*)";
+	  var regex = new RegExp( regexS );
+	  var results = regex.exec( window.location.href );
+	  if( results === null )
+	    return null;
+	  else
+	    return results[1];
+	};
+	
 	
 	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
 	var element = $('#pharmit');
 	var viewer = new Pharmit.Viewer(element);
 	var phresults = new Pharmit.PharmaResults(element, viewer);
 	var query = new Pharmit.Query(element, viewer);
+	
+	//look for session in url
+	if(gup('SESSION'))
+	{		
+		$.get(decodeURI(gup('SESSION')), function(ret) {
+			query.loadSession(ret);
+		});
+	}
+
 		
+	
 	//work around jquery bug
 	$("button, input[type='button'], input[type='submit']").button()
     .bind('mouseup', function() {
@@ -509,7 +533,7 @@ Pharmit.Query = (function() {
 			features.append(fdivs);
 		};
 		
-		var loadSession = function(data) {
+		var loadSession = this.loadSession = function(data) {
 			var query = $.parseJSON(data);
 			
 			features.detach();
@@ -644,7 +668,11 @@ Pharmit.Query = (function() {
 		
 		
 		//initialization code
-		querydiv.resizable({handles: "e"});
+		querydiv.resizable({handles: "e",
+			resize: function(event, ui) {
+				viewer.setLeft(ui.size.width);
+				}
+			});
 		querydiv.disableSelection();
 		
 		var header = $('<div>').appendTo(querydiv).addClass("queryheader");
@@ -667,7 +695,21 @@ Pharmit.Query = (function() {
 		var featuregroup = $('<div>').appendTo(body);
 		featureheading = $('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('queryheading');
 		features = $('<div>').appendTo(featuregroup);
-		features.accordion({header: "> div > h3", animate: true, collapsible: true,heightStyle:'content'})
+		features.accordion({header: "> div > h3", 
+			animate: true, 
+			collapsible: true,
+			heightStyle:'content',
+			beforeActivate: function( event, ui ) { 
+				var fdiv = null;
+				if(ui.newHeader.length > 0) { //being activated
+					fdiv = ui.newHeader.parent();
+					fdiv.get(0).feature.selectFeature();
+				}
+				if(ui.oldHeader.length > 0) {
+					 fdiv = ui.oldHeader.parent();					
+					fdiv.get(0).feature.deselectFeature();
+				}
+			}})
 			.sortable({ //from jquery ui example
 				axis: "y",
 				handle: "h3",
@@ -721,7 +763,7 @@ Pharmit.Query = (function() {
 		row.append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  Rotatable Bonds &le;</label>'));
 		var maxnrot = $('<input id="maxnrot" name="maxrotbonds">').appendTo(row).spinner();
 
-		filters.accordion({animate: true, collapsible: true,heightStyle:'content'});
+		filters.accordion({animate: true, collapsible: true, heightStyle:'content'});
 		
 		
 		//viewer settings
@@ -739,7 +781,9 @@ Pharmit.Query = (function() {
 		
 		var loadsessionfile = $('<input type="file">').appendTo(footer).fileinput(loadsession).change(function() {readText(this,loadSession);});	
 		var savesession = $('<button>Save Session...</button>').appendTo(footer).button().click(saveSession);		
-				
+		
+		viewer.setLeft(querydiv.width());
+
 	}
 
 	return Query;
@@ -784,7 +828,9 @@ Pharmit.Viewer = (function() {
                 blueCarbon:  "Blue"
 		};
 		
-		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': 'white', 'HydrogenAcceptor': 'orange', 
+		var margins = {left: 0, right: 0}; 
+		
+		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xeeeeee', 'HydrogenAcceptor': 'orange', 
 							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue'};
 
 		
@@ -907,7 +953,7 @@ Pharmit.Viewer = (function() {
 				modelsAndStyles.Receptor.model = receptor;
 				viewer.render();
 				//surface
-				viewer.mapAtomProperties($3Dmol.partialCharges);
+				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, 
 						{model:receptor}, {bonds:0, invert:true});
@@ -952,6 +998,7 @@ Pharmit.Viewer = (function() {
 				radius: fobj.radius,
 				color: featureColors[fobj.name],
 				wireframe: true,
+				linewidth: 1.5,
 				clickable: true,
 				callback: clickHandler
 			};
@@ -967,7 +1014,7 @@ Pharmit.Viewer = (function() {
 		this.selectFeature = function(s) {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
-				shape.sphere.updateStyle({wireframe: false, alpha: 0.8});
+				shape.sphere.updateStyle({wireframe: false});
 				viewer.render();
 			}
 		};
@@ -975,7 +1022,7 @@ Pharmit.Viewer = (function() {
 		this.unselectFeature = function(s) {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
-				shape.sphere.updateStyle({wireframe: true, alpha: 0});
+				shape.sphere.updateStyle({wireframe: true});
 				viewer.render();
 			}
 		};
@@ -994,6 +1041,20 @@ Pharmit.Viewer = (function() {
 			//clear back of array 
 			while (shapes.length > 0 && typeof (shapes[shapes.length - 1]) === "undefined")
 				shapes.pop();
+		};
+		
+		//specify size of left div so we can move the center point of the viewer
+		this.setLeft = function(x) {
+			var dx = x-margins.left;
+			margins.left = x;
+			viewer.translate(dx, 0);
+		};
+		
+		//specify size of right div so we can move the center point of the viewer
+		this.setRight = function(x) {
+			var dx = margins.right-x;
+			margins.right = x;
+			viewer.translate(dx, 0);
 		};
 		
 		//initialization code

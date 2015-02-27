@@ -24,9 +24,11 @@ function Feature(viewer, features, fobj) {
 			function(e, active) {
 				if(active) {
 					F.obj.enabled = true;
+					F.container.addClass("enabledfeature");
 				}
 				else {
-					F.obj.enabled = false;					
+					F.obj.enabled = false;	
+					F.container.removeClass("enabledfeature");
 				}
 				F.updateViewer();
 			}
@@ -35,7 +37,7 @@ function Feature(viewer, features, fobj) {
 	var namespan = $('<span>').addClass('featurenameheading').appendTo(namediv);
 	var closediv = $('<div>').addClass('featureclose').appendTo(heading).click(function() {
 		//remove from viewer
-		
+		if(F.shape) viewer.removeFeature(F.shape);
 		//remove from dom
 		F.container.feature = null;
 		F.container.remove();
@@ -255,19 +257,15 @@ Feature.prototype.updateViewer = function() {
 	//(position, arrow orientation, radius)
 	
 	if(this.shape !== null) {
-		this.viewer.removeShape(this.shape);
+		this.viewer.removeFeature(this.shape);
 	}
 	if(this.obj.enabled) {
 		var F = this;
 		this.shape = this.viewer.addFeature(this.obj, function() {
 			if(F.selected) {
-				F.viewer.unselectFeature(F.shape);
-				F.container.removeClass("selectedFeature");
-				F.selected = false;
+				F.deselectFeature();
 			} else {
-				F.viewer.selectFeature(F.shape);
-				F.container.addClass("selectedFeature");
-				F.selected = true;
+				F.selectFeature();
 			}
 		});
 	}
@@ -275,12 +273,16 @@ Feature.prototype.updateViewer = function() {
 
 
 //display in selected style
-Feature.prototype.select = function() {
-	
+Feature.prototype.selectFeature = function() {
+	this.viewer.selectFeature(this.shape);
+	this.container.addClass("selectedFeature");
+	this.selected = true;
 };
 
 //remove selection style
-Feature.prototype.deselect = function() {
-	
+Feature.prototype.deselectFeature = function() {
+	this.viewer.unselectFeature(this.shape);
+	this.container.removeClass("selectedFeature");
+	this.selected = false;
 };
 

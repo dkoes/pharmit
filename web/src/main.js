@@ -12,13 +12,35 @@
 
 var Pharmit = {};
 $(document).ready(function() {
+	var gup = function( name )
+	{
+	  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+	  var regexS = "[\\?&]"+name+"=([^&#]*)";
+	  var regex = new RegExp( regexS );
+	  var results = regex.exec( window.location.href );
+	  if( results === null )
+	    return null;
+	  else
+	    return results[1];
+	};
+	
 	
 	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
 	var element = $('#pharmit');
 	var viewer = new Pharmit.Viewer(element);
 	var phresults = new Pharmit.PharmaResults(element, viewer);
 	var query = new Pharmit.Query(element, viewer);
+	
+	//look for session in url
+	if(gup('SESSION'))
+	{		
+		$.get(decodeURI(gup('SESSION')), function(ret) {
+			query.loadSession(ret);
+		});
+	}
+
 		
+	
 	//work around jquery bug
 	$("button, input[type='button'], input[type='submit']").button()
     .bind('mouseup', function() {

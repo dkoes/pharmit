@@ -84,7 +84,7 @@ Pharmit.Query = (function() {
 			features.append(fdivs);
 		};
 		
-		var loadSession = function(data) {
+		var loadSession = this.loadSession = function(data) {
 			var query = $.parseJSON(data);
 			
 			features.detach();
@@ -219,7 +219,11 @@ Pharmit.Query = (function() {
 		
 		
 		//initialization code
-		querydiv.resizable({handles: "e"});
+		querydiv.resizable({handles: "e",
+			resize: function(event, ui) {
+				viewer.setLeft(ui.size.width);
+				}
+			});
 		querydiv.disableSelection();
 		
 		var header = $('<div>').appendTo(querydiv).addClass("queryheader");
@@ -242,7 +246,21 @@ Pharmit.Query = (function() {
 		var featuregroup = $('<div>').appendTo(body);
 		featureheading = $('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('queryheading');
 		features = $('<div>').appendTo(featuregroup);
-		features.accordion({header: "> div > h3", animate: true, collapsible: true,heightStyle:'content'})
+		features.accordion({header: "> div > h3", 
+			animate: true, 
+			collapsible: true,
+			heightStyle:'content',
+			beforeActivate: function( event, ui ) { 
+				var fdiv = null;
+				if(ui.newHeader.length > 0) { //being activated
+					fdiv = ui.newHeader.parent();
+					fdiv.get(0).feature.selectFeature();
+				}
+				if(ui.oldHeader.length > 0) {
+					 fdiv = ui.oldHeader.parent();					
+					fdiv.get(0).feature.deselectFeature();
+				}
+			}})
 			.sortable({ //from jquery ui example
 				axis: "y",
 				handle: "h3",
@@ -296,7 +314,7 @@ Pharmit.Query = (function() {
 		row.append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  Rotatable Bonds &le;</label>'));
 		var maxnrot = $('<input id="maxnrot" name="maxrotbonds">').appendTo(row).spinner();
 
-		filters.accordion({animate: true, collapsible: true,heightStyle:'content'});
+		filters.accordion({animate: true, collapsible: true, heightStyle:'content'});
 		
 		
 		//viewer settings
@@ -314,7 +332,9 @@ Pharmit.Query = (function() {
 		
 		var loadsessionfile = $('<input type="file">').appendTo(footer).fileinput(loadsession).change(function() {readText(this,loadSession);});	
 		var savesession = $('<button>Save Session...</button>').appendTo(footer).button().click(saveSession);		
-				
+		
+		viewer.setLeft(querydiv.width());
+
 	}
 
 	return Query;
