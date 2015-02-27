@@ -145,6 +145,11 @@ Pharmit.Viewer = (function() {
 			radiodiv.buttonset();
 		};
 		
+		//amount to offset viewer position by based on morgins
+		var xoffset = function() {
+			return (margins.left-margins.right)/2;
+		};
+		
 		this.setReceptor = function(recstr, recname) {
 			
 			var receptor = modelsAndStyles.Receptor.model;
@@ -167,7 +172,7 @@ Pharmit.Viewer = (function() {
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, 
 						{model:receptor}, {bonds:0, invert:true});
-				viewer.zoomTo();
+				viewer.zoomTo({});
 			}
 			viewer.render();
 		};
@@ -257,14 +262,14 @@ Pharmit.Viewer = (function() {
 		this.setLeft = function(x) {
 			var dx = x-margins.left;
 			margins.left = x;
-			viewer.translate(dx, 0);
+			viewer.translate(dx/2, 0);
 		};
 		
 		//specify size of right div so we can move the center point of the viewer
 		this.setRight = function(x) {
 			var dx = margins.right-x;
 			margins.right = x;
-			viewer.translate(dx, 0);
+			viewer.translate(dx/2, 0);
 		};
 		
 		//initialization code

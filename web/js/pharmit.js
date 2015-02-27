@@ -679,9 +679,9 @@ Pharmit.Query = (function() {
 		createSearchButton(header,['MolPort','ZINC']);
 		
 		//load features and load receptor
-		var loaders = $('<div>').appendTo(header);
-		var loadfeatures = $('<button>Load Features...</button>').button();
+		var loaders = $('<div>').appendTo(header).addClass('loaderdiv');
 		var loadrec = $('<button>Load Receptor...</button>').button();
+		var loadfeatures = $('<button>Load Features...</button>').button();
 		
 		//fileinput needs the file inputs in the dom
 		element.append(querydiv);
@@ -701,14 +701,17 @@ Pharmit.Query = (function() {
 			heightStyle:'content',
 			beforeActivate: function( event, ui ) { 
 				var fdiv = null;
+				
+				//deslect all features
+				var fdivs = features.children();
+				$.each(fdivs, function(key,fdiv) {
+					fdiv.feature.deselectFeature();
+				});
 				if(ui.newHeader.length > 0) { //being activated
 					fdiv = ui.newHeader.parent();
 					fdiv.get(0).feature.selectFeature();
 				}
-				if(ui.oldHeader.length > 0) {
-					 fdiv = ui.oldHeader.parent();					
-					fdiv.get(0).feature.deselectFeature();
-				}
+
 			}})
 			.sortable({ //from jquery ui example
 				axis: "y",
@@ -722,10 +725,11 @@ Pharmit.Query = (function() {
 				}
 				});
 		
-		var addbutton = $('<button>Add</button>').appendTo(featuregroup)
+		var buttondiv = $('<div>').appendTo(featuregroup).addClass('featurebuttons');
+		var addbutton = $('<button>Add</button>').appendTo(buttondiv)
 			.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
 			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
-		var sortbutton = $('<button>Sort</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
+		var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
 
 		//filters
 		var filtergroup = $('<div>').appendTo(body);
@@ -935,6 +939,11 @@ Pharmit.Viewer = (function() {
 			radiodiv.buttonset();
 		};
 		
+		//amount to offset viewer position by based on morgins
+		var xoffset = function() {
+			return (margins.left-margins.right)/2;
+		};
+		
 		this.setReceptor = function(recstr, recname) {
 			
 			var receptor = modelsAndStyles.Receptor.model;
@@ -957,7 +966,7 @@ Pharmit.Viewer = (function() {
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, 
 						{model:receptor}, {bonds:0, invert:true});
-				viewer.zoomTo();
+				viewer.zoomTo({});
 			}
 			viewer.render();
 		};
@@ -1047,14 +1056,14 @@ Pharmit.Viewer = (function() {
 		this.setLeft = function(x) {
 			var dx = x-margins.left;
 			margins.left = x;
-			viewer.translate(dx, 0);
+			viewer.translate(dx/2, 0);
 		};
 		
 		//specify size of right div so we can move the center point of the viewer
 		this.setRight = function(x) {
 			var dx = margins.right-x;
 			margins.right = x;
-			viewer.translate(dx, 0);
+			viewer.translate(dx/2, 0);
 		};
 		
 		//initialization code

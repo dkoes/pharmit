@@ -15,6 +15,11 @@ body {
 	width: 100%;
 }
 
+.ui-state-default {
+	color: #212121;
+}
+
+	
 .pharmit_query {
 	float: left;
 	position: absolute;
@@ -30,6 +35,8 @@ body {
 }
 
 .pharmit_query .queryheader {
+	   border-bottom: 1px solid #dddddd;
+	
 }
 
 .floatmenu {
@@ -45,11 +52,38 @@ body {
 	flex:1;
     overflow-y: auto;
     width: 100%;
+    padding-bottom: 1em;
 }
 
+.queryheading {
+	font-weight: bold;
+    font-size: 1em;
+    color: white;
+    margin: 0;
+	font-family: Verdana,Arial,sans-serif;
+	padding: 0.25em;
+background: rgb(44,25,67); /* Old browsers */
+background: -moz-linear-gradient(top, rgba(44,25,67,1) 0%, rgba(44,16,92,1) 50%, rgba(40,14,84,1) 51%, rgba(58,23,127,1) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(44,25,67,1)), color-stop(50%,rgba(44,16,92,1)), color-stop(51%,rgba(40,14,84,1)), color-stop(100%,rgba(58,23,127,1))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* IE10+ */
+background: linear-gradient(to bottom, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', endColorstr='#3a177f',GradientType=0 ); /* IE6-9 */
+     border-radius: 5px;
+     padding-left: 1em;
+}
 .pharmit_query .queryfooter {
     width: 100%;
     text-align: center;
+    border-top: 1px solid #dddddd;
+    padding: 0.5em;
+}
+
+.pharmit_query .queryfooter button {
+
+    margin-right: 0.5em;
+    margin-left: 0.5em;
 }
 
 .pharmit_results {
@@ -59,11 +93,23 @@ body {
 
 .searchdiv {
 	text-align: center;
+	padding: 0.5em;
+	white-space: nowrap;
 }
+
 .searchdiv .ui-button-text {
 	width: 14em;
 }
 
+.loaderdiv {
+	text-align: center;
+}
+
+.loaderdiv div {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	padding-bottom: 0.5em;
+}
 .filterrow input {
 	width: 4em;
 }
@@ -113,6 +159,16 @@ body {
 	font-size: 110%;
 }
 
+.featurebuttons {
+	padding: 0.5em;
+	text-align: center;
+}
+
+.featurebuttons button {
+	   margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
 .selectedFeature.enabledfeature h3 {
 	border-color: purple;
 }
@@ -133,6 +189,7 @@ body {
 .featurediv>h3 {
 	position: relative;
 	white-space: nowrap;
+	color: #555555;
 }
 
 .featuresummary {

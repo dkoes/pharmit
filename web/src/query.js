@@ -230,9 +230,9 @@ Pharmit.Query = (function() {
 		createSearchButton(header,['MolPort','ZINC']);
 		
 		//load features and load receptor
-		var loaders = $('<div>').appendTo(header);
-		var loadfeatures = $('<button>Load Features...</button>').button();
+		var loaders = $('<div>').appendTo(header).addClass('loaderdiv');
 		var loadrec = $('<button>Load Receptor...</button>').button();
+		var loadfeatures = $('<button>Load Features...</button>').button();
 		
 		//fileinput needs the file inputs in the dom
 		element.append(querydiv);
@@ -252,14 +252,17 @@ Pharmit.Query = (function() {
 			heightStyle:'content',
 			beforeActivate: function( event, ui ) { 
 				var fdiv = null;
+				
+				//deslect all features
+				var fdivs = features.children();
+				$.each(fdivs, function(key,fdiv) {
+					fdiv.feature.deselectFeature();
+				});
 				if(ui.newHeader.length > 0) { //being activated
 					fdiv = ui.newHeader.parent();
 					fdiv.get(0).feature.selectFeature();
 				}
-				if(ui.oldHeader.length > 0) {
-					 fdiv = ui.oldHeader.parent();					
-					fdiv.get(0).feature.deselectFeature();
-				}
+
 			}})
 			.sortable({ //from jquery ui example
 				axis: "y",
@@ -273,10 +276,11 @@ Pharmit.Query = (function() {
 				}
 				});
 		
-		var addbutton = $('<button>Add</button>').appendTo(featuregroup)
+		var buttondiv = $('<div>').appendTo(featuregroup).addClass('featurebuttons');
+		var addbutton = $('<button>Add</button>').appendTo(buttondiv)
 			.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
 			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
-		var sortbutton = $('<button>Sort</button>').appendTo(featuregroup).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
+		var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
 
 		//filters
 		var filtergroup = $('<div>').appendTo(body);
