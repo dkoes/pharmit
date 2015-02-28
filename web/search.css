@@ -22,6 +22,8 @@ body {
 	color: #212121;
 }
 
+label { font-weight: bold; white-space: nowrap;}
+
 	
 .pharmit_query {
 	float: left;
@@ -162,54 +164,36 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 .filterrow {
 	white-space: nowrap;
 }
-.hitreduction .filterrow {
-		margin: 0.5em;
-		position: relative;
-		max-width: 17em;
-		
-}
+
 .hitreduction .filterrow input {
 	width: 4em;
 }
-
-/* clear fix next */
- .filterrow:before,
-.filterrow:after {
-  content:"";
-  display:table;
-}
-.filterrow:after {
-  clear:both;
-}
-.hitreduction .filterrow span.ui-spinner {
-	float: right;
+.hitreduction .ui-spinner {
+	margin-left: 1em;
 }
 
 .querybody .hitscreening {
 		padding: 0.5em 0em; /* spinner has margin */
 }	
-.hitscreening .filterrow {
-		margin: 0.5em;
-		position: relative;	
-		max-width: 24em;
-}
+
 .hitscreening .filterrow input {
 	width: 2.5em;
+}
+
+.hitscreening .filterrow td {
+	text-align: center;
 }
 
 .hitscreening .ui-spinner {
 	margin-left: 1em;
 	margin-right: 1em;
 }
-.hitscreening label+.ui-spinner {
-	float: right;
-	margin-left: 0em;
-}
 
 .headingsummary {
 	font-size: x-small;
 	color: gray;
 }
+
 
 
 
@@ -342,39 +326,29 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 }
 
 
-label { font-weight: bold;}
 .vizdiv {
 	padding: 0.5em 0em 0.5em 1.5em;
 }
 
-.styleselectrow {
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
-	max-width: 18em;
-	line-height: 2.5em;
+.vizdiv table {
+	 border-collapse: collapse;
 }
-
- .styleselectrow:before,
-.styleselectrow:after {
-  content:"";
-  display:table;
-}
-
-.styleselectrow:after {
-  clear:both;
-}
-
 
 .querybody .ui-selectmenu-button span.ui-selectmenu-text {
 	text-align: center;
 }
-.styleselectrow>span{
-	float: right;
-}
+
 .stylelabel {
+	white-space: nowrap;
+	padding-right: 0.5em;
 }
 .styleselector {
 	width: 8em;
+}
+
+.styleselectrow td {
+	padding: 0;
+	height: 3em;
 }
 
 .surfacetransparencydiv {

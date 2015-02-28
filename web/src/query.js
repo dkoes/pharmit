@@ -319,33 +319,42 @@ Pharmit.Query = (function() {
 		var heading = $('<h3>Hit Reduction<br></h3>').appendTo(filters);
 		var hitreductionsummary = $('<span class="headingsummary"></span>').appendTo(heading);
 
-		var hitreductions = $('<div class="hitreduction"></div>').appendTo(filters);
+		var hitreductions = $('<div>').addClass("hitreduction").appendTo(filters);
+		var reducetable = $('<table>').appendTo(hitreductions);
+		var row = $('<tr>').addClass('filterrow').appendTo(reducetable);
+		$('<td>').append('<label title="Maximum number of orientations returned for each conformation" value="1" for="reduceorienttext">Max Hits per Conf:</label>').appendTo(row);
+		var cell = $('<td>').appendTo(row);
+		$('<input id="reduceorienttext" name="max-orient">').appendTo(cell).spinner();
 		
-		var row = $('<div>').addClass('filterrow').appendTo(hitreductions);
-		row.append('<label title="Maximum number of orientations returned for each conformation" value="1" for="reduceorienttext">Max Hits per Conf:</label>');
-		var maxorient = $('<input id="reduceorienttext" name="max-orient">').appendTo(row).spinner();
+		row = $('<tr>').addClass('filterrow').appendTo(reducetable);
+		$('<td>').append('<label title="Maximum number of conformations returned for each compound" value="1" for="reduceconfstext">Max Hits per Mol:</label>').appendTo(row);
+		cell = $('<td>').appendTo(row);
+		$('<input id="reduceconfstext" name="reduceConfs">').appendTo(cell).spinner();
 		
-		row = $('<div>').addClass('filterrow').appendTo(hitreductions);
-		row.append('<label title="Maximum number of conformations returned for each compound" value="1" for="reduceconfstext">Max Hits per Mol:</label>');
-		var maxconfs = $('<input id="reduceconfstext" name="reduceConfs">').appendTo(row).spinner();
-		
-		row = $('<div>').addClass('filterrow').appendTo(hitreductions);
-		row.append('<label title="Maximum number of hits returned" value="1" for="reducehitstext">Max Total Hits:</label>');
-		var maxhits = $('<input id="reducehitstext" name="max-hits">').appendTo(row).spinner();
+		row = $('<tr>').addClass('filterrow').appendTo(reducetable);
+		$('<td>').append('<label title="Maximum number of hits returned" value="1" for="reducehitstext">Max Total Hits:</label>').appendTo(row);
+		cell = $('<td>').appendTo(row);
+		$('<input id="reducehitstext" name="max-hits">').appendTo(cell).spinner();
 		
 		
 		heading = $('<h3>Hit Screening<br></h3>').appendTo(filters);
 		var hitscreeningsummary = $('<span class="headingsummary"></span>').appendTo(heading);
 		var hitscreening = $('<div class="hitscreening"></div>').appendTo(filters);
-		row = $('<div>').addClass('filterrow').appendTo(hitscreening);
-		var minweight = $('<input id="minmolweight" name="minMolWeight">').appendTo(row).spinner();
-		row.append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  MolWeight &le;</label>'));
-		var maxweight = $('<input id="maxmolweight" name=maxMolWeight>').appendTo(row).spinner().addClass('rightside');
+		var screentable = $('<table>').appendTo(hitscreening);
+		
+		row = $('<tr>').addClass('filterrow').appendTo(screentable);
+		cell = $('<td>').appendTo(row);
+		$('<input id="minmolweight" name="minMolWeight">').appendTo(cell).spinner();
+		$('<td>').appendTo(row).append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  MolWeight &le;</label>'));
+		cell = $('<td>').appendTo(row);
+		$('<input id="maxmolweight" name=maxMolWeight>').appendTo(cell).spinner();
 
-		row = $('<div>').addClass('filterrow').appendTo(hitscreening);
-		var minnrot = $('<input id="minnrot" name="minrotbonds">').appendTo(row).spinner();
-		row.append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  RotBonds &le;</label>'));
-		var maxnrot = $('<input id="maxnrot" name="maxrotbonds">').appendTo(row).spinner().addClass('rightside');
+		row = $('<tr>').addClass('filterrow').appendTo(screentable);
+		cell = $('<td>').appendTo(row);
+		$('<input id="minnrot" name="minrotbonds">').appendTo(cell).spinner();
+		$('<td>').appendTo(row).append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  RotBonds &le;</label>'));
+		cell = $('<td>').appendTo(row);
+		$('<input id="maxnrot" name="maxrotbonds">').appendTo(cell).spinner();
 
 		filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
 		

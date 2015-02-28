@@ -73,12 +73,14 @@ Pharmit.Viewer = (function() {
 		
 		
 		//create jquery selection object for picking molecule style
-		var createStyleSelector = function(name, defaultval, vizgroup, callback) {
-			var ret = $('<div>').appendTo(vizgroup).addClass('styleselectrow');
+		//adds a table row
+		var createStyleSelector = function(name, defaultval, table, callback) {
+			var ret = $('<tr>').appendTo(table).addClass('styleselectrow');
 			var id = name+"MolStyleSelect";
-			$('<label for="'+id+'">'+name+' Style:</label>').appendTo(ret).addClass('stylelabel');
+			$('<label for="'+id+'">'+name+' Style:</label>').appendTo(ret).addClass('stylelabel').appendTo($('<td>').appendTo(ret));
 			
-			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(ret).addClass('styleselector');
+			var cell = $('<td>').appendTo(ret);
+			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(cell).addClass('styleselector');
 			$.each(colorStyles, function(key, value) {
 				$('<option value="'+key+'">'+value+'</option>').appendTo(select);
 			});
@@ -86,7 +88,7 @@ Pharmit.Viewer = (function() {
 			select.val(defaultval);
 			select.selectmenu({
 				width: '9em', 
-				appendTo: vizgroup, 
+				appendTo: table, 
 				change: function() {select.change();},
 				position: {my: "left top", at: "left bottom", collision: "flip"}
 			});
@@ -115,9 +117,11 @@ Pharmit.Viewer = (function() {
 		
 		//add controls for change the styles of the div to the specified element
 		this.appendViewerControls = function(vizgroup) {
-			createStyleSelector("Ligand",'rasmol', vizgroup, null);
-			createStyleSelector("Results",'rasmol', vizgroup, null);
-			createStyleSelector("Receptor",'rasmol', vizgroup, null);
+			
+			var table = $('<table>').appendTo(vizgroup);
+			createStyleSelector("Ligand",'rasmol', table, null);
+			createStyleSelector("Results",'rasmol', table, null);
+			createStyleSelector("Receptor",'rasmol', table, null);
 			
 			//surface transparency
 			var stdiv = $('<div>').addClass('surfacetransparencydiv').appendTo(vizgroup);
