@@ -26,7 +26,6 @@ Pharmit.Query = (function() {
 	function Query(element, viewer) {
 		//private variables and functions
 		var querydiv = $('<div>').addClass('pharmit_query');
-		var vizgroup = null;
 		var features = null;
 		var featureheading = null;
 		var receptorData = null;
@@ -217,27 +216,57 @@ Pharmit.Query = (function() {
 		
 		//public variables and functions
 		
+		var closer = $('<div>').appendTo(querydiv).addClass('leftclose');
+		var closericon = $('<span>').addClass("ui-icon ui-icon-carat-1-w").appendTo(closer);
 		
 		//initialization code
 		querydiv.resizable({handles: "e",
 			resize: function(event, ui) {
 				viewer.setLeft(ui.size.width);
-				}
-			});
+			}
+		});
 		querydiv.disableSelection();
+		
+
+		closer.click(function() {
+			if(closer.hasClass('leftisclosed')) {
+				closer.removeClass('leftisclosed');
+				closericon.removeClass('ui-icon-carat-1-e');
+				closericon.addClass('ui-icon-carat-1-w');
+				var start = querydiv.width();
+				querydiv.css('width', ''); //restore stylesheet width	
+				var target = querydiv.width();
+				querydiv.width(start);
+				
+				querydiv.animate({width: target},{
+					progress: function() { viewer.setLeft(querydiv.width());}
+				}); 
+				querydiv.resizable( "option", "disabled", false);
+
+			} else { //close it 
+				querydiv.animate({width: 0}, {
+					progress: function() { viewer.setLeft(querydiv.width());}
+					}); 
+				//viewer.setLeft(0);
+				closer.addClass('leftisclosed');
+				closericon.addClass('ui-icon-carat-1-e');
+				closericon.removeClass('ui-icon-carat-1-w');			
+				querydiv.resizable( "option", "disabled", true );
+			}
+		});
 		
 		var header = $('<div>').appendTo(querydiv).addClass("queryheader");
 		createSearchButton(header,['MolPort','ZINC']);
 		
 		//load features and load receptor
-		var loaders = $('<div>').appendTo(header).addClass('loaderdiv');
+		var loaders = $('<div>').appendTo(header).addClass('loaderdiv').addClass('nowrap');
 		var loadrec = $('<button>Load Receptor...</button>').button();
 		var loadfeatures = $('<button>Load Features...</button>').button();
 		
 		//fileinput needs the file inputs in the dom
 		element.append(querydiv);
-		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(loadFeatures);		
 		var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(function(e) {readText(this, loadReceptor);});
+		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(loadFeatures);		
 		
 		querydiv.detach();
 		
@@ -310,32 +339,32 @@ Pharmit.Query = (function() {
 		var hitscreening = $('<div class="hitscreening"></div>').appendTo(filters);
 		row = $('<div>').addClass('filterrow').appendTo(hitscreening);
 		var minweight = $('<input id="minmolweight" name="minMolWeight">').appendTo(row).spinner();
-		row.append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  Molecular Weight &le;</label>'));
-		var maxweight = $('<input id="maxmolweight" name=maxMolWeight>').appendTo(row).spinner();
+		row.append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  MolWeight &le;</label>'));
+		var maxweight = $('<input id="maxmolweight" name=maxMolWeight>').appendTo(row).spinner().addClass('rightside');
 
 		row = $('<div>').addClass('filterrow').appendTo(hitscreening);
 		var minnrot = $('<input id="minnrot" name="minrotbonds">').appendTo(row).spinner();
-		row.append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  Rotatable Bonds &le;</label>'));
-		var maxnrot = $('<input id="maxnrot" name="maxrotbonds">').appendTo(row).spinner();
+		row.append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  RotBonds &le;</label>'));
+		var maxnrot = $('<input id="maxnrot" name="maxrotbonds">').appendTo(row).spinner().addClass('rightside');
 
-		filters.accordion({animate: true, collapsible: true, heightStyle:'content'});
-		
+		filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
 		
 		//viewer settings
-		vizgroup = $('<div>').appendTo(body);
+		var vizgroup = $('<div>').appendTo(body);
 		$('<div>Visualization</div>').appendTo(vizgroup).addClass('queryheading');
-		
-		viewer.appendViewerControls(vizgroup);
+		var vizbody = $('<div>').appendTo(vizgroup).addClass('vizdiv');
+		viewer.appendViewerControls(vizbody);
 
 		
 		//load/save session
 		var footer = $('<div>').appendTo(querydiv).addClass("queryfooter");
+		var bottomloaders = $('<div>').appendTo(footer).addClass("bottomloaders").addClass('nowrap');
 		element.append(querydiv);
 
 		var loadsession = $('<button>Load Session...</button>').button();
 		
-		var loadsessionfile = $('<input type="file">').appendTo(footer).fileinput(loadsession).change(function() {readText(this,loadSession);});	
-		var savesession = $('<button>Save Session...</button>').appendTo(footer).button().click(saveSession);		
+		var loadsessionfile = $('<input type="file">').appendTo(bottomloaders).fileinput(loadsession).change(function() {readText(this,loadSession);});	
+		var savesession = $('<button>Save Session...</button>').appendTo(bottomloaders).button().click(saveSession);		
 		
 		viewer.setLeft(querydiv.width());
 

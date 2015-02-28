@@ -96,42 +96,48 @@ function Feature(viewer, features, fobj) {
 		return init;
 	};
 	
-	$('<label>x:</label>').appendTo(locationdiv);
-	this.x = $('<input>').appendTo(locationdiv).addClass('coordinput').change(function() {
+	//for prettier display round values to 3 decimal places
+	var round = function(x) { return Math.round(x*1000)/1000;};
+	
+	var c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>x:</label>').appendTo(c);
+	this.x = $('<input>').appendTo(c).addClass('coordinput').change(function() {
 		//change x value
-		var x = parseFloat(this.value);
+		var x = this.value = round(parseFloat(this.value));
 		F.xsummary.text(numeral(x).format('0.[00]'));
-		F.obj.x = x;
+		F.obj.x = round(x);
 		F.updateViewer();
 		});
 	this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
 	
-	
-	$('<label>y:</label>').appendTo(locationdiv);
-	this.y = $('<input>').appendTo(locationdiv).addClass('coordinput');
+	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>y:</label>').appendTo(c);
+	this.y = $('<input>').appendTo(c).addClass('coordinput');
 	this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
 		//change y value
-		var y = parseFloat(this.value);
+		var y = this.value = round(parseFloat(this.value));
 		F.ysummary.text(numeral(y).format('0.[00]'));
-		F.obj.y = y;
+		F.obj.y = round(y);
 		F.updateViewer();
 		});
 
-	$('<label>z:</label>').appendTo(locationdiv);
-	this.z = $('<input>').appendTo(locationdiv).addClass('coordinput');
+	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>z:</label>').appendTo(c);
+	this.z = $('<input>').appendTo(c).addClass('coordinput');
 	this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
-		var z = parseFloat(this.value);
+		var z = this.value = round(parseFloat(this.value));
 		F.zsummary.text(numeral(z).format('0.[00]'));
 		F.obj.z = z;
 		F.updateViewer();
 		});
 
 	//radius
-	$('<label>Radius:</label>').appendTo(locationdiv);
-	this.radius = $('<input>').appendTo(locationdiv).addClass('radiusinput');
+	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>Radius:</label>').appendTo(c);
+	this.radius = $('<input>').appendTo(c).addClass('radiusinput');
 	this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
 		F.rsummary.text(numeral(this.value).format('0.[00]'));
-		F.obj.radius = this.value;
+		F.obj.radius = this.value = round(this.value);
 		F.updateViewer();
 		});
 
@@ -140,15 +146,24 @@ function Feature(viewer, features, fobj) {
 	var theta = null, phi = null;
 	
 	
-	var setVector = function(t, p) {
-		//t and p are in degrees, create svector i nobj
-		var theta = t*Math.PI/180;
-		var psi = p*Math.PI/180;
+	var updateVector = function () {
+		//parse text, round to integers, and calculate vector for orientation
+		var p = Math.round(parseFloat(phi.val())) % 360;
+		var t = Math.round(parseFloat(theta.val())) % 360;
+		if(isNaN(p)) p = 0;
+		if(isNaN(t)) t = 0;
+		phi.val(p);
+		theta.val(t);
+		//convert to radians
+		t = t*Math.PI/180;
+		p = p*Math.PI/180;
 		F.obj.svector = {
-			x: Math.sin(theta)*Math.cos(psi),
-			y: Math.sin(theta)*Math.sin(psi),
-			z: Math.cos(theta)
+			x: Math.sin(t)*Math.cos(p),
+			y: Math.sin(t)*Math.sin(p),
+			z: Math.cos(t)
 		};
+		F.updateViewer();
+
 	};
 	
 	this.orientenabled = $('<input type="checkbox">').appendTo(orientdiv).change(
@@ -156,31 +171,27 @@ function Feature(viewer, features, fobj) {
 				if($(this).prop( "checked")) {
 					theta.spinner('option','disabled',false);
 					phi.spinner('option','disabled',false);
-					F.obj.vector_on = 0;
+					F.obj.vector_on = 1;
 				}
 				else {
 					theta.spinner('option','disabled',true);
 					phi.spinner('option','disabled',true);
-					F.obj.vector_on = 1;
-					setVector(theta.val(), phi.val());						
+					F.obj.vector_on = 0;
+					updateVector();
 				}
 				F.updateViewer();
 			}
 			);
 	
-	$('<label>&theta;:</label>').appendTo(orientdiv);
-	theta = this.theta = $('<input>').appendTo(orientdiv).addClass('orientinput');
-	this.theta.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(function() {
-		setVector(theta.val(), phi.val());
-		F.updateViewer();
-		});
-	
-	$('<label>&phi;:</label>').appendTo(orientdiv);
-	phi = this.phi = $('<input>').appendTo(orientdiv).addClass('orientinput');
-	this.phi.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(function() {			
-		setVector(theta.val(), phi.val());
-		F.updateViewer();
-		});
+	var nowrap = $('<span>').addClass('nowrap').appendTo(orientdiv);
+	$('<label>&theta;:</label>').appendTo(nowrap);
+	theta = this.theta = $('<input>').appendTo(nowrap).addClass('orientinput');
+	this.theta.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(updateVector);
+
+	nowrap = $('<span>').addClass('nowrap').appendTo(orientdiv);
+	$('<label>&phi;:</label>').appendTo(nowrap);
+	phi = this.phi = $('<input>').appendTo(nowrap).addClass('orientinput');
+	this.phi.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(updateVector);
 	
 	this.orientdiv.hide();
 	
@@ -193,7 +204,7 @@ function Feature(viewer, features, fobj) {
 		F.updateViewer();
 	});
 	
-	$('<label> &le; #Atoms &le;</label>').appendTo(sizediv);
+	$('<label> &le; #Atoms &le;</label>').appendTo(sizediv).addClass('nowrap');
 	this.maxsize = $('<input>').appendTo(sizediv).addClass('sizeinput');
 	this.maxsize.spinner(spinObject(F.maxsize,{step: 1, numberFormat: 'n'})).change(function() {
 		F.obj.maxsize = this.value;
@@ -277,6 +288,7 @@ Feature.prototype.selectFeature = function() {
 	this.viewer.selectFeature(this.shape);
 	this.container.addClass("selectedFeature");
 	this.selected = true;
+	this.obj.selected = true;
 };
 
 //remove selection style
@@ -284,6 +296,7 @@ Feature.prototype.deselectFeature = function() {
 	this.viewer.unselectFeature(this.shape);
 	this.container.removeClass("selectedFeature");
 	this.selected = false;
+	this.obj.selected = false;
 };
 
 
@@ -475,7 +488,6 @@ Pharmit.Query = (function() {
 	function Query(element, viewer) {
 		//private variables and functions
 		var querydiv = $('<div>').addClass('pharmit_query');
-		var vizgroup = null;
 		var features = null;
 		var featureheading = null;
 		var receptorData = null;
@@ -666,27 +678,57 @@ Pharmit.Query = (function() {
 		
 		//public variables and functions
 		
+		var closer = $('<div>').appendTo(querydiv).addClass('leftclose');
+		var closericon = $('<span>').addClass("ui-icon ui-icon-carat-1-w").appendTo(closer);
 		
 		//initialization code
 		querydiv.resizable({handles: "e",
 			resize: function(event, ui) {
 				viewer.setLeft(ui.size.width);
-				}
-			});
+			}
+		});
 		querydiv.disableSelection();
+		
+
+		closer.click(function() {
+			if(closer.hasClass('leftisclosed')) {
+				closer.removeClass('leftisclosed');
+				closericon.removeClass('ui-icon-carat-1-e');
+				closericon.addClass('ui-icon-carat-1-w');
+				var start = querydiv.width();
+				querydiv.css('width', ''); //restore stylesheet width	
+				var target = querydiv.width();
+				querydiv.width(start);
+				
+				querydiv.animate({width: target},{
+					progress: function() { viewer.setLeft(querydiv.width());}
+				}); 
+				querydiv.resizable( "option", "disabled", false);
+
+			} else { //close it 
+				querydiv.animate({width: 0}, {
+					progress: function() { viewer.setLeft(querydiv.width());}
+					}); 
+				//viewer.setLeft(0);
+				closer.addClass('leftisclosed');
+				closericon.addClass('ui-icon-carat-1-e');
+				closericon.removeClass('ui-icon-carat-1-w');			
+				querydiv.resizable( "option", "disabled", true );
+			}
+		});
 		
 		var header = $('<div>').appendTo(querydiv).addClass("queryheader");
 		createSearchButton(header,['MolPort','ZINC']);
 		
 		//load features and load receptor
-		var loaders = $('<div>').appendTo(header).addClass('loaderdiv');
+		var loaders = $('<div>').appendTo(header).addClass('loaderdiv').addClass('nowrap');
 		var loadrec = $('<button>Load Receptor...</button>').button();
 		var loadfeatures = $('<button>Load Features...</button>').button();
 		
 		//fileinput needs the file inputs in the dom
 		element.append(querydiv);
-		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(loadFeatures);		
 		var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(function(e) {readText(this, loadReceptor);});
+		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(loadFeatures);		
 		
 		querydiv.detach();
 		
@@ -759,32 +801,32 @@ Pharmit.Query = (function() {
 		var hitscreening = $('<div class="hitscreening"></div>').appendTo(filters);
 		row = $('<div>').addClass('filterrow').appendTo(hitscreening);
 		var minweight = $('<input id="minmolweight" name="minMolWeight">').appendTo(row).spinner();
-		row.append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  Molecular Weight &le;</label>'));
-		var maxweight = $('<input id="maxmolweight" name=maxMolWeight>').appendTo(row).spinner();
+		row.append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  MolWeight &le;</label>'));
+		var maxweight = $('<input id="maxmolweight" name=maxMolWeight>').appendTo(row).spinner().addClass('rightside');
 
 		row = $('<div>').addClass('filterrow').appendTo(hitscreening);
 		var minnrot = $('<input id="minnrot" name="minrotbonds">').appendTo(row).spinner();
-		row.append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  Rotatable Bonds &le;</label>'));
-		var maxnrot = $('<input id="maxnrot" name="maxrotbonds">').appendTo(row).spinner();
+		row.append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  RotBonds &le;</label>'));
+		var maxnrot = $('<input id="maxnrot" name="maxrotbonds">').appendTo(row).spinner().addClass('rightside');
 
-		filters.accordion({animate: true, collapsible: true, heightStyle:'content'});
-		
+		filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
 		
 		//viewer settings
-		vizgroup = $('<div>').appendTo(body);
+		var vizgroup = $('<div>').appendTo(body);
 		$('<div>Visualization</div>').appendTo(vizgroup).addClass('queryheading');
-		
-		viewer.appendViewerControls(vizgroup);
+		var vizbody = $('<div>').appendTo(vizgroup).addClass('vizdiv');
+		viewer.appendViewerControls(vizbody);
 
 		
 		//load/save session
 		var footer = $('<div>').appendTo(querydiv).addClass("queryfooter");
+		var bottomloaders = $('<div>').appendTo(footer).addClass("bottomloaders").addClass('nowrap');
 		element.append(querydiv);
 
 		var loadsession = $('<button>Load Session...</button>').button();
 		
-		var loadsessionfile = $('<input type="file">').appendTo(footer).fileinput(loadsession).change(function() {readText(this,loadSession);});	
-		var savesession = $('<button>Save Session...</button>').appendTo(footer).button().click(saveSession);		
+		var loadsessionfile = $('<input type="file">').appendTo(bottomloaders).fileinput(loadsession).change(function() {readText(this,loadSession);});	
+		var savesession = $('<button>Save Session...</button>').appendTo(bottomloaders).button().click(saveSession);		
 		
 		viewer.setLeft(querydiv.width());
 
@@ -834,7 +876,7 @@ Pharmit.Viewer = (function() {
 		
 		var margins = {left: 0, right: 0}; 
 		
-		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xeeeeee', 'HydrogenAcceptor': 'orange', 
+		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xf0f0f0', 'HydrogenAcceptor': 'orange', 
 							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue'};
 
 		
@@ -868,9 +910,9 @@ Pharmit.Viewer = (function() {
 		
 		//create jquery selection object for picking molecule style
 		var createStyleSelector = function(name, defaultval, vizgroup, callback) {
-			var ret = $('<div>').appendTo(vizgroup);
+			var ret = $('<div>').appendTo(vizgroup).addClass('styleselectrow');
 			var id = name+"MolStyleSelect";
-			$('<label for="'+id+'">'+name+' Style</label>').appendTo(ret).addClass('stylelabel');
+			$('<label for="'+id+'">'+name+' Style:</label>').appendTo(ret).addClass('stylelabel');
 			
 			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(ret).addClass('styleselector');
 			$.each(colorStyles, function(key, value) {
@@ -879,7 +921,7 @@ Pharmit.Viewer = (function() {
 			
 			select.val(defaultval);
 			select.selectmenu({
-				width: '8em', 
+				width: '9em', 
 				appendTo: vizgroup, 
 				change: function() {select.change();},
 				position: {my: "left top", at: "left bottom", collision: "flip"}
@@ -888,7 +930,12 @@ Pharmit.Viewer = (function() {
 				var scheme = this.value;
 				var style = modelsAndStyles[name].style;
 				$.each(style, function(key, substyle) {
-					substyle.colorscheme = scheme;
+					if(scheme == 'none') {
+						substyle.hidden = true;
+					} else {
+						substyle.colorscheme = scheme;
+						delete substyle.hidden;
+					}
 				});
 				var model = modelsAndStyles[name].model;
 				if(model) model.setStyle({}, style);				
@@ -896,6 +943,8 @@ Pharmit.Viewer = (function() {
 				viewer.render();
 			});
 			select.change();
+			
+	
 		};
 		
 		//public variables and functions
@@ -907,8 +956,9 @@ Pharmit.Viewer = (function() {
 			createStyleSelector("Receptor",'rasmol', vizgroup, null);
 			
 			//surface transparency
-			$('<label for="surfaceopacity">Receptor Surface Opacity</label>').appendTo(vizgroup);
-			var sliderdiv = $('<div>').addClass('surfacetransparencydiv').appendTo(vizgroup);
+			var stdiv = $('<div>').addClass('surfacetransparencydiv').appendTo(vizgroup);
+			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
+			var sliderdiv = $('<div>').addClass('surfacetransparencyslider').appendTo(stdiv);
 			$('<div id="surfaceopacity" name="surfaceopacity">').appendTo(sliderdiv)
 				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8,
 					change: function(event, ui) { 
@@ -920,8 +970,9 @@ Pharmit.Viewer = (function() {
 				
 			
 			//background color
-			$('<label for="backgroundcolor">Background Color</label>').appendTo(vizgroup);
-			var radiodiv = $('<div id="backgroundcolor">').appendTo(vizgroup);
+			var bcdiv = $('<div>').addClass('backgroundcolordiv').appendTo(vizgroup);
+			$('<label for="backgroundcolor">Background Color:</label>').appendTo(bcdiv);
+			var radiodiv = $('<div id="backgroundcolor">').appendTo(bcdiv);
 			$('<input type="radio" id="whiteBackground" name="backgroundcolor"><label for="whiteBackground">White</label>').appendTo(radiodiv)
 				.change(function() {
 					if($(this).prop("checked")) {
@@ -1014,6 +1065,52 @@ Pharmit.Viewer = (function() {
 			
 			var shape = {sphere: null, arrows: [], label: null};
 			shape.sphere = viewer.addSphere(sphere);
+			if(fobj.selected)
+				shape.sphere.updateStyle({wireframe: false});
+
+			if(fobj.hasvec && fobj.vector_on && fobj.svector) {
+				//draw arrow
+				var vec = new $3Dmol.Vector3(fobj.svector.x, fobj.svector.y, fobj.svector.z);
+				var len = fobj.radius+1.0;
+				var mid = (len-0.5)/len; //where arrowhead starts as a ratio
+				vec = vec.normalize();
+				var start = vec.clone().multiplyScalar(fobj.radius).add(fobj);
+				var end = vec.clone().multiplyScalar(len).add(fobj);
+				var arrow = {
+					start: start,
+					end: end,
+					radius: 0.075,
+					radiusRatio: 2.0,
+					mid: mid,
+					wireframe: !fobj.selected,
+					color: featureColors[fobj.name]
+				};
+				shape.arrows.push(viewer.addArrow(arrow));
+				
+				if(fobj.name == "Aromatic") { //double arrow
+					start = vec.clone().multiplyScalar(-fobj.radius).add(fobj);
+					end = vec.clone().multiplyScalar(-len).add(fobj);
+					arrow.start = start;
+					arrow.end = end;
+					shape.arrows.push(viewer.addArrow(arrow));
+				}
+			}
+			
+			if(fobj.name == "Hydrophobic") {
+				//may have size
+				var label = fobj.minsize + ":" + fobj.maxsize;
+				if(label != ":") {
+					var lab = {
+							position: {x: fobj.x, y: fobj.y, z: fobj.z},
+							showBackground: true,
+							fontColor: 'black',
+							backgroundColor: featureColors[fobj.name],
+							backgroundOpacity: 0.5,
+							alignment: $3Dmol.SpriteAlignment.center
+					};
+					shape.label = viewer.addLabel(label, lab);
+				}
+			}
 			viewer.render();
 			shapes.push(shape);
 			return shapes.length-1;
@@ -1024,6 +1121,10 @@ Pharmit.Viewer = (function() {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
 				shape.sphere.updateStyle({wireframe: false});
+				
+				$.each(shape.arrows, function(i, arrow) {
+					arrow.updateStyle({wireframe:false});
+				});
 				viewer.render();
 			}
 		};
@@ -1032,6 +1133,9 @@ Pharmit.Viewer = (function() {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
 				shape.sphere.updateStyle({wireframe: true});
+				$.each(shape.arrows, function(i, arrow) {
+					arrow.updateStyle({wireframe:true});
+				});
 				viewer.render();
 			}
 		};

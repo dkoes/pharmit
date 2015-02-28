@@ -40,7 +40,7 @@ Pharmit.Viewer = (function() {
 		
 		var margins = {left: 0, right: 0}; 
 		
-		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xeeeeee', 'HydrogenAcceptor': 'orange', 
+		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xf0f0f0', 'HydrogenAcceptor': 'orange', 
 							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue'};
 
 		
@@ -74,9 +74,9 @@ Pharmit.Viewer = (function() {
 		
 		//create jquery selection object for picking molecule style
 		var createStyleSelector = function(name, defaultval, vizgroup, callback) {
-			var ret = $('<div>').appendTo(vizgroup);
+			var ret = $('<div>').appendTo(vizgroup).addClass('styleselectrow');
 			var id = name+"MolStyleSelect";
-			$('<label for="'+id+'">'+name+' Style</label>').appendTo(ret).addClass('stylelabel');
+			$('<label for="'+id+'">'+name+' Style:</label>').appendTo(ret).addClass('stylelabel');
 			
 			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(ret).addClass('styleselector');
 			$.each(colorStyles, function(key, value) {
@@ -85,7 +85,7 @@ Pharmit.Viewer = (function() {
 			
 			select.val(defaultval);
 			select.selectmenu({
-				width: '8em', 
+				width: '9em', 
 				appendTo: vizgroup, 
 				change: function() {select.change();},
 				position: {my: "left top", at: "left bottom", collision: "flip"}
@@ -94,7 +94,12 @@ Pharmit.Viewer = (function() {
 				var scheme = this.value;
 				var style = modelsAndStyles[name].style;
 				$.each(style, function(key, substyle) {
-					substyle.colorscheme = scheme;
+					if(scheme == 'none') {
+						substyle.hidden = true;
+					} else {
+						substyle.colorscheme = scheme;
+						delete substyle.hidden;
+					}
 				});
 				var model = modelsAndStyles[name].model;
 				if(model) model.setStyle({}, style);				
@@ -102,6 +107,8 @@ Pharmit.Viewer = (function() {
 				viewer.render();
 			});
 			select.change();
+			
+	
 		};
 		
 		//public variables and functions
@@ -113,8 +120,9 @@ Pharmit.Viewer = (function() {
 			createStyleSelector("Receptor",'rasmol', vizgroup, null);
 			
 			//surface transparency
-			$('<label for="surfaceopacity">Receptor Surface Opacity</label>').appendTo(vizgroup);
-			var sliderdiv = $('<div>').addClass('surfacetransparencydiv').appendTo(vizgroup);
+			var stdiv = $('<div>').addClass('surfacetransparencydiv').appendTo(vizgroup);
+			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
+			var sliderdiv = $('<div>').addClass('surfacetransparencyslider').appendTo(stdiv);
 			$('<div id="surfaceopacity" name="surfaceopacity">').appendTo(sliderdiv)
 				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8,
 					change: function(event, ui) { 
@@ -126,8 +134,9 @@ Pharmit.Viewer = (function() {
 				
 			
 			//background color
-			$('<label for="backgroundcolor">Background Color</label>').appendTo(vizgroup);
-			var radiodiv = $('<div id="backgroundcolor">').appendTo(vizgroup);
+			var bcdiv = $('<div>').addClass('backgroundcolordiv').appendTo(vizgroup);
+			$('<label for="backgroundcolor">Background Color:</label>').appendTo(bcdiv);
+			var radiodiv = $('<div id="backgroundcolor">').appendTo(bcdiv);
 			$('<input type="radio" id="whiteBackground" name="backgroundcolor"><label for="whiteBackground">White</label>').appendTo(radiodiv)
 				.change(function() {
 					if($(this).prop("checked")) {
@@ -220,6 +229,52 @@ Pharmit.Viewer = (function() {
 			
 			var shape = {sphere: null, arrows: [], label: null};
 			shape.sphere = viewer.addSphere(sphere);
+			if(fobj.selected)
+				shape.sphere.updateStyle({wireframe: false});
+
+			if(fobj.hasvec && fobj.vector_on && fobj.svector) {
+				//draw arrow
+				var vec = new $3Dmol.Vector3(fobj.svector.x, fobj.svector.y, fobj.svector.z);
+				var len = fobj.radius+1.0;
+				var mid = (len-0.5)/len; //where arrowhead starts as a ratio
+				vec = vec.normalize();
+				var start = vec.clone().multiplyScalar(fobj.radius).add(fobj);
+				var end = vec.clone().multiplyScalar(len).add(fobj);
+				var arrow = {
+					start: start,
+					end: end,
+					radius: 0.075,
+					radiusRatio: 2.0,
+					mid: mid,
+					wireframe: !fobj.selected,
+					color: featureColors[fobj.name]
+				};
+				shape.arrows.push(viewer.addArrow(arrow));
+				
+				if(fobj.name == "Aromatic") { //double arrow
+					start = vec.clone().multiplyScalar(-fobj.radius).add(fobj);
+					end = vec.clone().multiplyScalar(-len).add(fobj);
+					arrow.start = start;
+					arrow.end = end;
+					shape.arrows.push(viewer.addArrow(arrow));
+				}
+			}
+			
+			if(fobj.name == "Hydrophobic") {
+				//may have size
+				var label = fobj.minsize + ":" + fobj.maxsize;
+				if(label != ":") {
+					var lab = {
+							position: {x: fobj.x, y: fobj.y, z: fobj.z},
+							showBackground: true,
+							fontColor: 'black',
+							backgroundColor: featureColors[fobj.name],
+							backgroundOpacity: 0.5,
+							alignment: $3Dmol.SpriteAlignment.center
+					};
+					shape.label = viewer.addLabel(label, lab);
+				}
+			}
 			viewer.render();
 			shapes.push(shape);
 			return shapes.length-1;
@@ -230,6 +285,10 @@ Pharmit.Viewer = (function() {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
 				shape.sphere.updateStyle({wireframe: false});
+				
+				$.each(shape.arrows, function(i, arrow) {
+					arrow.updateStyle({wireframe:false});
+				});
 				viewer.render();
 			}
 		};
@@ -238,6 +297,9 @@ Pharmit.Viewer = (function() {
 			var shape = shapes[s];
 			if(shape && shape.sphere) {
 				shape.sphere.updateStyle({wireframe: true});
+				$.each(shape.arrows, function(i, arrow) {
+					arrow.updateStyle({wireframe:true});
+				});
 				viewer.render();
 			}
 		};

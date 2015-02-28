@@ -7,6 +7,9 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 12px;
+    
 }
 .ui-widget{font-size:12px;}
 
@@ -27,16 +30,44 @@ body {
 	opacity: 0.9;
 	border-right: 1px solid black;
 	z-index: 10;
-	overflow: hidden;
 	height:100vh;
   	display:flex;
   	flex-direction: column;
-  	width: 20em;
+  	width: 25em;
 }
 
 .pharmit_query .queryheader {
 	   border-bottom: 1px solid #dddddd;
-	
+		overflow: hidden;
+}
+
+.leftclose {
+	position: absolute;
+	width: 2em;
+	height: 3em;
+	right: 0em;
+	background-color: white;
+	border-style: solid;
+	border-color: #222222;
+	border-width: 0px;
+    vertical-align: middle;	
+    text-align: center;
+}
+
+.leftclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	position: absolute;
+	top: 50%;	
+	right: 50%;
+	margin-right: -8px;
+}
+
+.leftclose.leftisclosed {
+	border-width: 0px 1px 1px 1px;	
+	right: -40px;
+	width: 38px;
 }
 
 .floatmenu {
@@ -44,6 +75,12 @@ body {
 	z-index: 20;
 	position: absolute;
 }
+
+.nowrap {
+	white-space: nowrap;
+	display: inline-block;
+}
+
 .queryheader li {
 	text-align: left;
 }
@@ -53,14 +90,14 @@ body {
     overflow-y: auto;
     width: 100%;
     padding-bottom: 1em;
+    overflow-x: hidden;
 }
 
 .queryheading {
 	font-weight: bold;
-    font-size: 1em;
+    font-size: 120%;
     color: white;
     margin: 0;
-	font-family: Verdana,Arial,sans-serif;
 	padding: 0.25em;
 background: rgb(44,25,67); /* Old browsers */
 background: -moz-linear-gradient(top, rgba(44,25,67,1) 0%, rgba(44,16,92,1) 50%, rgba(40,14,84,1) 51%, rgba(58,23,127,1) 100%); /* FF3.6+ */
@@ -75,11 +112,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 }
 .pharmit_query .queryfooter {
     width: 100%;
-    text-align: center;
     border-top: 1px solid #dddddd;
-    padding: 0.5em;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
 }
 
+.bottomloaders {
+    text-align: center;
+    padding: 0.5em;
+    overflow: hidden;
+}
 .pharmit_query .queryfooter button {
 
     margin-right: 0.5em;
@@ -103,6 +146,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 
 .loaderdiv {
 	text-align: center;
+	width: 100%;
 }
 
 .loaderdiv div {
@@ -110,8 +154,56 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	padding-right: 0.5em;
 	padding-bottom: 0.5em;
 }
-.filterrow input {
+
+.querybody .hitreduction {
+	padding: 0.5em 1em;
+}
+	
+.filterrow {
+	white-space: nowrap;
+}
+.hitreduction .filterrow {
+		margin: 0.5em;
+		position: relative;
+		max-width: 17em;
+		
+}
+.hitreduction .filterrow input {
 	width: 4em;
+}
+
+/* clear fix next */
+ .filterrow:before,
+.filterrow:after {
+  content:"";
+  display:table;
+}
+.filterrow:after {
+  clear:both;
+}
+.hitreduction .filterrow span.ui-spinner {
+	float: right;
+}
+
+.querybody .hitscreening {
+		padding: 0.5em 0em; /* spinner has margin */
+}	
+.hitscreening .filterrow {
+		margin: 0.5em;
+		position: relative;	
+		max-width: 24em;
+}
+.hitscreening .filterrow input {
+	width: 2.5em;
+}
+
+.hitscreening .ui-spinner {
+	margin-left: 1em;
+	margin-right: 1em;
+}
+.hitscreening label+.ui-spinner {
+	float: right;
+	margin-left: 0em;
 }
 
 .headingsummary {
@@ -119,28 +211,14 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	color: gray;
 }
 
-.stylelabel {
-	display:block;
-}
-.styleselector {
-	width: 10em;
-}
 
-.surfacetransparencydiv {
-	width: 100%;
-	text-align: center;
-}
-
-.surfacetransparencydiv div {
-	margin-left: 1em;
-	margin-right: 1em;
-}
 
 .togglediv {
     display: inline-block;
     height: 22px;
     width: 60px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .togglediv .toggle-on {
@@ -152,6 +230,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	display: inline-block;
 	padding-right: 2.5em; /* space for feature close */
 	padding-left: 0.5em;
+	vertical-align: middle;
 }
 
 .featurenameheading {
@@ -162,6 +241,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 .featurebuttons {
 	padding: 0.5em;
 	text-align: center;
+	white-space: nowrap;
 }
 
 .featurebuttons button {
@@ -212,3 +292,113 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	position: absolute;
 	top: 50%;	
 }
+
+.locationdiv {
+	padding-top: 0.5em;
+}
+.coorddiv {
+	padding-top: 0.5em;
+}
+
+.coorddiv input {
+	width: 4em;
+}
+
+.coorddiv .ui-spinner {
+	margin-left: 0.5em;
+}
+
+.coorddiv input.radiusinput {
+	width: 2.5em;
+}
+
+.orientdiv {
+	padding-top: 1em;
+}
+
+.orientdiv * {
+	vertical-align: middle;
+}
+.orientdiv label {
+	padding-left: 0.5em;
+	padding-right: 0.1em;
+}
+.orientinput {
+	width: 2.2em;
+}
+.sizediv {
+	padding-top: 1em;
+}
+
+.sizediv * {
+	vertical-align: middle;
+}
+.sizediv label {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}
+.sizeinput {
+	width: 2.2em;
+}
+
+
+label { font-weight: bold;}
+.vizdiv {
+	padding: 0.5em 0em 0.5em 1.5em;
+}
+
+.styleselectrow {
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+	max-width: 18em;
+	line-height: 2.5em;
+}
+
+ .styleselectrow:before,
+.styleselectrow:after {
+  content:"";
+  display:table;
+}
+
+.styleselectrow:after {
+  clear:both;
+}
+
+
+.querybody .ui-selectmenu-button span.ui-selectmenu-text {
+	text-align: center;
+}
+.styleselectrow>span{
+	float: right;
+}
+.stylelabel {
+}
+.styleselector {
+	width: 8em;
+}
+
+.surfacetransparencydiv {
+	width: 100%;
+	padding-top: 0.75em;
+}
+.surfacetransparencyslider {
+	width: 100%;
+	text-align: center;
+	padding-top: 0.5em;
+}
+
+.surfacetransparencyslider div {
+	margin-left: 0em;
+	margin-right: 1.5em;
+}
+
+.backgroundcolordiv  {
+	padding-top: 1em;
+}
+
+.backgroundcolordiv  .ui-buttonset {
+	padding-top: 0.5em;
+	padding-left: 0.25em;
+	display: inline-block;
+}
+

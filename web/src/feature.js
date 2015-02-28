@@ -96,42 +96,48 @@ function Feature(viewer, features, fobj) {
 		return init;
 	};
 	
-	$('<label>x:</label>').appendTo(locationdiv);
-	this.x = $('<input>').appendTo(locationdiv).addClass('coordinput').change(function() {
+	//for prettier display round values to 3 decimal places
+	var round = function(x) { return Math.round(x*1000)/1000;};
+	
+	var c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>x:</label>').appendTo(c);
+	this.x = $('<input>').appendTo(c).addClass('coordinput').change(function() {
 		//change x value
-		var x = parseFloat(this.value);
+		var x = this.value = round(parseFloat(this.value));
 		F.xsummary.text(numeral(x).format('0.[00]'));
-		F.obj.x = x;
+		F.obj.x = round(x);
 		F.updateViewer();
 		});
 	this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
 	
-	
-	$('<label>y:</label>').appendTo(locationdiv);
-	this.y = $('<input>').appendTo(locationdiv).addClass('coordinput');
+	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>y:</label>').appendTo(c);
+	this.y = $('<input>').appendTo(c).addClass('coordinput');
 	this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
 		//change y value
-		var y = parseFloat(this.value);
+		var y = this.value = round(parseFloat(this.value));
 		F.ysummary.text(numeral(y).format('0.[00]'));
-		F.obj.y = y;
+		F.obj.y = round(y);
 		F.updateViewer();
 		});
 
-	$('<label>z:</label>').appendTo(locationdiv);
-	this.z = $('<input>').appendTo(locationdiv).addClass('coordinput');
+	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>z:</label>').appendTo(c);
+	this.z = $('<input>').appendTo(c).addClass('coordinput');
 	this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
-		var z = parseFloat(this.value);
+		var z = this.value = round(parseFloat(this.value));
 		F.zsummary.text(numeral(z).format('0.[00]'));
 		F.obj.z = z;
 		F.updateViewer();
 		});
 
 	//radius
-	$('<label>Radius:</label>').appendTo(locationdiv);
-	this.radius = $('<input>').appendTo(locationdiv).addClass('radiusinput');
+	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	$('<label>Radius:</label>').appendTo(c);
+	this.radius = $('<input>').appendTo(c).addClass('radiusinput');
 	this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
 		F.rsummary.text(numeral(this.value).format('0.[00]'));
-		F.obj.radius = this.value;
+		F.obj.radius = this.value = round(this.value);
 		F.updateViewer();
 		});
 
@@ -140,15 +146,24 @@ function Feature(viewer, features, fobj) {
 	var theta = null, phi = null;
 	
 	
-	var setVector = function(t, p) {
-		//t and p are in degrees, create svector i nobj
-		var theta = t*Math.PI/180;
-		var psi = p*Math.PI/180;
+	var updateVector = function () {
+		//parse text, round to integers, and calculate vector for orientation
+		var p = Math.round(parseFloat(phi.val())) % 360;
+		var t = Math.round(parseFloat(theta.val())) % 360;
+		if(isNaN(p)) p = 0;
+		if(isNaN(t)) t = 0;
+		phi.val(p);
+		theta.val(t);
+		//convert to radians
+		t = t*Math.PI/180;
+		p = p*Math.PI/180;
 		F.obj.svector = {
-			x: Math.sin(theta)*Math.cos(psi),
-			y: Math.sin(theta)*Math.sin(psi),
-			z: Math.cos(theta)
+			x: Math.sin(t)*Math.cos(p),
+			y: Math.sin(t)*Math.sin(p),
+			z: Math.cos(t)
 		};
+		F.updateViewer();
+
 	};
 	
 	this.orientenabled = $('<input type="checkbox">').appendTo(orientdiv).change(
@@ -156,31 +171,27 @@ function Feature(viewer, features, fobj) {
 				if($(this).prop( "checked")) {
 					theta.spinner('option','disabled',false);
 					phi.spinner('option','disabled',false);
-					F.obj.vector_on = 0;
+					F.obj.vector_on = 1;
 				}
 				else {
 					theta.spinner('option','disabled',true);
 					phi.spinner('option','disabled',true);
-					F.obj.vector_on = 1;
-					setVector(theta.val(), phi.val());						
+					F.obj.vector_on = 0;
+					updateVector();
 				}
 				F.updateViewer();
 			}
 			);
 	
-	$('<label>&theta;:</label>').appendTo(orientdiv);
-	theta = this.theta = $('<input>').appendTo(orientdiv).addClass('orientinput');
-	this.theta.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(function() {
-		setVector(theta.val(), phi.val());
-		F.updateViewer();
-		});
-	
-	$('<label>&phi;:</label>').appendTo(orientdiv);
-	phi = this.phi = $('<input>').appendTo(orientdiv).addClass('orientinput');
-	this.phi.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(function() {			
-		setVector(theta.val(), phi.val());
-		F.updateViewer();
-		});
+	var nowrap = $('<span>').addClass('nowrap').appendTo(orientdiv);
+	$('<label>&theta;:</label>').appendTo(nowrap);
+	theta = this.theta = $('<input>').appendTo(nowrap).addClass('orientinput');
+	this.theta.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(updateVector);
+
+	nowrap = $('<span>').addClass('nowrap').appendTo(orientdiv);
+	$('<label>&phi;:</label>').appendTo(nowrap);
+	phi = this.phi = $('<input>').appendTo(nowrap).addClass('orientinput');
+	this.phi.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(updateVector);
 	
 	this.orientdiv.hide();
 	
@@ -193,7 +204,7 @@ function Feature(viewer, features, fobj) {
 		F.updateViewer();
 	});
 	
-	$('<label> &le; #Atoms &le;</label>').appendTo(sizediv);
+	$('<label> &le; #Atoms &le;</label>').appendTo(sizediv).addClass('nowrap');
 	this.maxsize = $('<input>').appendTo(sizediv).addClass('sizeinput');
 	this.maxsize.spinner(spinObject(F.maxsize,{step: 1, numberFormat: 'n'})).change(function() {
 		F.obj.maxsize = this.value;
@@ -277,6 +288,7 @@ Feature.prototype.selectFeature = function() {
 	this.viewer.selectFeature(this.shape);
 	this.container.addClass("selectedFeature");
 	this.selected = true;
+	this.obj.selected = true;
 };
 
 //remove selection style
@@ -284,5 +296,6 @@ Feature.prototype.deselectFeature = function() {
 	this.viewer.unselectFeature(this.shape);
 	this.container.removeClass("selectedFeature");
 	this.selected = false;
+	this.obj.selected = false;
 };
 
