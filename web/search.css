@@ -13,37 +13,39 @@ body {
 }
 .ui-widget{font-size:12px;}
 
-#pharmit {
+.pharmit_main {
 	height: 100%;
 	width: 100%;
 }
 
-.ui-state-default {
+.pharmit_main .ui-state-default {
 	color: #212121;
 }
 
-label { font-weight: bold; white-space: nowrap;}
+.pharmit_main label { font-weight: bold; white-space: nowrap;}
 
-	
-.pharmit_query {
-	float: left;
+.pharmit_overlay { /*either left or right*/
 	position: absolute;
 	background-color: white;
 	opacity: 0.9;
-	border-right: 1px solid black;
 	z-index: 10;
 	height:100vh;
+  	width: 25em;	
+}
+	
+.pharmit_query {
+	float: left;
+	border-right: 1px solid #dddddd;
   	display:flex;
   	flex-direction: column;
-  	width: 25em;
 }
 
-.pharmit_query .queryheader {
+.pharmit_queryheader {
 	   border-bottom: 1px solid #dddddd;
 		overflow: hidden;
 }
 
-.leftclose {
+.pharmit_leftclose {
 	position: absolute;
 	width: 2em;
 	height: 3em;
@@ -56,7 +58,7 @@ label { font-weight: bold; white-space: nowrap;}
     text-align: center;
 }
 
-.leftclose span {
+.pharmit_leftclose span {
 	display: block;
 	height: 16px;
 	margin-top: -8px;
@@ -66,28 +68,28 @@ label { font-weight: bold; white-space: nowrap;}
 	margin-right: -8px;
 }
 
-.leftclose.leftisclosed {
+.pharmit_leftclose.pharmit_leftisclosed {
 	border-width: 0px 1px 1px 1px;	
 	right: -40px;
 	width: 38px;
 }
 
-.floatmenu {
+.pharmit_floatmenu {
 	display: inline-block;
 	z-index: 20;
 	position: absolute;
 }
 
-.nowrap {
+.pharmit_nowrap {
 	white-space: nowrap;
 	display: inline-block;
 }
 
-.queryheader li {
+.pharmit_queryheader li {
 	text-align: left;
 }
 
-.pharmit_query .querybody {
+.pharmit_query .pharmit_querybody {
 	flex:1;
     overflow-y: auto;
     width: 100%;
@@ -95,7 +97,7 @@ label { font-weight: bold; white-space: nowrap;}
     overflow-x: hidden;
 }
 
-.queryheading {
+.pharmit_heading {
 	font-weight: bold;
     font-size: 120%;
     color: white;
@@ -112,7 +114,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
      border-radius: 5px;
      padding-left: 1em;
 }
-.pharmit_query .queryfooter {
+.pharmit_query .pharmit_queryfooter {
     width: 100%;
     border-top: 1px solid #dddddd;
     padding: 0;
@@ -120,76 +122,73 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
     overflow: hidden;
 }
 
-.bottomloaders {
+.pharmit_bottomloaders {
     text-align: center;
-    padding: 0.5em;
+    padding: 0.5em 0;
+    width: 100%;
     overflow: hidden;
 }
-.pharmit_query .queryfooter button {
+.pharmit_bottomloaders button {
 
     margin-right: 0.5em;
     margin-left: 0.5em;
 }
 
-.pharmit_results {
-	height: 100%;
-	float: right;
-}
 
-.searchdiv {
+.pharmit_searchdiv {
 	text-align: center;
 	padding: 0.5em;
 	white-space: nowrap;
 }
 
-.searchdiv .ui-button-text {
+.pharmit_searchdiv .ui-button-text {
 	width: 14em;
 }
 
-.loaderdiv {
+.pharmit_loaderdiv {
 	text-align: center;
 	width: 100%;
 }
 
-.loaderdiv div {
+.pharmit_loaderdiv div {
 	padding-left: 0.5em;
 	padding-right: 0.5em;
 	padding-bottom: 0.5em;
 }
 
-.querybody .hitreduction {
+.pharmit_querybody .pharmit_hitreduction {
 	padding: 0.5em 1em;
 }
 	
-.filterrow {
+.pharmit_filterrow {
 	white-space: nowrap;
 }
 
-.hitreduction .filterrow input {
+.pharmit_hitreduction .pharmit_filterrow input {
 	width: 4em;
 }
-.hitreduction .ui-spinner {
+.pharmit_hitreduction .ui-spinner {
 	margin-left: 1em;
 }
 
-.querybody .hitscreening {
+.pharmit_querybody .pharmit_hitscreening {
 		padding: 0.5em 0em; /* spinner has margin */
 }	
 
-.hitscreening .filterrow input {
+.pharmit_hitscreening .pharmit_filterrow input {
 	width: 2.5em;
 }
 
-.hitscreening .filterrow td {
+.pharmit_hitscreening .pharmit_filterrow td {
 	text-align: center;
 }
 
-.hitscreening .ui-spinner {
+.pharmit_hitscreening .ui-spinner {
 	margin-left: 1em;
 	margin-right: 1em;
 }
 
-.headingsummary {
+.pharmit_headingsummary {
 	font-size: x-small;
 	color: gray;
 }
@@ -197,7 +196,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 
 
 
-.togglediv {
+.pharmit_togglediv {
     display: inline-block;
     height: 22px;
     width: 60px;
@@ -205,61 +204,61 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
     vertical-align: middle;
 }
 
-.togglediv .toggle-on {
+.pharmit_togglediv .toggle-on {
 	font-weight: bold;
 	background-color:  #2E0854;
 }
 
-.featurenamediv {
+.pharmit_featurenamediv {
 	display: inline-block;
 	padding-right: 2.5em; /* space for feature close */
 	padding-left: 0.5em;
 	vertical-align: middle;
 }
 
-.featurenameheading {
+.pharmit_featurenameheading {
 	font-weight: bold;
 	font-size: 110%;
 }
 
-.featurebuttons {
+.pharmit_featurebuttons {
 	padding: 0.5em;
 	text-align: center;
 	white-space: nowrap;
 }
 
-.featurebuttons button {
+.pharmit_featurebuttons button {
 	   margin-left: 0.5em;
     margin-right: 0.5em;
 }
 
-.selectedFeature.enabledfeature h3 {
+.pharmit_selectedFeature.pharmit_enabledfeature h3 {
 	border-color: purple;
 }
 
-.selectedFeature.enabledfeature .ui-accordion-content-active {
+.pharmit_selectedFeature.pharmit_enabledfeature .ui-accordion-content-active {
 		border-color: purple;
 }
 
-.enabledfeature .featurenameheading {
+.pharmit_enabledfeature .pharmit_featurenameheading {
 	color: black;
 }
 
 
 
-.featurenamediv>span {
+.pharmit_featurenamediv>span {
 	display: block;
 }
-.featurediv>h3 {
+.pharmit_featurediv>h3 {
 	position: relative;
 	white-space: nowrap;
 	color: #555555;
 }
 
-.featuresummary {
+.pharmit_featuresummary {
 	font-size: 75%;
 }
-.featureclose{
+.pharmit_featureclose{
 	display: inline-block;
 	position: absolute;
 	right: 0;
@@ -268,7 +267,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
     margin-top: -.5em; /* counteract padding */
     vertical-align: middle;	
 }
-.featureclose span {
+.pharmit_featureclose span {
 	display: block;
 	height: 16px;
 	margin-top: -8px;
@@ -277,102 +276,213 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	top: 50%;	
 }
 
-.locationdiv {
+.pharmit_locationdiv {
 	padding-top: 0.5em;
 }
-.coorddiv {
+.pharmit_coorddiv {
 	padding-top: 0.5em;
 }
 
-.coorddiv input {
+.pharmit_coorddiv input {
 	width: 4em;
 }
 
-.coorddiv .ui-spinner {
+.pharmit_coorddiv .ui-spinner {
 	margin-left: 0.5em;
 }
 
-.coorddiv input.radiusinput {
+.pharmit_coorddiv input.radiusinput {
 	width: 2.5em;
 }
 
-.orientdiv {
+.pharmit_orientdiv {
 	padding-top: 1em;
 }
 
-.orientdiv * {
+.pharmit_orientdiv * {
 	vertical-align: middle;
 }
-.orientdiv label {
+.pharmit_orientdiv label {
 	padding-left: 0.5em;
 	padding-right: 0.1em;
 }
-.orientinput {
+.pharmit_orientinput {
 	width: 2.2em;
 }
-.sizediv {
+.pharmit_sizediv {
 	padding-top: 1em;
 }
 
-.sizediv * {
+.pharmit_sizediv * {
 	vertical-align: middle;
 }
-.sizediv label {
+.pharmit_sizediv label {
 	padding-left: 0.5em;
 	padding-right: 0.5em;
 }
-.sizeinput {
+.pharmit_sizeinput {
 	width: 2.2em;
 }
 
 
-.vizdiv {
+.pharmit_vizdiv {
 	padding: 0.5em 0em 0.5em 1.5em;
 }
 
-.vizdiv table {
+.pharmit_vizdiv table {
 	 border-collapse: collapse;
 }
 
-.querybody .ui-selectmenu-button span.ui-selectmenu-text {
+.pharmit_querybody .ui-selectmenu-button span.ui-selectmenu-text {
 	text-align: center;
 }
 
-.stylelabel {
+.pharmit_stylelabel {
 	white-space: nowrap;
 	padding-right: 0.5em;
 }
-.styleselector {
+.pharmit_styleselector {
 	width: 8em;
 }
 
-.styleselectrow td {
+.pharmit_styleselectrow td {
 	padding: 0;
 	height: 3em;
 }
 
-.surfacetransparencydiv {
+.pharmit_surfacetransparencydiv {
 	width: 100%;
 	padding-top: 0.75em;
 }
-.surfacetransparencyslider {
+.pharmit_surfacetransparencyslider {
 	width: 100%;
 	text-align: center;
 	padding-top: 0.5em;
 }
 
-.surfacetransparencyslider div {
+.pharmit_surfacetransparencyslider div {
 	margin-left: 0em;
 	margin-right: 1.5em;
 }
 
-.backgroundcolordiv  {
+.pharmit_backgroundcolordiv  {
 	padding-top: 1em;
 }
 
-.backgroundcolordiv  .ui-buttonset {
+.pharmit_backgroundcolordiv  .ui-buttonset {
 	padding-top: 0.5em;
 	padding-left: 0.25em;
 	display: inline-block;
 }
 
+.pharmit_backgroundcolordiv .ui-state-default {
+	color: #555555;
+	font-weight: normal;
+
+}
+
+.pharmit_backgroundcolordiv .ui-state-active {
+	color: black;
+	font-weight: normal;
+}
+
+/*** results styling below ***/
+
+	
+.pharmit_results {
+	right: 0; !important
+	position: absolute;!important
+	margin: 0;
+	border-left: 1px solid #dddddd;
+}
+
+
+.pharmit_rightclose {
+	position: absolute;
+	width: 2em;
+	height: 2em;
+	left: 0em;
+	color: white;
+	border-style: solid;
+	border-color: #222222;
+	border-width: 0px;
+    vertical-align: middle;	
+    text-align: center;
+    z-index: 100;
+    
+}
+
+.pharmit_rightclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	position: absolute;
+	top: 50%;	
+	right: 50%;
+	margin-right: -8px;
+	filter: invert(100%);
+	font-weight: bold;
+}
+
+.pharmit_rightclose:not(.pharmit_rightisclosed) span {
+	background-image: url("images/icons_white.png"); /* open*/	
+}
+.pharmit_rightclose.pharmit_rightisclosed {
+	border-width: 0px 1px 1px 1px;	
+	left: -40px;
+	width: 38px;
+	background-color: white;
+	filter: invert(0%);
+	}
+
+.pharmit_rescontainer {
+  	display:flex;
+  	flex-direction: column;
+  	width: 100%;
+  	height: 100vh;
+  	position: absolute;
+}
+
+.pharmit_resheader {
+		overflow: hidden;
+		width: 100%;
+}
+
+.pharmit_resbody {
+	flex:1;
+    overflow: auto;
+    width: 100%;
+}
+
+.pharmit_resfooter {
+    width: 100%;
+    border-top: 1px solid #dddddd;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.pharmit_rightheading {
+	/*leave space for close*/
+	padding-left: 2em;
+	white-space: nowrap;
+}
+
+.pharmit_resclose{
+	display: inline-block;
+	position: absolute;
+	right: 0;
+	height: 24px;
+    width: 2em;
+    margin-top: -.25em; /* counteract padding */
+    vertical-align: middle;	
+}
+.pharmit_resclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	margin-left: .5em;
+	position: absolute;
+	top: 50%;	
+	background-image: url("images/icons_white.png"); 
+}

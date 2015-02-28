@@ -10,10 +10,8 @@
     FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
  */
 /*
-	viewer.js
-	Object responsible for maintaining molecular viewer.
-	Query and Results both call have references to the viewer to set data.
-	Query provides a callback for when pharmacophores are selected
+	query.js
+	Left div that manages the query information.
 */
 
 var Pharmit = Pharmit || {};
@@ -23,9 +21,9 @@ Pharmit.Query = (function() {
 	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 
 	
-	function Query(element, viewer) {
+	function Query(element, viewer, results) {
 		//private variables and functions
-		var querydiv = $('<div>').addClass('pharmit_query');
+		var querydiv = $('<div>').addClass('pharmit_query pharmit_overlay');
 		var features = null;
 		var featureheading = null;
 		var receptorData = null;
@@ -34,7 +32,9 @@ Pharmit.Query = (function() {
 		var ligandName = null;
 		
 		var doSearch = function() {
-			
+			var qobj = getQueryObj();
+			//results manages queries
+			results.phquery(qobj);
 		};
 		
 		//boiler plate for asynchronously extracting text from a file input
@@ -50,6 +50,8 @@ Pharmit.Query = (function() {
 			}
 		};
 		
+		//query server to get pharmacophore
+		//result replaces any existing featuers
 		var loadFeatures = function() {
 			
 		};
@@ -182,12 +184,12 @@ Pharmit.Query = (function() {
 		
 		//create a split button from a list of vendors and prepend it to header
 		var createSearchButton = function(header,vendors) {
-			var buttons = $('<div>').addClass('searchdiv');
+			var buttons = $('<div>').addClass('pharmit_searchdiv');
 			var run = $('<button>Search '+vendors[0]+'</button>').appendTo(buttons).button();
 			var select = $('<button>Select subset to search</button>').appendTo(buttons).button({text: false, icons: {primary: "ui-icon-triangle-1-s"}});
 			
 			buttons.buttonset();
-			var ul = $('<ul>').appendTo($('body')).addClass('floatmenu'); //can't be in query div because of overflow truncation
+			var ul = $('<ul>').appendTo($('body')).addClass('pharmit_floatmenu'); //can't be in query div because of overflow truncation
 			var lis = [];
 			for(var i = 0, n = vendors.length; i < n; i++) {
 				lis[i] = '<li>'+vendors[i]+'</li>';
@@ -216,7 +218,7 @@ Pharmit.Query = (function() {
 		
 		//public variables and functions
 		
-		var closer = $('<div>').appendTo(querydiv).addClass('leftclose');
+		var closer = $('<div>').appendTo(querydiv).addClass('pharmit_leftclose');
 		var closericon = $('<span>').addClass("ui-icon ui-icon-carat-1-w").appendTo(closer);
 		
 		//initialization code
@@ -229,8 +231,8 @@ Pharmit.Query = (function() {
 		
 
 		closer.click(function() {
-			if(closer.hasClass('leftisclosed')) {
-				closer.removeClass('leftisclosed');
+			if(closer.hasClass('pharmit_leftisclosed')) {
+				closer.removeClass('pharmit_leftisclosed');
 				closericon.removeClass('ui-icon-carat-1-e');
 				closericon.addClass('ui-icon-carat-1-w');
 				var start = querydiv.width();
@@ -248,18 +250,18 @@ Pharmit.Query = (function() {
 					progress: function() { viewer.setLeft(querydiv.width());}
 					}); 
 				//viewer.setLeft(0);
-				closer.addClass('leftisclosed');
+				closer.addClass('pharmit_leftisclosed');
 				closericon.addClass('ui-icon-carat-1-e');
 				closericon.removeClass('ui-icon-carat-1-w');			
 				querydiv.resizable( "option", "disabled", true );
 			}
 		});
 		
-		var header = $('<div>').appendTo(querydiv).addClass("queryheader");
+		var header = $('<div>').appendTo(querydiv).addClass("pharmit_queryheader");
 		createSearchButton(header,['MolPort','ZINC']);
 		
 		//load features and load receptor
-		var loaders = $('<div>').appendTo(header).addClass('loaderdiv').addClass('nowrap');
+		var loaders = $('<div>').appendTo(header).addClass('pharmit_loaderdiv').addClass('pharmit_nowrap');
 		var loadrec = $('<button>Load Receptor...</button>').button();
 		var loadfeatures = $('<button>Load Features...</button>').button();
 		
@@ -271,12 +273,13 @@ Pharmit.Query = (function() {
 		querydiv.detach();
 		
 		//query features
-		var body = $('<div>').appendTo(querydiv).addClass("querybody");
+		var body = $('<div>').appendTo(querydiv).addClass("pharmit_querybody");
 		var featuregroup = $('<div>').appendTo(body);
-		featureheading = $('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('queryheading');
+		featureheading = $('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('pharmit_heading');
 		features = $('<div>').appendTo(featuregroup);
 		features.accordion({header: "> div > h3", 
 			animate: true, 
+			active: false,
 			collapsible: true,
 			heightStyle:'content',
 			beforeActivate: function( event, ui ) { 
@@ -305,7 +308,7 @@ Pharmit.Query = (function() {
 				}
 				});
 		
-		var buttondiv = $('<div>').appendTo(featuregroup).addClass('featurebuttons');
+		var buttondiv = $('<div>').appendTo(featuregroup).addClass('pharmit_featurebuttons');
 		var addbutton = $('<button>Add</button>').appendTo(buttondiv)
 			.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
 			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
@@ -313,43 +316,43 @@ Pharmit.Query = (function() {
 
 		//filters
 		var filtergroup = $('<div>').appendTo(body);
-		$('<div>Filters</div>').appendTo(filtergroup).addClass('queryheading');
+		$('<div>Filters</div>').appendTo(filtergroup).addClass('pharmit_heading');
 		var filters = $('<div>').appendTo(filtergroup);		
 		
 		var heading = $('<h3>Hit Reduction<br></h3>').appendTo(filters);
-		var hitreductionsummary = $('<span class="headingsummary"></span>').appendTo(heading);
+		var hitreductionsummary = $('<span>').appendTo(heading).addClass('pharmit_headingsummary');
 
-		var hitreductions = $('<div>').addClass("hitreduction").appendTo(filters);
+		var hitreductions = $('<div>').addClass("pharmit_hitreduction").appendTo(filters);
 		var reducetable = $('<table>').appendTo(hitreductions);
-		var row = $('<tr>').addClass('filterrow').appendTo(reducetable);
+		var row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
 		$('<td>').append('<label title="Maximum number of orientations returned for each conformation" value="1" for="reduceorienttext">Max Hits per Conf:</label>').appendTo(row);
 		var cell = $('<td>').appendTo(row);
 		$('<input id="reduceorienttext" name="max-orient">').appendTo(cell).spinner();
 		
-		row = $('<tr>').addClass('filterrow').appendTo(reducetable);
+		row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
 		$('<td>').append('<label title="Maximum number of conformations returned for each compound" value="1" for="reduceconfstext">Max Hits per Mol:</label>').appendTo(row);
 		cell = $('<td>').appendTo(row);
 		$('<input id="reduceconfstext" name="reduceConfs">').appendTo(cell).spinner();
 		
-		row = $('<tr>').addClass('filterrow').appendTo(reducetable);
+		row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
 		$('<td>').append('<label title="Maximum number of hits returned" value="1" for="reducehitstext">Max Total Hits:</label>').appendTo(row);
 		cell = $('<td>').appendTo(row);
 		$('<input id="reducehitstext" name="max-hits">').appendTo(cell).spinner();
 		
 		
 		heading = $('<h3>Hit Screening<br></h3>').appendTo(filters);
-		var hitscreeningsummary = $('<span class="headingsummary"></span>').appendTo(heading);
-		var hitscreening = $('<div class="hitscreening"></div>').appendTo(filters);
+		var hitscreeningsummary = $('<span>').appendTo(heading).addClass('pharmit_headingsummary');
+		var hitscreening = $('<div>').appendTo(filters).addClass('pharmit_hitscreening');
 		var screentable = $('<table>').appendTo(hitscreening);
 		
-		row = $('<tr>').addClass('filterrow').appendTo(screentable);
+		row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
 		cell = $('<td>').appendTo(row);
 		$('<input id="minmolweight" name="minMolWeight">').appendTo(cell).spinner();
 		$('<td>').appendTo(row).append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  MolWeight &le;</label>'));
 		cell = $('<td>').appendTo(row);
 		$('<input id="maxmolweight" name=maxMolWeight>').appendTo(cell).spinner();
 
-		row = $('<tr>').addClass('filterrow').appendTo(screentable);
+		row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
 		cell = $('<td>').appendTo(row);
 		$('<input id="minnrot" name="minrotbonds">').appendTo(cell).spinner();
 		$('<td>').appendTo(row).append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  RotBonds &le;</label>'));
@@ -360,14 +363,14 @@ Pharmit.Query = (function() {
 		
 		//viewer settings
 		var vizgroup = $('<div>').appendTo(body);
-		$('<div>Visualization</div>').appendTo(vizgroup).addClass('queryheading');
-		var vizbody = $('<div>').appendTo(vizgroup).addClass('vizdiv');
+		$('<div>Visualization</div>').appendTo(vizgroup).addClass('pharmit_heading');
+		var vizbody = $('<div>').appendTo(vizgroup).addClass('pharmit_vizdiv');
 		viewer.appendViewerControls(vizbody);
 
 		
 		//load/save session
-		var footer = $('<div>').appendTo(querydiv).addClass("queryfooter");
-		var bottomloaders = $('<div>').appendTo(footer).addClass("bottomloaders").addClass('nowrap');
+		var footer = $('<div>').appendTo(querydiv).addClass("pharmit_queryfooter");
+		var bottomloaders = $('<div>').appendTo(footer).addClass("pharmit_bottomloaders").addClass('pharmit_nowrap');
 		element.append(querydiv);
 
 		var loadsession = $('<button>Load Session...</button>').button();

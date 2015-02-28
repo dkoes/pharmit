@@ -1,3 +1,18 @@
+/*
+ * Pharmit Web Client
+ * Copyright 2015 David R Koes and University of Pittsburgh
+ *  The JavaScript code in this page is free software: you can
+    redistribute it and/or modify it under the terms of the GNU
+    General Public License (GNU GPL) as published by the Free Software
+    Foundation, either version 2 of the License, or (at your option)
+    any later version.  The code is distributed WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+ */
+/*
+	query.js
+	Represents a single pharmacophore feature.
+*/
 
 /* object representing a single pharmacophore feature*/
 function Feature(viewer, features, fobj) {
@@ -14,28 +29,28 @@ function Feature(viewer, features, fobj) {
 	//and make updateViewer functional
 	this.updateViewer = function() {};
 	
-	this.container = $('<div>').appendTo(features).addClass('featurediv');
+	this.container = $('<div>').appendTo(features).addClass('pharmit_featurediv');
 	this.container.get(0).feature = this;
 	this.container.disableSelection();
 	
 	//header has checkbox for enable, name, and a close icon
 	var heading = $('<h3></h3>').appendTo(this.container);
-	this.enabled = $('<div>').addClass('toggle toggle-light togglediv').appendTo(heading).toggles().on('toggle',
+	this.enabled = $('<div>').addClass('toggle toggle-light pharmit_togglediv').appendTo(heading).toggles().on('toggle',
 			function(e, active) {
 				if(active) {
 					F.obj.enabled = true;
-					F.container.addClass("enabledfeature");
+					F.container.addClass("pharmit_enabledfeature");
 				}
 				else {
 					F.obj.enabled = false;	
-					F.container.removeClass("enabledfeature");
+					F.container.removeClass("pharmit_enabledfeature");
 				}
 				F.updateViewer();
 			}
 			).click(function(e) {return false;}); //needed to stop clickthrue
-	var namediv = $('<div>').addClass('featurenamediv').appendTo(heading);
-	var namespan = $('<span>').addClass('featurenameheading').appendTo(namediv);
-	var closediv = $('<div>').addClass('featureclose').appendTo(heading).click(function() {
+	var namediv = $('<div>').addClass('pharmit_featurenamediv').appendTo(heading);
+	var namespan = $('<span>').addClass('pharmit_featurenameheading').appendTo(namediv);
+	var closediv = $('<div>').addClass('pharmit_featureclose').appendTo(heading).click(function() {
 		//remove from viewer
 		if(F.shape) viewer.removeFeature(F.shape);
 		//remove from dom
@@ -45,7 +60,7 @@ function Feature(viewer, features, fobj) {
 	var close = $('<span>').addClass('ui-icon-circle-close ui-icon').appendTo(closediv);
 	
 	//summary has (x,y,z) Radius r
-	var summary = $('<span>').appendTo(namediv).addClass('featuresummary');		
+	var summary = $('<span>').appendTo(namediv).addClass('pharmit_featuresummary');		
 	summary.append($(document.createTextNode('(')));
 	this.xsummary = $('<span>').appendTo(summary);
 	summary.append($(document.createTextNode(',')));
@@ -58,7 +73,7 @@ function Feature(viewer, features, fobj) {
 	var editdiv = $('<div>').appendTo(this.container);
 	
 	//feature kind selection (name)
-	var select = this.select = $('<select name="featurename">').addClass('featureselect').appendTo(editdiv);
+	var select = this.select = $('<select name="featurename">').addClass('pharmit_featureselect').appendTo(editdiv);
 	$.each(this.featureNames, function(key,val) {
 		$('<option value="'+val+'">'+val+'</option>').appendTo(select);
 	});
@@ -86,7 +101,7 @@ function Feature(viewer, features, fobj) {
 	select.selectmenu({width: "12em", change: function() {select.trigger('change');}});
 	
 	//position (x,y,z)
-	var locationdiv = $('<div>').appendTo(editdiv).addClass('locationdiv');
+	var locationdiv = $('<div>').appendTo(editdiv).addClass('pharmit_locationdiv');
 	
 	//because spinners are insane and don't trigger a change event on the
 	//underlying element and split up spinning and stopping and changing...
@@ -99,9 +114,9 @@ function Feature(viewer, features, fobj) {
 	//for prettier display round values to 3 decimal places
 	var round = function(x) { return Math.round(x*1000)/1000;};
 	
-	var c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	var c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>x:</label>').appendTo(c);
-	this.x = $('<input>').appendTo(c).addClass('coordinput').change(function() {
+	this.x = $('<input>').appendTo(c).addClass('pharmit_coordinput').change(function() {
 		//change x value
 		var x = this.value = round(parseFloat(this.value));
 		F.xsummary.text(numeral(x).format('0.[00]'));
@@ -110,9 +125,9 @@ function Feature(viewer, features, fobj) {
 		});
 	this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
 	
-	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>y:</label>').appendTo(c);
-	this.y = $('<input>').appendTo(c).addClass('coordinput');
+	this.y = $('<input>').appendTo(c).addClass('pharmit_coordinput');
 	this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
 		//change y value
 		var y = this.value = round(parseFloat(this.value));
@@ -121,9 +136,9 @@ function Feature(viewer, features, fobj) {
 		F.updateViewer();
 		});
 
-	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>z:</label>').appendTo(c);
-	this.z = $('<input>').appendTo(c).addClass('coordinput');
+	this.z = $('<input>').appendTo(c).addClass('pharmit_coordinput');
 	this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
 		var z = this.value = round(parseFloat(this.value));
 		F.zsummary.text(numeral(z).format('0.[00]'));
@@ -132,9 +147,9 @@ function Feature(viewer, features, fobj) {
 		});
 
 	//radius
-	c = $('<div>').appendTo(locationdiv).addClass('coorddiv');
+	c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>Radius:</label>').appendTo(c);
-	this.radius = $('<input>').appendTo(c).addClass('radiusinput');
+	this.radius = $('<input>').appendTo(c).addClass('pharmit_radiusinput');
 	this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
 		F.rsummary.text(numeral(this.value).format('0.[00]'));
 		F.obj.radius = this.value = round(this.value);
@@ -142,7 +157,7 @@ function Feature(viewer, features, fobj) {
 		});
 
 	//orientation (for hbonds and aromatic)
-	var orientdiv = this.orientdiv = $('<div>').appendTo(editdiv).addClass('orientdiv');
+	var orientdiv = this.orientdiv = $('<div>').appendTo(editdiv).addClass('pharmit_orientdiv');
 	var theta = null, phi = null;
 	
 	
@@ -183,29 +198,29 @@ function Feature(viewer, features, fobj) {
 			}
 			);
 	
-	var nowrap = $('<span>').addClass('nowrap').appendTo(orientdiv);
+	var nowrap = $('<span>').addClass('pharmit_nowrap').appendTo(orientdiv);
 	$('<label>&theta;:</label>').appendTo(nowrap);
-	theta = this.theta = $('<input>').appendTo(nowrap).addClass('orientinput');
+	theta = this.theta = $('<input>').appendTo(nowrap).addClass('pharmit_orientinput');
 	this.theta.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(updateVector);
 
-	nowrap = $('<span>').addClass('nowrap').appendTo(orientdiv);
+	nowrap = $('<span>').addClass('pharmit_nowrap').appendTo(orientdiv);
 	$('<label>&phi;:</label>').appendTo(nowrap);
-	phi = this.phi = $('<input>').appendTo(nowrap).addClass('orientinput');
+	phi = this.phi = $('<input>').appendTo(nowrap).addClass('pharmit_orientinput');
 	this.phi.spinner(spinObject(F.theta,{step: 1, numberFormat: 'n'})).change(updateVector);
 	
 	this.orientdiv.hide();
 	
 	//size for hydrophobic
-	var sizediv = this.sizediv = $('<div>').appendTo(editdiv).addClass('sizediv');		
+	var sizediv = this.sizediv = $('<div>').appendTo(editdiv).addClass('pharmit_sizediv');		
 	
-	this.minsize = $('<input>').appendTo(sizediv).addClass('sizeinput');
+	this.minsize = $('<input>').appendTo(sizediv).addClass('pharmit_sizeinput');
 	this.minsize.spinner(spinObject(F.minsize,{step: 1, numberFormat: 'n'})).change(function() {
 		F.obj.minsize = this.value;
 		F.updateViewer();
 	});
 	
-	$('<label> &le; #Atoms &le;</label>').appendTo(sizediv).addClass('nowrap');
-	this.maxsize = $('<input>').appendTo(sizediv).addClass('sizeinput');
+	$('<label> &le; #Atoms &le;</label>').appendTo(sizediv).addClass('pharmit_nowrap');
+	this.maxsize = $('<input>').appendTo(sizediv).addClass('pharmit_sizeinput');
 	this.maxsize.spinner(spinObject(F.maxsize,{step: 1, numberFormat: 'n'})).change(function() {
 		F.obj.maxsize = this.value;
 		F.updateViewer();
@@ -286,7 +301,7 @@ Feature.prototype.updateViewer = function() {
 //display in selected style
 Feature.prototype.selectFeature = function() {
 	this.viewer.selectFeature(this.shape);
-	this.container.addClass("selectedFeature");
+	this.container.addClass("pharmit_selectedFeature");
 	this.selected = true;
 	this.obj.selected = true;
 };
@@ -294,7 +309,7 @@ Feature.prototype.selectFeature = function() {
 //remove selection style
 Feature.prototype.deselectFeature = function() {
 	this.viewer.unselectFeature(this.shape);
-	this.container.removeClass("selectedFeature");
+	this.container.removeClass("pharmit_selectedFeature");
 	this.selected = false;
 	this.obj.selected = false;
 };

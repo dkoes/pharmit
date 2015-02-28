@@ -46,23 +46,25 @@ Pharmit.Viewer = (function() {
 		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
-					style: {stick:{radius: 0.15}}
+					style: {stick:{radius: 0.15}},
+					nonbond: {sphere: {radius: 0.15}}
 					},
 				'Receptor': {model: null,
-					style: {cartoon: {},
-							line: {linewidth:3.0}}
+						style: {cartoon: {},
+							line: {linewidth:3.0}},
+						nonbond: {sphere: {radius: 0.2 }}
 					},
 				'Results': {model: null,
-						style: {stick: {}}
+						style: {stick: {radius: 0.25}},
+						nonbond: {sphere: {radius: 0.25}}
 						}
 		};
-		var nonBondStyle = {sphere: {radius: 0.2}};
 		var surface = null;
 		var surfaceStyle = {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-0.8,0.8)}, opacity:0.8};
 		var viewer = null;
 		var shapes = [];
 		
-		var getExt = function(fname) {
+		var getExt = function(fname) { 
 			if(!fname) return "";
 			var a = fname.split(".");
 			if( a.length <= 1 ) {
@@ -75,12 +77,12 @@ Pharmit.Viewer = (function() {
 		//create jquery selection object for picking molecule style
 		//adds a table row
 		var createStyleSelector = function(name, defaultval, table, callback) {
-			var ret = $('<tr>').appendTo(table).addClass('styleselectrow');
+			var ret = $('<tr>').appendTo(table).addClass('pharmit_styleselectrow');
 			var id = name+"MolStyleSelect";
-			$('<label for="'+id+'">'+name+' Style:</label>').appendTo(ret).addClass('stylelabel').appendTo($('<td>').appendTo(ret));
+			$('<label for="'+id+'">'+name+' Style:</label>').appendTo(ret).addClass('pharmit_stylelabel').appendTo($('<td>').appendTo(ret));
 			
 			var cell = $('<td>').appendTo(ret);
-			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(cell).addClass('styleselector');
+			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(cell).addClass('pharmit_styleselector');
 			$.each(colorStyles, function(key, value) {
 				$('<option value="'+key+'">'+value+'</option>').appendTo(select);
 			});
@@ -94,17 +96,29 @@ Pharmit.Viewer = (function() {
 			});
 			select.change(function() {
 				var scheme = this.value;
-				var style = modelsAndStyles[name].style;
-				$.each(style, function(key, substyle) {
+				
+				//set color scheme and hidden property
+				var update = function(key, substyle) {
 					if(scheme == 'none') {
 						substyle.hidden = true;
 					} else {
 						substyle.colorscheme = scheme;
 						delete substyle.hidden;
 					}
-				});
+				};
+
+				var style = modelsAndStyles[name].style;
+				var nbond = modelsAndStyles[name].nonbond; //whater style
+
+				$.each(style, update);
+				$.each(nbond, update);
+				
 				var model = modelsAndStyles[name].model;
-				if(model) model.setStyle({}, style);				
+				if(model) {
+					model.setStyle({}, style);
+					model.setStyle({bonds: 0}, nbond);
+				}				
+				
 				select.selectmenu("refresh");
 				viewer.render();
 			});
@@ -124,9 +138,9 @@ Pharmit.Viewer = (function() {
 			createStyleSelector("Receptor",'rasmol', table, null);
 			
 			//surface transparency
-			var stdiv = $('<div>').addClass('surfacetransparencydiv').appendTo(vizgroup);
+			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
 			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
-			var sliderdiv = $('<div>').addClass('surfacetransparencyslider').appendTo(stdiv);
+			var sliderdiv = $('<div>').addClass('pharmit_surfacetransparencyslider').appendTo(stdiv);
 			$('<div id="surfaceopacity" name="surfaceopacity">').appendTo(sliderdiv)
 				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8,
 					change: function(event, ui) { 
@@ -138,7 +152,7 @@ Pharmit.Viewer = (function() {
 				
 			
 			//background color
-			var bcdiv = $('<div>').addClass('backgroundcolordiv').appendTo(vizgroup);
+			var bcdiv = $('<div>').addClass('pharmit_backgroundcolordiv').appendTo(vizgroup);
 			$('<label for="backgroundcolor">Background Color:</label>').appendTo(bcdiv);
 			var radiodiv = $('<div id="backgroundcolor">').appendTo(bcdiv);
 			$('<input type="radio" id="whiteBackground" name="backgroundcolor"><label for="whiteBackground">White</label>').appendTo(radiodiv)
@@ -176,8 +190,12 @@ Pharmit.Viewer = (function() {
 			if(recstr) {
 				var ext = getExt(recname);
 				receptor = viewer.addModel(recstr, ext);
-				receptor.setStyle({}, modelsAndStyles.Receptor.style);
-				receptor.setStyle({bonds: 0}, nonBondStyle);
+				var rstyle = modelsAndStyles.Receptor.style;
+				receptor.setStyle({}, rstyle);
+				//also show water
+				receptor.setStyle({bonds: 0}, modelsAndStyles.Receptor.nonbond);
+				
+				
 				modelsAndStyles.Receptor.model = receptor;
 				viewer.render();
 				//surface
@@ -201,6 +219,7 @@ Pharmit.Viewer = (function() {
 				var ext = getExt(name);
 				ligand = viewer.addModel(ligstr, ext);
 				ligand.setStyle({}, modelsAndStyles.Ligand.style);
+				ligand.setStyle({bonds: 0}, modelsAndStyles.Ligand.nonbond);
 				modelsAndStyles.Ligand.model = ligand;
 				viewer.zoomTo({model: ligand});
 			}
