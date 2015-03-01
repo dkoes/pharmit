@@ -1345,6 +1345,14 @@ Pharmit.Viewer = (function() {
 			});
 			
 			var colorpicker = $('<input name="'+id+'color">').appendTo($('<td>').appendTo(ret));
+			colorpicker.change(function() {
+				var c = this.value;
+				colorpicker.spectrum("set",c);
+				var color = parseInt(colorpicker.spectrum("get").toHex(),16); //number
+				rec.colorscheme.C = color;
+				updateStyle(name);
+			});
+			
 			colorpicker.spectrum({
 				color: '#C8C8C8',
 			    showPalette: true,
@@ -1352,14 +1360,13 @@ Pharmit.Viewer = (function() {
 			    showPaletteOnly: true,
 			    clickoutFiresChange: true,
 			    palette: ['#C8C8C8', 'white','green','cyan','magenta','yellow','orange','purple','blue'],
-			    change: function(color) {
-			    	var c = parseInt(color.toHex(),16);
-			    	rec.colorscheme.C = c;
-					updateStyle(name);
+			    change: function(color) { 
+			    	colorpicker.change();
 			    }
 			});		
 			
 			select.change();
+			colorpicker.change();
 			select.selectmenu("refresh");	       
 	
 		};
