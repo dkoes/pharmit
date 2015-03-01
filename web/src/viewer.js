@@ -190,6 +190,7 @@ Pharmit.Viewer = (function() {
 			});
 			
 			var colorpicker = $('<input name="'+id+'color">').appendTo($('<td>').appendTo(ret));
+			colorpicker.val('#C8C8C8');
 			colorpicker.change(function() {
 				var c = this.value;
 				colorpicker.spectrum("set",c);

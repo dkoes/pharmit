@@ -380,6 +380,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 
 .pharmit_styleselectrow td .sp-dd {
 	padding: 0;
+	padding-left: 2px;
 	white-space: nowrap;
 	vertical-align: middle;
 	display: inline-block;
