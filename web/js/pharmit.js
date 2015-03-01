@@ -1201,18 +1201,79 @@ Pharmit.Viewer = (function() {
 		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
-					style: {stick:{radius: 0.15}},
-					nonbond: {sphere: {radius: 0.15}}
-					},
-				'Receptor': {model: null,
-						style: {cartoon: {},
-							line: {linewidth:3.0}},
-						nonbond: {sphere: {radius: 0.2 }}
-					},
-				'Results': {model: null,
-						style: {stick: {radius: 0.25}},
-						nonbond: {sphere: {radius: 0.25}}
+					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					selectedstyle: 'stick',
+					styles: {
+						stick: {name: "Stick",
+							style: {stick:{radius: 0.15}},
+							nonbond: {sphere: {radius: 0.15}}
+						},
+						wire: {name: "Wire",
+							style: {line:{linewidth: 2.0}},
+							nonbond: {sphere: {radius: 0.05}}
+						},
+						sphere: {name: "Sphere",
+							style: {sphere:{}},
+							nonbond: {sphere: {}}
+						},
+						none: {name: "None",
+							style: {},
+							nonbond: {}
 						}
+					}
+					},
+				'Receptor':{model: null,
+					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					selectedstyle: 'cartoonwire',
+					styles: {
+						stick: {name: "Stick",
+							style: {stick:{radius: 0.1}},
+							nonbond: {sphere: {radius: 0.1}}
+						},
+						wire: {name: "Wire",
+							style: {line:{linewidth: 3.0}},
+							nonbond: {sphere: {radius: 0.05}}
+						},
+						sphere: {name: "Sphere",
+							style: {sphere:{}},
+							nonbond: {sphere: {}}
+						},
+						cartoon: {name: "Cartoon",
+							style: {cartoon:{}},
+							nonbond: {sphere: {radius: 0.1}}
+							},
+						cartoonwire: {name: "Cartoon+Wire",
+							style: {cartoon: {}, line: {linewidth: 3.0}},
+							nonbond: {sphere: {radius: 0.2}}
+							},
+						none: {name: "None",
+							style: {},
+							nonbond: {}
+						}
+					}
+					}, 
+				'Results': {model: null,
+					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					selectedstyle: 'stick',
+					styles: {
+						stick: {name: "Stick",
+							style: {stick:{radius: 0.25}},
+							nonbond: {sphere: {radius: 0.25}}
+						},
+						wire: {name: "Wire",
+							style: {line:{linewidth: 4.0}},
+							nonbond: {sphere: {radius: 0.1}}
+						},
+						sphere: {name: "Sphere",
+							style: {sphere:{}},
+							nonbond: {sphere: {}}
+						},
+						none: {name: "None",
+							style: {},
+							nonbond: {}
+						}
+					}
+					}
 		};
 		var surface = null;
 		var surfaceStyle = {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-0.8,0.8)}, opacity:0.8};
@@ -1228,57 +1289,78 @@ Pharmit.Viewer = (function() {
 			return a.pop(); 
 		};
 		
+		//applies the current selectedstyle and colorscheme for name
+		var updateStyle = function(name) {
+			var rec = modelsAndStyles[name];
+			var stylename = rec.selectedStyle;
+			var s = rec.styles[stylename];
+			var style = s.style;
+			var nbond = s.nonbond;
+
+			var model = rec.model;
+			if(model) {
+				model.setStyle({}, style);
+				model.setStyle({bonds: 0}, nbond);
+			}				
+			
+			viewer.render();
+		};
 		
 		//create jquery selection object for picking molecule style
 		//adds a table row
-		var createStyleSelector = function(name, defaultval, table, callback) {
+		var createStyleSelector = function(name, table, callback) {
+			var rec = modelsAndStyles[name];
 			var ret = $('<tr>').appendTo(table).addClass('pharmit_styleselectrow');
 			var id = name+"MolStyleSelect";
-			$('<label for="'+id+'">'+name+' Style:</label>').appendTo(ret).addClass('pharmit_stylelabel').appendTo($('<td>').appendTo(ret));
+			$('<label for="'+id+'">'+name+':</label>').appendTo(ret).addClass('pharmit_stylelabel').appendTo($('<td>').appendTo(ret));
 			
-			var cell = $('<td>').appendTo(ret);
+			var cell = $('<td nowrap>').appendTo(ret);
 			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(cell).addClass('pharmit_styleselector');
-			$.each(colorStyles, function(key, value) {
-				$('<option value="'+key+'">'+value+'</option>').appendTo(select);
+			$.each(rec.styles, function(key, value) {
+				$('<option value="'+key+'">'+value.name+'</option>').appendTo(select);
 			});
 			
-			select.val(defaultval);
+			select.val(rec.selectedstyle);
 			select.selectmenu({
-				width: '9em', 
+				width: '11em', 
 				appendTo: table, 
 				change: function() {select.change();},
 				position: {my: "left top", at: "left bottom", collision: "flip"}
 			});
-			select.change(function() {
-				var scheme = this.value;
-				
-				//set color scheme and hidden property
-				var update = function(key, substyle) {
-					if(scheme == 'none') {
-						substyle.hidden = true;
-					} else {
-						substyle.colorscheme = scheme;
-						delete substyle.hidden;
-					}
-				};
-
-				var style = modelsAndStyles[name].style;
-				var nbond = modelsAndStyles[name].nonbond; //whater style
-
-				$.each(style, update);
-				$.each(nbond, update);
-				
-				var model = modelsAndStyles[name].model;
-				if(model) {
-					model.setStyle({}, style);
-					model.setStyle({bonds: 0}, nbond);
-				}				
-				
-				select.selectmenu("refresh");
-				viewer.render();
-			});
-			select.change();
 			
+			//workaround firefox bug - remove element style so css stylesheet takes effect
+			select.selectmenu( "widget" ).css('width','');
+			
+			var colorscheme = rec.colorscheme;
+			//give color scheme to all substyles, this is reference so change the original colorscheme should change the styles
+			$.each(rec.styles, function(key, subrec) {
+				$.each(subrec.style, function(key,value) {
+					value.colorscheme = colorscheme;
+				});
+			});					
+			
+			select.change(function() {
+				rec.selectedStyle = this.value;
+				updateStyle(name);
+			});
+			
+			var colorpicker = $('<input name="'+id+'color">').appendTo($('<td>').appendTo(ret));
+			colorpicker.spectrum({
+				color: '#C8C8C8',
+			    showPalette: true,
+			    replacerClassName: 'ui-state-default ui-corner-all',
+			    showPaletteOnly: true,
+			    clickoutFiresChange: true,
+			    palette: ['#C8C8C8', 'white','green','cyan','magenta','yellow','orange','purple','blue'],
+			    change: function(color) {
+			    	var c = parseInt(color.toHex(),16);
+			    	rec.colorscheme.C = c;
+					updateStyle(name);
+			    }
+			});		
+			
+			select.change();
+			select.selectmenu("refresh");	       
 	
 		};
 		
@@ -1288,9 +1370,9 @@ Pharmit.Viewer = (function() {
 		this.appendViewerControls = function(vizgroup) {
 			
 			var table = $('<table>').appendTo(vizgroup);
-			createStyleSelector("Ligand",'rasmol', table, null);
-			createStyleSelector("Results",'rasmol', table, null);
-			createStyleSelector("Receptor",'rasmol', table, null);
+			createStyleSelector("Ligand",  table, null);
+			createStyleSelector("Results", table, null);
+			createStyleSelector("Receptor",  table, null);
 			
 			//surface transparency
 			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
@@ -1345,14 +1427,9 @@ Pharmit.Viewer = (function() {
 			if(recstr) {
 				var ext = getExt(recname);
 				receptor = viewer.addModel(recstr, ext);
-				var rstyle = modelsAndStyles.Receptor.style;
-				receptor.setStyle({}, rstyle);
-				//also show water
-				receptor.setStyle({bonds: 0}, modelsAndStyles.Receptor.nonbond);
-				
-				
 				modelsAndStyles.Receptor.model = receptor;
-				viewer.render();
+				updateStyle("Receptor");			
+				
 				//surface
 				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
@@ -1360,7 +1437,8 @@ Pharmit.Viewer = (function() {
 						{model:receptor}, {bonds:0, invert:true});
 				viewer.zoomTo({});
 			}
-			viewer.render();
+			else
+				viewer.render();
 		};
 
 		this.setLigand = function(ligstr, name) {
@@ -1373,12 +1451,12 @@ Pharmit.Viewer = (function() {
 			if(ligstr) { 
 				var ext = getExt(name);
 				ligand = viewer.addModel(ligstr, ext);
-				ligand.setStyle({}, modelsAndStyles.Ligand.style);
-				ligand.setStyle({bonds: 0}, modelsAndStyles.Ligand.nonbond);
 				modelsAndStyles.Ligand.model = ligand;
+				updateStyle("Ligand");
 				viewer.zoomTo({model: ligand});
 			}
-			viewer.render();
+			else
+				viewer.render();
 		};
 
 		
