@@ -111,7 +111,7 @@ Pharmit.Results = (function() {
 		//pharmacophore results
 		phresults = new Pharmit.PhResults(this, viewer, minresults);		
 
-		
+		resultsdiv.hide(); //wait for query
 		if(resultsdiv.is(":visible")) {
 			viewer.setRight(resultsdiv.width());
 		}

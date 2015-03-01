@@ -9,6 +9,8 @@ body {
     height: 100vh;
     font-family: Verdana,Arial,sans-serif;
     font-size: 12px;
+    overflow: hidden;
+    
     
 }
 .ui-widget{font-size:12px;}
@@ -124,7 +126,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 
 .pharmit_bottomloaders {
     text-align: center;
-    padding: 0.5em 0;
+    padding: 0.75em 0;
     width: 100%;
     overflow: hidden;
 }
@@ -409,6 +411,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
     vertical-align: middle;	
     text-align: center;
     z-index: 100;
+    overflow: hidden;
     
 }
 
@@ -420,7 +423,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	top: 50%;	
 	right: 50%;
 	margin-right: -8px;
-	filter: invert(100%);
 	font-weight: bold;
 }
 
@@ -432,7 +434,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	left: -40px;
 	width: 38px;
 	background-color: white;
-	filter: invert(0%);
 	}
 
 .pharmit_rescontainer {
@@ -441,6 +442,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
   	width: 100%;
   	height: 100vh;
   	position: absolute;
+  	overflow: hidden;
 }
 
 .pharmit_resheader {
@@ -456,16 +458,18 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 
 .pharmit_resfooter {
     width: 100%;
-    border-top: 1px solid #dddddd;
+    border-top: 0px solid #dddddd;
     padding: 0;
     margin: 0;
     overflow: hidden;
+    text-align: center;
 }
 
 .pharmit_rightheading {
 	/*leave space for close*/
 	padding-left: 2em;
 	white-space: nowrap;
+	overflow: hidden;
 }
 
 .pharmit_resclose{
@@ -485,4 +489,49 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	position: absolute;
 	top: 50%;	
 	background-image: url("images/icons_white.png"); 
+}
+
+.pharmit_minparams {
+	text-align: center;
+	border-radius: 5px;
+	border: 1px solid #2E0854;
+	display: inline-block;
+	margin-top: 1em;
+	margin-bottom: 0.5em;
+	padding: 0.5em;
+}
+
+.pharmit_paramrow {
+	text-align: left;
+}
+
+.pharmit_paramrow .pharmit_sminainput {
+	width: 3em;
+}
+
+.pharmit_minbottom {
+    text-align: center;
+    padding-bottom: 0.75em;
+    padding-top: 0.5em;
+    width: 100%;
+    overflow: hidden;
+}
+.pharmit_minbottom button {
+
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+}
+
+.pharmit_applycell {
+	text-align: center;
+	padding-left: 2px;
+}
+
+.pharmit_checkcell {
+	text-align: right;
+}
+
+.pharmit_applycell .ui-button-text-only .ui-button-text {
+	width: 3em;
+	padding: 0.25em 0.5em;
 }

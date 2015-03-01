@@ -508,6 +508,11 @@ Pharmit.MinResults = (function() {
 			
 		};
 		
+		//get results filtered
+		var applyFilters = function() {
+			
+		};
+		
 		//initialization code
 		mindiv = $('<div>').appendTo(results.div).addClass('pharmit_rescontainer');
 		//header
@@ -529,10 +534,27 @@ Pharmit.MinResults = (function() {
 
 		//footer
 		var footer = $('<div>').appendTo(mindiv).addClass("pharmit_resfooter");
-		//minimize and save buttons
-		var bottomloaders = $('<div>').appendTo(footer).addClass("pharmit_bottomloaders").addClass('pharmit_nowrap');
-
-		var save = $('<button>Save...</button>').appendTo(bottomloaders).button().click(saveResults);				
+		var paramdiv = $('<div>').appendTo(footer).addClass("pharmit_minparams").disableSelection();
+		//filters for minimization
+		var table = $('<table>').appendTo(paramdiv);
+		var row = $('<tr>').appendTo(table).addClass('pharmit_paramrow');
+		$('<td>').appendTo(row).append($('<label>Max Score</label>'));
+		var cell = $('<td>').appendTo(row);
+		$('<input name="sminamaxscore">').appendTo(cell).addClass('pharmit_sminainput').spinner();
+		$('<td>').appendTo(row).addClass('pharmit_checkcell').append($('<input type="checkbox" name="sminaunique">'));
+		$('<td>').appendTo(row).append($('<label>Single<br>conformer</label>'));
+		
+		
+		row = $('<tr>').appendTo(table).addClass('pharmit_paramrow');
+		$('<td>').appendTo(row).append($('<label>Max mRMSD</label>'));
+		cell = $('<td>').appendTo(row);
+		$('<input name="sminamaxrmsd">').appendTo(cell).addClass('pharmit_sminainput').spinner();
+		cell = $('<td colspan=2>').appendTo(row).addClass('pharmit_applycell');
+		$('<button>Apply</button>').appendTo(cell).button().click(applyFilters);
+		
+		//save button
+		var bottomrow = $('<div>').appendTo(footer).addClass('pharmit_minbottom');
+		var save = $('<button>Save...</button>').appendTo(bottomrow).button().click(saveResults);				
 
 		mindiv.hide();
 	}
@@ -1123,7 +1145,7 @@ Pharmit.Results = (function() {
 		//pharmacophore results
 		phresults = new Pharmit.PhResults(this, viewer, minresults);		
 
-		
+		resultsdiv.hide(); //wait for query
 		if(resultsdiv.is(":visible")) {
 			viewer.setRight(resultsdiv.width());
 		}
