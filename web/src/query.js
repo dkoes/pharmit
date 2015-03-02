@@ -28,11 +28,18 @@ Pharmit.Query = (function() {
 		var featureheading = null;
 		var receptorData = null;
 		var receptorName = null; //filename (need ext)
+		var receptorKey = null; //md5 key to avoid transfering full structure
 		var ligandData = null;
 		var ligandName = null;
 		
 		var doSearch = function() {
 			var qobj = getQueryObj();
+			//remove receptor and ligand data to reduce size of query
+			if(qobj.receptor && qobj.reckey) {
+				delete qobj.receptor; //server can get data w/reckey if need be
+			}
+			delete qobj.ligand;
+			
 			//results manages queries
 			results.phquery(qobj);
 		};
@@ -50,16 +57,101 @@ Pharmit.Query = (function() {
 			}
 		};
 		
+		//take an array of pharmacophore features (query.points) and
+		//put them in the query view
+		var setFeatures = function(featurearray) {
+			var start = new Date().getTime();
+			
+			viewer.disableRendering();
+			//while we're removing/adding bunches of features, don't bother rendering until the end
+			
+			features.detach();
+			//replace features
+			var old = features.children();
+			$.each(old, function(i, fdiv) {
+				fdiv.feature.deleteFeature();
+			});
+			
+			features.empty();
+			if(featurearray) {
+				$.each(featurearray, function(i, pt) {
+					new Feature(viewer, features, pt);
+				});
+			}
+			features.accordion("option","active",false);
+			features.accordion("refresh");
+
+			featureheading.after(features); 
+			
+			viewer.enableRendering();
+			var end = new Date().getTime();
+			var time = end - start;
+			console.log('setFeatures time: ' + time);
+		};
+		
 		//query server to get pharmacophore
 		//result replaces any existing featuers
-		var loadFeatures = function() {
+		var loadFeatures = function(data, lname) {
+			
+			ligandData = null;
+			ligandName = null;
+			var postData = {
+					cmd: 'getpharma',
+					ligand: data,
+					ligandname: lname,
+			};
+			
+			if(receptorName) {
+				if(receptorKey) { //most likely
+					postData.reckey = receptorKey;
+					postData.recname = receptorName;
+				} else {
+					postData.receptor = receptorData;
+					postData.recname = receptorName;	
+				}
+			}
+			
+			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
+				if(ret.status) { //success
+					if(ret.mol) {
+						//this was molecular data, save it
+						ligandName = lname;
+						ligandData = data;
+						viewer.setLigand(data, lname);						
+					}
+					setFeatures(ret.points);					
+					
+				} else {
+					alert("Error: "+ret.msg);
+				}
+			}).fail(function() {
+				alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
+			});
 			
 		};
 		
+		//set receptor variables, show receptor in viewer,
+		//and register receptor with server
 		var loadReceptor = function(data, fname) {
+			
+			if(!data || !fname)
+				return;
+			
 			receptorData = data;
 			receptorName = fname;
 			viewer.setReceptor(data, fname);
+			
+			//calculate md5 of receptor
+			receptorKey = null; //but don't set it until we get ack from server
+			var rKey = Pharmit.hex_md5(receptorData);	
+
+			$.post( Pharmit.server, { 
+				cmd: "setreceptor",
+				key: rKey,
+				receptor: receptorData
+				}).done(function() {
+						receptorKey = rKey;
+				}); //key setting isn't critical, so skip the the fail handler
 		};
 		
 
@@ -86,30 +178,19 @@ Pharmit.Query = (function() {
 		};
 		
 		var loadSession = this.loadSession = function(data) {
-			var query = $.parseJSON(data);
-			
-			features.detach();
-			//replace features
-			features.empty();
-			if(query.points) {
-				$.each(query.points, function(i, pt) {
-					new Feature(viewer, features, pt);
-				});
-			}
-			features.accordion("option","active",false);
-			features.accordion("refresh");
 
-			featureheading.after(features); 
+			var query = $.parseJSON(data);
+			setFeatures(query.points);
 			
 			//get named settings, including visualization
 			$.each(query, function(key,value) {
 				var i = $('input[name='+key+']');
 				if(i.length) {
-					i.val(value);
+					i.val(value).change();
 				}
 			});
-			receptorData = query.receptor;
-			receptorName = query.recname;			
+			
+			loadReceptor(query.receptor, query.recname);		
 			
 			viewer.setReceptor(receptorData, receptorName);
 			
@@ -162,6 +243,7 @@ Pharmit.Query = (function() {
 			ret.ligandFormat = ligandName;
 			ret.receptor = receptorData;
 			ret.recname = receptorName;
+			ret.receptorid = receptorKey;
 			return ret;
 		};
 		
@@ -268,7 +350,7 @@ Pharmit.Query = (function() {
 		//fileinput needs the file inputs in the dom
 		element.append(querydiv);
 		var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(function(e) {readText(this, loadReceptor);});
-		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(loadFeatures);		
+		var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(function(e) {readText(this,loadFeatures);});		
 		
 		querydiv.detach();
 		

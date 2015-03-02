@@ -41,7 +41,7 @@ Pharmit.Viewer = (function() {
 		var margins = {left: 0, right: 0}; 
 		
 		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xf0f0f0', 'HydrogenAcceptor': 'orange', 
-							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue'};
+							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey'};
 
 		
 		var modelsAndStyles = {
@@ -443,6 +443,16 @@ Pharmit.Viewer = (function() {
 			viewer.translate(dx/2, 0);
 		};
 		
+		var savedRender = null;
+		this.disableRendering = function() {
+			savedRender = viewer.render;
+			viewer.render = function() {};
+		};
+		
+		this.enableRendering = function() {
+			if(savedRender) viewer.render = savedRender;
+			viewer.render();
+		};
 		//initialization code
 		viewer = new $3Dmol.GLViewer(element);
 		viewer.setBackgroundColor('white');

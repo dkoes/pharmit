@@ -48,14 +48,11 @@ function Feature(viewer, features, fobj) {
 				F.updateViewer();
 			}
 			).click(function(e) {return false;}); //needed to stop clickthrue
+	
 	var namediv = $('<div>').addClass('pharmit_featurenamediv').appendTo(heading);
 	var namespan = $('<span>').addClass('pharmit_featurenameheading').appendTo(namediv);
 	var closediv = $('<div>').addClass('pharmit_featureclose').appendTo(heading).click(function() {
-		//remove from viewer
-		if(F.shape) viewer.removeFeature(F.shape);
-		//remove from dom
-		F.container.feature = null;
-		F.container.remove();
+		F.deleteFeature();
 	});
 	var close = $('<span>').addClass('ui-icon-circle-close ui-icon').appendTo(closediv);
 	
@@ -276,7 +273,7 @@ Feature.prototype.setFeature = function(fobj) {
 };
 
 Feature.prototype.featureNames = ['Aromatic','HydrogenDonor', 'HydrogenAcceptor', 
-		'Hydrophobic', 'NegativeIon', 'PositiveIon'];
+		'Hydrophobic', 'NegativeIon', 'PositiveIon','ExclusionSphere'];
 
 Feature.prototype.updateViewer = function() {
 	//anything that changes the geometry requires a new shape 
@@ -314,3 +311,12 @@ Feature.prototype.deselectFeature = function() {
 	this.obj.selected = false;
 };
 
+//remove completely
+Feature.prototype.deleteFeature = function() {
+	
+	//remove from viewer
+	if(this.shape !== null) this.viewer.removeFeature(this.shape);
+	//remove from dom
+	this.container.feature = null;
+	this.container.remove();
+};

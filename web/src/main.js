@@ -13,7 +13,7 @@
  * Pretty much all html is dynamically created into the provided element.
  * Assumes jquery, 3Dmol, DataTables, jquery-toggles, and numeral.js are available..
  */
-var Pharmit = {};
+var Pharmit = Pharmit ||  {};
 $(document).ready(function() {
 	
 	//global variable checking - we should add nothing but Pharmit
@@ -44,6 +44,8 @@ $(document).ready(function() {
 	
 	
 	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
+	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	
 	var element = $('#pharmit').addClass('pharmit_main');
 	var viewer = new Pharmit.Viewer(element);
 	var results = new Pharmit.Results(element, viewer);

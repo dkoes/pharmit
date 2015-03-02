@@ -71,7 +71,7 @@ body {
 }
 
 .pharmit_leftclose.pharmit_leftisclosed {
-	border-width: 0px 1px 1px 1px;	
+	border-width: 0px 1px 1px 0px;	
 	right: -40px;
 	width: 38px;
 }

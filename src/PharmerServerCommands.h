@@ -447,6 +447,13 @@ public:
 						rformat = OBConversion::FormatFromExt(fname.c_str());
 					}
 				}
+				//if we didn't get a receptor from a reckey, see if we were sent the whole thing
+				if(receptor.size() == 0 && cgiTagExists(CGI, "receptor") && cgiTagExists(CGI, "recname"))
+				{
+					receptor = cgiGetString(CGI, "receptor");
+					string fname = cgiGetString(CGI, "recname");
+					rformat = OBConversion::FormatFromExt(fname.c_str());
+				}
 
 				if(!jsonPharmaQuery(*pharmas, val, filedata, format, receptor, rformat))
 				{

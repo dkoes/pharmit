@@ -764,7 +764,7 @@ bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points)
 		}
 
 		pt["radius"] = points[i].radius;
-		pt["requirement"] = points[i].requirementStr();
+		pt["enabled"] = points[i].requirements != PharmaPoint::NotPresent;
 	}
 
 	return true;
@@ -1014,11 +1014,13 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
 		return false;
 
 	//set disabled points
-	for (unsigned i = points.size() - disabled.size(), n = points.size(); i < n;
-			i++)
+	unsigned cutoff = points.size() - disabled.size();
+	for(unsigned i = 0, n = points.size(); i < n; i++)
 	{
-		root["points"][i]["enabled"] = false;
+		root["points"][i]["enabled"] = (i < cutoff);
+
 	}
+
 	return true;
 }
 

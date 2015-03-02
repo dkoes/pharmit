@@ -25,21 +25,42 @@ Pharmit.PhResults = (function() {
 	function PhResults(results, viewer, minresults) {
 		//private variables and functions
 		var phdiv = null;
-		
+		var qid = null;
 		//public variables and functions
 		
 		//perform the query
 		this.query = function(qobj) {
-			//if we aren't hidden, need to cancel current query first
-			
+			//don't need receptor or ligand structures and they are big
+			delete qobj.receptor;
+			delete qobj.ligand;
 			//start provided query
+			var postData = {cmd: 'startquery',
+					json: JSON.stringify(qobj)
+			};
 			
+			if(qid !== null) postData.oldqid = qid;
+			
+			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
+				if(ret.status) { //success
+					console.log("mols "+ret.numMols+", confs "+ret.numConfs);				
+					
+				} else {
+					alert("Error: "+ret.msg);
+				}
+			}).fail(function() {
+				alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
+			});
 		};
 		
 		//cancel any query. clear out the table, and hide the div
 		//note that quiting is always controlled by Results
 		this.quit = function() {
 			
+			if(qid !== null) {
+				$.post(Pharmit.server, 
+						{cmd: 'cancelquery',
+						oldqid: qid});
+			}
 		};
 		
 		//download and save results
@@ -70,6 +91,20 @@ Pharmit.PhResults = (function() {
 		
 		//body, should stretch to fill
 		var body = $('<div>').appendTo(phdiv).addClass("pharmit_resbody");
+		
+		//skeleton of datatable
+		var table = $('<table>').addClass('pharmit_phtable').appendTo(body);
+		var headrow = $('<tr>').appendTo($('<thead>').appendTo(table));
+		$('<th>Name</th>').appendTo(headrow);
+		$('<th>RMSD</th>').appendTo(headrow);
+		$('<th>Mass</th>').appendTo(headrow);
+		$('<th>RBnds</th>').appendTo(headrow);
+		$('<tbody>').appendTo(table);
+		
+		table.dataTable({
+			searching: false,
+			lengthChange: false
+		});
 
 		//footer
 		var footer = $('<div>').appendTo(phdiv).addClass("pharmit_resfooter");

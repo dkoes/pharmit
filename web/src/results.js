@@ -36,10 +36,10 @@ Pharmit.Results = (function() {
 		
 		//perform the query
 		this.phquery = function(qobj) {
-			//if we aren't hidden, need to cancel current query first
-			
+			// cancel current query first
+			phresults.quit();
 			//start provided query
-			
+			phresults.query(qobj);						
 			//show div
 			this.show();
 		};
