@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Checks to see if a fingerprint potentially matches the query
  */
 
-#ifndef QUERYTRIPLETFINGERPRINT_H_
-#define QUERYTRIPLETFINGERPRINT_H_
+#ifndef PHARMITSERVER_QUERYTRIPLETFINGERPRINT_H_
+#define PHARMITSERVER_QUERYTRIPLETFINGERPRINT_H_
 
 #include "TripletFingerprint.h"
 #include "SimpleFingers.h"
@@ -52,4 +52,4 @@ public:
 
 };
 
-#endif /* QUERYTRIPLETFINGERPRINT_H_ */
+#endif /* PHARMITSERVER_QUERYTRIPLETFINGERPRINT_H_ */

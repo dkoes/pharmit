@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef CORS_H_
-#define CORS_H_
+#ifndef PHARMITSERVER_CORS_H_
+#define PHARMITSERVER_CORS_H_
 
 #include "pharmerdb.h"
 #include "tripletmatching.h"
@@ -183,4 +183,4 @@ public:
 
 
 
-#endif /* CORS_H_ */
+#endif /* PHARMITSERVER_CORS_H_ */

@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef MMAPPEDREGION_H_
-#define MMAPPEDREGION_H_
+#ifndef PHARMITSERVER_MMAPPEDREGION_H_
+#define PHARMITSERVER_MMAPPEDREGION_H_
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <iostream>
@@ -135,4 +135,4 @@ public:
 	}
 };
 
-#endif /* MMAPPEDREGION_H_ */
+#endif /* PHARMITSERVER_MMAPPEDREGION_H_ */

@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Simple parameter storing classes.
  */
 
-#ifndef PARAMS_H_
-#define PARAMS_H_
+#ifndef PHARMITSERVER_PARAMS_H_
+#define PHARMITSERVER_PARAMS_H_
 #include <iostream>
 #include <boost/tuple/tuple.hpp>
 #include <boost/shared_ptr.hpp>
@@ -114,9 +114,11 @@ struct DataParameters
 	SortTyp sort;
 	bool reverseSort;
 	bool extraInfo; //get mol info (slower)
+
+	unsigned drawCode; //for datatables
 	//extract parameters from posted data
 	DataParameters() :
-		start(0), num(0), sort(SortType::Undefined), reverseSort(false), extraInfo(false)
+		start(0), num(0), sort(SortType::Undefined), reverseSort(false), extraInfo(false), drawCode(0)
 	{
 
 	}
@@ -124,4 +126,4 @@ struct DataParameters
 };
 
 
-#endif /* PARAMS_H_ */
+#endif /* PHARMITSERVER_PARAMS_H_ */

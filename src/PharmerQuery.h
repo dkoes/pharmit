@@ -27,8 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Designed for both synchronous and asynchroous querying.
  */
 
-#ifndef PHARMERQUERY_H_
-#define PHARMERQUERY_H_
+#ifndef PHARMITSERVER_PHARMERQUERY_H_
+#define PHARMITSERVER_PHARMERQUERY_H_
 
 #include "cors.h"
 #include <iostream>
@@ -195,6 +195,8 @@ public:
 	//output text result of query (correspondences)
 	void outputData(const DataParameters& dp, ostream& out, bool jsonHeader =
 			false);
+	//output data in datatables json format
+	void setDataJSON(const DataParameters& dp, Json::Value& data);
 	//write out all results in sdf format - NOT sorted
 	void outputMols(ostream& out);
 	//output single mol in sdf format
@@ -202,6 +204,8 @@ public:
 	void outputMol(unsigned index, ostream& out, bool jsonHeader, bool minimize = false);
 
 	void getZINCIDs(vector<unsigned>& ids);
+
+	void cancelSmina(); //cancel just min
 	//attempt to cancel, non-blocking, query neest time to wrap up
 	void cancel();
 	bool finished(); //okay to deallocate, user may still care though
@@ -256,4 +260,4 @@ public:
 	}
 };
 
-#endif /* PHARMERQUERY_H_ */
+#endif /* PHARMITSERVER_PHARMERQUERY_H_ */

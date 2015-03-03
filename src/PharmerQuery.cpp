@@ -374,6 +374,11 @@ PharmerQuery::~PharmerQuery()
 void PharmerQuery::cancel()
 {
 	stopQuery = true;
+	cancelSmina();
+}
+
+void PharmerQuery::cancelSmina()
+{
 	if (sminaid > 0 && sminaServer.length() > 0)
 	{
 		boost::asio::ip::tcp::iostream strm(sminaServer, sminaPort);
@@ -600,6 +605,29 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 	}
 }
 
+void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
+{
+	vector<QueryResult*> r;
+	getResults(dp, r);
+
+	data["draw"] = dp.drawCode;
+	data["recordsTotal"] = (unsigned)results.size();
+	data["recordsFiltered"] = (unsigned)results.size();
+	data["finished"] = (tripletMatchThread == NULL);
+	data["data"].resize(0); //make empty array
+
+	for (unsigned i = 0, n = r.size(); i < n; i++)
+	{
+		//column ordre is Name,RMSD, Mass,RBnds,location
+		data["data"][i][0u] = r[i]->name;
+		data["data"][i][1] = r[i]->c->val;
+		data["data"][i][2] = r[i]->c->weight;
+		data["data"][i][3] = r[i]->c->nRBnds;
+		data["data"][i][4] = i+dp.start;
+	}
+}
+
+
 static bool locationCompare(const QueryResult* lhs, const QueryResult* rhs)
 {
 	return lhs->c->location < rhs->c->location;
@@ -819,6 +847,9 @@ void PharmerQuery::thread_sendSmina(PharmerQuery *query, stream_ptr out,
 			filter.push(str);
 			Matrix3d rotmat = r->c->rmsd.rotationMatrix().cast<double>();
 			Vector3d trans = r->c->rmsd.translationVector().cast<double>();
+
+			//smina expects things in row major order..
+			rotmat.transposeInPlace();
 
 			filter.write((char*) rotmat.data(), sizeof(double) * 9);
 			filter.write((char*) trans.data(), sizeof(double) * 3);

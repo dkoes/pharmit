@@ -7,71 +7,646 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 12px;
+    overflow: hidden;
+    
+    
 }
+.ui-widget{font-size:12px;}
 
-
-#pharmit {
+.pharmit_main {
 	height: 100%;
 	width: 100%;
 }
 
+.pharmit_main .ui-state-default {
+	color: #212121;
+}
+
+.pharmit_main label { font-weight: bold; white-space: nowrap;}
+
+.pharmit_overlay { /*either left or right*/
+	position: absolute;
+	background-color: white;
+	opacity: 0.9;
+	z-index: 10;
+	height:100vh;
+  	width: 25em;	
+}
+	
 .pharmit_query {
 	float: left;
-	position: absolute;
-	background-color: rgba(255,255,255,.9);
-	border-right: 1px solid black;
-	z-index: 10;
-	overflow: hidden;
-	height:100vh;
+	border-right: 1px solid #dddddd;
   	display:flex;
   	flex-direction: column;
 }
 
-.pharmit_query .queryheader {
+.pharmit_queryheader {
+	   border-bottom: 1px solid #dddddd;
+		overflow: hidden;
 }
 
-.pharmit_query .querybody {
-	flex:1;
-    overflow-y: auto;
-    width: 100%;
-}
-
-.pharmit_query .queryfooter {
-    width: 100%;
+.pharmit_leftclose {
+	position: absolute;
+	width: 2em;
+	height: 3em;
+	right: 0em;
+	background-color: white;
+	border-style: solid;
+	border-color: #222222;
+	border-width: 0px;
+    vertical-align: middle;	
     text-align: center;
 }
 
-.pharmit_results {
-	height: 100%;
-	float: right;
+.pharmit_leftclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	position: absolute;
+	top: 50%;	
+	right: 50%;
+	margin-right: -8px;
 }
 
-.searchdiv {
-	text-align: center;
+.pharmit_leftclose.pharmit_leftisclosed {
+	border-width: 0px 1px 1px 0px;	
+	right: -40px;
+	width: 38px;
 }
-.searchdiv .ui-button-text {
+
+.pharmit_floatmenu {
+	display: inline-block;
+	z-index: 20;
+	position: absolute;
+}
+
+.pharmit_nowrap {
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.pharmit_queryheader li {
+	text-align: left;
+}
+
+.pharmit_query .pharmit_querybody {
+	flex:1;
+    overflow-y: auto;
+    width: 100%;
+    padding-bottom: 1em;
+    overflow-x: hidden;
+}
+
+.pharmit_heading {
+	font-weight: bold;
+    font-size: 120%;
+    color: white;
+    margin: 0;
+	padding: 0.25em;
+background: rgb(44,25,67); /* Old browsers */
+background: -moz-linear-gradient(top, rgba(44,25,67,1) 0%, rgba(44,16,92,1) 50%, rgba(40,14,84,1) 51%, rgba(58,23,127,1) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(44,25,67,1)), color-stop(50%,rgba(44,16,92,1)), color-stop(51%,rgba(40,14,84,1)), color-stop(100%,rgba(58,23,127,1))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* IE10+ */
+background: linear-gradient(to bottom, rgba(44,25,67,1) 0%,rgba(44,16,92,1) 50%,rgba(40,14,84,1) 51%,rgba(58,23,127,1) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', endColorstr='#3a177f',GradientType=0 ); /* IE6-9 */
+     border-radius: 5px;
+     padding-left: 1em;
+}
+.pharmit_query .pharmit_queryfooter {
+    width: 100%;
+    border-top: 1px solid #dddddd;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.pharmit_bottomloaders {
+    text-align: center;
+    padding: 0.75em 0;
+    width: 100%;
+    overflow: hidden;
+}
+.pharmit_bottomloaders button {
+
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+}
+
+
+.pharmit_searchdiv {
+	text-align: center;
+	padding: 0.5em;
+	white-space: nowrap;
+}
+
+.pharmit_searchdiv .ui-button-text {
 	width: 14em;
 }
 
-.filterrow input {
-	width: 4em;
+.pharmit_loaderdiv {
+	text-align: center;
+	width: 100%;
 }
 
-.headingsummary {
+.pharmit_loaderdiv div {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	padding-bottom: 0.5em;
+}
+
+.pharmit_querybody .pharmit_hitreduction {
+	padding: 0.5em 1em;
+}
+	
+.pharmit_filterrow {
+	white-space: nowrap;
+}
+
+.pharmit_hitreduction .pharmit_filterrow input {
+	width: 4em;
+}
+.pharmit_hitreduction .ui-spinner {
+	margin-left: 1em;
+}
+
+.pharmit_querybody .pharmit_hitscreening {
+		padding: 0.5em 0em; /* spinner has margin */
+}	
+
+.pharmit_hitscreening .pharmit_filterrow input {
+	width: 2.5em;
+}
+
+.pharmit_hitscreening .pharmit_filterrow td {
+	text-align: center;
+}
+
+.pharmit_hitscreening .ui-spinner {
+	margin-left: 1em;
+	margin-right: 1em;
+}
+
+.pharmit_headingsummary {
 	font-size: x-small;
 	color: gray;
 }
 
-.stylelabel {
-	display:block;
+
+
+
+.pharmit_togglediv {
+    display: inline-block;
+    height: 22px;
+    width: 60px;
+    text-align: center;
+    vertical-align: middle;
 }
 
-.surfacetransparencydiv {
-	width: 100%;
+.pharmit_togglediv .toggle-on {
+	font-weight: bold;
+	background-color:  #2E0854;
+}
+
+.pharmit_featurenamediv {
+	display: inline-block;
+	padding-right: 2.5em; /* space for feature close */
+	padding-left: 0.5em;
+	vertical-align: middle;
+}
+
+.pharmit_featurenameheading {
+	font-weight: bold;
+	font-size: 110%;
+}
+
+.pharmit_featurebuttons {
+	padding: 0.5em;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.pharmit_featurebuttons button {
+	   margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+.pharmit_selectedFeature.pharmit_enabledfeature h3 {
+	border-color: purple;
+}
+
+.pharmit_selectedFeature.pharmit_enabledfeature .ui-accordion-content-active {
+		border-color: purple;
+}
+
+.pharmit_enabledfeature .pharmit_featurenameheading {
+	color: black;
+}
+
+
+
+.pharmit_featurenamediv>span {
+	display: block;
+}
+.pharmit_featurediv>h3 {
+	position: relative;
+	white-space: nowrap;
+	color: #555555;
+}
+
+.pharmit_featuresummary {
+	font-size: 75%;
+}
+.pharmit_featureclose{
+	display: inline-block;
+	position: absolute;
+	right: 0;
+    height: 100%;
+    width: 2.5em;
+    margin-top: -.5em; /* counteract padding */
+    vertical-align: middle;	
+}
+.pharmit_featureclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	margin-left: .5em;
+	position: absolute;
+	top: 50%;	
+}
+
+.pharmit_locationdiv {
+	padding-top: 0.5em;
+}
+.pharmit_coorddiv {
+	padding-top: 0.5em;
+}
+
+.pharmit_coorddiv input {
+	width: 4em;
+}
+
+.pharmit_coorddiv .ui-spinner {
+	margin-left: 0.5em;
+}
+
+.pharmit_coorddiv input.radiusinput {
+	width: 2.5em;
+}
+
+.pharmit_orientdiv {
+	padding-top: 1em;
+}
+
+.pharmit_orientdiv * {
+	vertical-align: middle;
+}
+.pharmit_orientdiv label {
+	padding-left: 0.5em;
+	padding-right: 0.1em;
+}
+.pharmit_orientinput {
+	width: 2.2em;
+}
+.pharmit_sizediv {
+	padding-top: 1em;
+}
+
+.pharmit_sizediv * {
+	vertical-align: middle;
+}
+.pharmit_sizediv label {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}
+.pharmit_sizeinput {
+	width: 2.2em;
+}
+
+
+.pharmit_vizdiv {
+	padding: 0.5em 0em 0.5em 1.5em;
+}
+
+.pharmit_vizdiv table {
+	 border-collapse: collapse;
+}
+
+.pharmit_querybody .ui-selectmenu-button span.ui-selectmenu-text {
 	text-align: center;
 }
 
-.surfacetransparencydiv div {
+.pharmit_stylelabel {
+	white-space: nowrap;
+	padding-right: 0.5em;
+}
+
+.pharmit_styleselectrow td {
+	padding: 0;
+	height: 3em;
+}
+
+.pharmit_styleselectrow  td span.ui-selectmenu-button {
+	width: 11em; !important
+}
+
+
+.pharmit_styleselectrow td .sp-preview {
+	width: 1em;
+	height: 1em;
+	margin: 0;
+ 	display: inline-block;
+	vertical-align: middle;
+
+}
+
+.pharmit_styleselectrow td .sp-replacer:hover {
+		border: 1px solid #999999;
+	background: #dadada url("images/ui-bg_glass_75_dadada_1x400.png") 50% 50% repeat-x;
+	font-weight: normal;
+	color: #212121;
+	
+}
+
+.pharmit_styleselectrow td .sp-replacer {
 	margin-left: 1em;
-	margin-right: 1em;
+	white-space: nowrap;
+	vertical-align: middle;
+}
+
+
+.pharmit_styleselectrow td .sp-dd {
+	padding: 0;
+	padding-left: 2px;
+	white-space: nowrap;
+	vertical-align: middle;
+	display: inline-block;
+	float: none;
+}
+
+
+.pharmit_surfacetransparencydiv {
+	width: 100%;
+	padding-top: 0.75em;
+}
+.pharmit_surfacetransparencyslider {
+	width: 100%;
+	text-align: center;
+	padding-top: 0.5em;
+}
+
+.pharmit_surfacetransparencyslider div {
+	margin-left: 0em;
+	margin-right: 1.5em;
+}
+
+.pharmit_backgroundcolordiv  {
+	padding-top: 1em;
+}
+
+.pharmit_backgroundcolordiv  .ui-buttonset {
+	padding-top: 0.5em;
+	padding-left: 0.25em;
+	display: inline-block;
+}
+
+.pharmit_backgroundcolordiv .ui-state-default {
+	color: #555555;
+	font-weight: normal;
+
+}
+
+.pharmit_backgroundcolordiv .ui-state-active {
+	color: black;
+	font-weight: normal;
+}
+
+.pharmit_filtermodified {
+	font-style: italic;
+}
+/*** results styling below ***/
+
+	
+.pharmit_results {
+	right: 0; !important
+	position: absolute;!important
+	margin: 0;
+	border-left: 1px solid #dddddd;
+}
+
+
+.pharmit_rightclose {
+	position: absolute;
+	width: 2em;
+	height: 2em;
+	left: 0em;
+	color: white;
+	border-style: solid;
+	border-color: #222222;
+	border-width: 0px;
+    vertical-align: middle;	
+    text-align: center;
+    z-index: 100;
+    overflow: hidden;
+    
+}
+
+.pharmit_rightclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	position: absolute;
+	top: 50%;	
+	right: 50%;
+	margin-right: -8px;
+	font-weight: bold;
+}
+
+.pharmit_rightclose:not(.pharmit_rightisclosed) span {
+	background-image: url("images/icons_white.png"); /* open*/	
+}
+.pharmit_rightclose.pharmit_rightisclosed {
+	border-width: 0px 1px 1px 1px;	
+	left: -40px;
+	width: 38px;
+	background-color: white;
+	}
+
+.pharmit_rescontainer {
+  	display:flex;
+  	flex-direction: column;
+  	width: 100%;
+  	height: 100vh;
+  	position: absolute;
+  	overflow: hidden;
+}
+
+.pharmit_resheader {
+		overflow: hidden;
+		width: 100%;
+}
+
+.pharmit_resbody {
+	flex:1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.pharmit_resfooter {
+    width: 100%;
+    border-top: 0px solid #dddddd;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    text-align: center;
+}
+
+.pharmit_rightheading {
+	/*leave space for close*/
+	padding-left: 2em;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.pharmit_resclose{
+	display: inline-block;
+	position: absolute;
+	right: 0;
+	height: 24px;
+    width: 2em;
+    margin-top: -.25em; /* counteract padding */
+    vertical-align: middle;	
+}
+.pharmit_resclose span {
+	display: block;
+	height: 16px;
+	margin-top: -8px;
+	margin-left: .5em;
+	position: absolute;
+	top: 50%;	
+	background-image: url("images/icons_white.png"); 
+}
+
+.pharmit_minparams {
+	text-align: center;
+	border-radius: 5px;
+	border: 1px solid #2E0854;
+	display: inline-block;
+	margin-top: 1em;
+	margin-bottom: 0.5em;
+	padding: 0.5em;
+}
+
+.pharmit_paramrow {
+	text-align: left;
+}
+
+.pharmit_paramrow .pharmit_sminainput {
+	width: 3em;
+}
+
+.pharmit_minbottom {
+    text-align: center;
+    padding-bottom: 0.75em;
+    padding-top: 0.5em;
+    width: 100%;
+    overflow: hidden;
+}
+.pharmit_minbottom button {
+
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+}
+
+.pharmit_applycell {
+	text-align: center;
+	padding-left: 2px;
+}
+
+.pharmit_checkcell {
+	text-align: right;
+}
+
+.pharmit_applycell .ui-button-text-only .ui-button-text {
+	width: 3em;
+	padding: 0.25em 0.5em;
+}
+
+.pharmit_rescontainer .dataTables_wrapper {
+	width: 100%;
+	height: 100%;
+}
+
+.pharmit_phtable .pharmit_mintable {
+	width: 100%;
+	
+}
+
+.pharmit_rescontainer .dataTables_info {
+	float: none;
+	text-align: center;
+	display: block;
+	white-space: nowrap;
+}
+
+
+.pharmit_mincontainer .dataTables_info {
+    height: 2.5em; /* leave space for filter line */
+}
+
+.pharmit_rescontainer .dataTables_paginate {
+    float: none;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pharmit_namecol {
+	text-align: left;
+}
+
+.pharmit_rmsdcol {
+    text-align: left;
+    width: 50px;
+	}
+
+.pharmit_masscol {
+	   text-align: left;
+    width: 50px;
+
+}
+
+.pharmit_bondscol {
+	   text-align: left;
+	width: 50px;
+}
+
+.pharmit_rescontainer table.dataTable tbody {
+	cursor: pointer;
+}
+
+.pharmit_rescontainer table.dataTable.compact thead th,
+table.dataTable.compact thead td {
+  padding: 7px 6px 3px 6px;
+}
+
+
+.pharmit_rescontainer table.dataTable.compact tbody th,
+table.dataTable.compact tbody td {
+  padding: 6px 5px;
+}
+
+.pharmit_rescontainer .dataTables_wrapper .dataTables_paginate  .paginate_button {
+	display: inline-block;
+min-width: 1em;
+padding: 0.25em .5em;
+margin-left: 2px;
+text-align: center;
+}
+
+.pharmit_rescontainer table.dataTable tbody tr.selected {
+	background-color: #BDA0CB;
 }

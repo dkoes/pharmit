@@ -29,8 +29,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      molecule, although of course they will not be evenly distributed.
  */
 
-#ifndef SIMPLEFINGERS_H_
-#define SIMPLEFINGERS_H_
+#ifndef PHARMITSERVER_SIMPLEFINGERS_H_
+#define PHARMITSERVER_SIMPLEFINGERS_H_
 
 #if 0
 This didn't have anywhere close to the hoped for effect. In most cases doesn't
@@ -191,4 +191,4 @@ public:
 };
 
 #endif
-#endif /* SIMPLEFINGERS_H_ */
+#endif /* PHARMITSERVER_SIMPLEFINGERS_H_ */

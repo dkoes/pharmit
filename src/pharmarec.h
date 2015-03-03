@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Routines for pharmacophore recognition.
  */
 
-#ifndef PHARMAREC_H_
-#define PHARMAREC_H_
+#ifndef PHARMITSERVER_PHARMAREC_H_
+#define PHARMITSERVER_PHARMAREC_H_
 
 #include <iostream>
 #include <boost/unordered_map.hpp>
@@ -260,4 +260,4 @@ extern bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
 		const string& moldata, OpenBabel::OBFormat *format, const string& recdata, OpenBabel::OBFormat *rformat);
 
 
-#endif /* PHARMAREC_H_ */
+#endif /* PHARMITSERVER_PHARMAREC_H_ */

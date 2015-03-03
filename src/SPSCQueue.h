@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      A single producer/single consumer thread-safe non-blocking queue
  */
 
-#ifndef SPSCQUEUE_H_
-#define SPSCQUEUE_H_
+#ifndef PHARMITSERVER_SPSCQUEUE_H_
+#define PHARMITSERVER_SPSCQUEUE_H_
 
 using namespace std;
 template < typename T, unsigned N>
@@ -177,4 +177,4 @@ public:
 	void setDone() { done =true; }
 };
 
-#endif /* SPSCQUEUE_H_ */
+#endif /* PHARMITSERVER_SPSCQUEUE_H_ */

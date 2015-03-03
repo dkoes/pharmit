@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *     	Creation and search routines for the specially formatted pharmer database.
  */
 
-#ifndef PHARMERDB_H_
-#define PHARMERDB_H_
+#ifndef PHARMITSERVER_PHARMERDB_H_
+#define PHARMITSERVER_PHARMERDB_H_
 
 
 #include <iostream>
@@ -595,4 +595,4 @@ public:
 };
 
 
-#endif /* PHARMERDB_H_ */
+#endif /* PHARMITSERVER_PHARMERDB_H_ */

@@ -30,8 +30,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Data is copied into the queue.
  */
 
-#ifndef MTQUEUE_H_
-#define MTQUEUE_H_
+#ifndef PHARMITSERVER_MTQUEUE_H_
+#define PHARMITSERVER_MTQUEUE_H_
 
 #include <boost/thread.hpp>
 #include <vector>
@@ -180,4 +180,4 @@ public:
 
 };
 
-#endif /* MTQUEUE_H_ */
+#endif /* PHARMITSERVER_MTQUEUE_H_ */

@@ -7,7 +7,7 @@ var gulp = require('gulp'),
 // Lint JS
 gulp.task('lint', function() {
   gulp.src('./src/*.js')
-    .pipe(jshint())
+    .pipe(jshint({'latedef':'nofunc'}))
     .pipe(jshint.reporter('default'));
 });
  

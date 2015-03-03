@@ -8,8 +8,8 @@
  *      check to see if any points fall within this space.
  */
 
-#ifndef EXCLUDER_H_
-#define EXCLUDER_H_
+#ifndef PHARMITSERVER_EXCLUDER_H_
+#define PHARMITSERVER_EXCLUDER_H_
 
 #include "FloatCoord.h"
 #include <json/json.h>
@@ -64,4 +64,4 @@ public:
 	}
 };
 
-#endif /* EXCLUDER_H_ */
+#endif /* PHARMITSERVER_EXCLUDER_H_ */

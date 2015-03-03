@@ -19,32 +19,104 @@
 var Pharmit = Pharmit || {};
 
 Pharmit.Viewer = (function() {
+	"use strict";
 	// private class variables and functions
 
 	function Viewer(element) {
 		//private variables and functions
 		var ec = $3Dmol.elementColors;
-		var colorStyles =  [//each element has name and color (3dmol)
-		                    {name: "None", color: null},
-		                    {name: "RasMol", color: ec.rasmol},
-		                    {name: "White", color: ec.whiteCarbon},
-		                    {name: "Green", color: ec.greenCarbon},
-		                    {name: "Cyan", color: ec.cyanCarbon},
-		                    {name: "Magenta", color: ec.magentaCarbon},
-		                    {name: "Yellow", color: ec.yellowCarbon},
-		                    {name: "Orange", color: ec.orangeCarbon},
-		                    {name: "Purple", color: ec.purpleCarbon},
-		                    {name: "Blue", color: ec.blueCarbon}
-		                    ];
 		
-		var pickCallback = null;
+		var margins = {left: 0, right: 0}; 
+		
+		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xf0f0f0', 'HydrogenAcceptor': 'orange', 
+							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey'};
+
+		
+		var modelsAndStyles = {
+				'Ligand': {model: null,
+					defaultColor: '#C8C8C8',
+					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					selectedstyle: 'stick',
+					styles: {
+						stick: {name: "Stick",
+							style: {stick:{radius: 0.15}},
+							nonbond: {sphere: {radius: 0.15}}
+						},
+						wire: {name: "Wire",
+							style: {line:{linewidth: 2.0}},
+							nonbond: {sphere: {radius: 0.05}}
+						},
+						sphere: {name: "Sphere",
+							style: {sphere:{}},
+							nonbond: {sphere: {}}
+						},
+						none: {name: "None",
+							style: {},
+							nonbond: {}
+						}
+					}
+					},
+				'Receptor':{model: null,
+					defaultColor: '#C8C8C8',
+					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					selectedstyle: 'cartoonwire',
+					styles: {
+						stick: {name: "Stick",
+							style: {stick:{radius: 0.1}},
+							nonbond: {sphere: {radius: 0.1}}
+						},
+						wire: {name: "Wire",
+							style: {line:{linewidth: 3.0}},
+							nonbond: {sphere: {radius: 0.05}}
+						},
+						sphere: {name: "Sphere",
+							style: {sphere:{}},
+							nonbond: {sphere: {}}
+						},
+						cartoon: {name: "Cartoon",
+							style: {cartoon:{}},
+							nonbond: {sphere: {radius: 0.1}}
+							},
+						cartoonwire: {name: "Cartoon+Wire",
+							style: {cartoon: {}, line: {linewidth: 3.0}},
+							nonbond: {sphere: {radius: 0.2}}
+							},
+						none: {name: "None",
+							style: {},
+							nonbond: {}
+						}
+					}
+					}, 
+				'Results': {model: null,
+					defaultColor: 'gray',
+					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					selectedstyle: 'stick',
+					styles: {
+						stick: {name: "Stick",
+							style: {stick:{radius: 0.25}},
+							nonbond: {sphere: {radius: 0.25}}
+						},
+						wire: {name: "Wire",
+							style: {line:{linewidth: 4.0}},
+							nonbond: {sphere: {radius: 0.1}}
+						},
+						sphere: {name: "Sphere",
+							style: {sphere:{}},
+							nonbond: {sphere: {}}
+						},
+						none: {name: "None",
+							style: {},
+							nonbond: {}
+						}
+					}
+					}
+		};
+		var surface = null;
+		var surfaceStyle = {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-0.8,0.8)}, opacity:0.8};
 		var viewer = null;
-		var receptor = null;
-		var ligand = null;
-		var results = [];
 		var shapes = [];
 		
-		var getExt = function(fname) {
+		var getExt = function(fname) { 
 			if(!fname) return "";
 			var a = fname.split(".");
 			if( a.length <= 1 ) {
@@ -53,55 +125,339 @@ Pharmit.Viewer = (function() {
 			return a.pop(); 
 		};
 		
+		//applies the current selectedstyle and colorscheme for name
+		var updateStyle = function(name) {
+			var rec = modelsAndStyles[name];
+			var stylename = rec.selectedStyle;
+			var s = rec.styles[stylename];
+			var style = s.style;
+			var nbond = s.nonbond;
+
+			var model = rec.model;
+			if(model) {
+				model.setStyle({}, style);
+				model.setStyle({bonds: 0}, nbond);
+			}				
+			
+			viewer.render();
+		};
 		
 		//create jquery selection object for picking molecule style
-		var createStyleSelector = function(name, defaultval, callback) {
-			var ret = $('<div>');
+		//adds a table row
+		var createStyleSelector = function(name, table, callback) {
+			var rec = modelsAndStyles[name];
+			var ret = $('<tr>').appendTo(table).addClass('pharmit_styleselectrow');
 			var id = name+"MolStyleSelect";
-			$('<label for="'+id+'">'+name+' Style</label>').appendTo(ret).addClass('stylelabel');
+			$('<label for="'+id+'">'+name+':</label>').appendTo(ret).addClass('pharmit_stylelabel').appendTo($('<td>').appendTo(ret));
 			
-			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(ret).addClass('styleselector');
-			for(var i = 0, n = colorStyles.length; i < n; i++) {
-				$('<option value="'+i+'">'+colorStyles[i].name+'</option>').appendTo(select);
-			}
+			var cell = $('<td nowrap>').appendTo(ret);
+			var select = $('<select name="'+id+'" id="'+id+'">').appendTo(cell).addClass('pharmit_styleselector');
+			$.each(rec.styles, function(key, value) {
+				$('<option value="'+key+'">'+value.name+'</option>').appendTo(select);
+			});
 			
-			select.val(defaultval);
-			select.selectmenu({width: 120});
-
-			return ret;
+			select.val(rec.selectedstyle);
+			select.selectmenu({
+				width: '11em', 
+				appendTo: table, 
+				change: function() {select.change();},
+				position: {my: "left top", at: "left bottom", collision: "flip"}
+			});
+			
+			//workaround firefox bug - remove element style so css stylesheet takes effect
+			select.selectmenu( "widget" ).css('width','');
+			
+			var colorscheme = rec.colorscheme;
+			//give color scheme to all substyles, this is reference so change the original colorscheme should change the styles
+			$.each(rec.styles, function(key, subrec) {
+				$.each(subrec.style, function(key,value) {
+					value.colorscheme = colorscheme;
+				});
+			});					
+			
+			select.change(function() {
+				rec.selectedStyle = this.value;
+				updateStyle(name);
+			});
+			
+			var colorpicker = $('<input name="'+id+'color">').appendTo($('<td>').appendTo(ret));
+			colorpicker.val(rec.defaultColor);
+			colorpicker.change(function() {
+				var c = this.value;
+				colorpicker.spectrum("set",c);
+				var color = parseInt(colorpicker.spectrum("get").toHex(),16); //number
+				rec.colorscheme.C = color;
+				updateStyle(name);
+			});
+			
+			colorpicker.spectrum({
+			    showPalette: true,
+			    preferredFormat: "hex",
+			    replacerClassName: 'ui-state-default ui-corner-all',
+			    showPaletteOnly: true,
+			    clickoutFiresChange: true,
+			    palette: ['#C8C8C8', 'gray', 'white','green','cyan','magenta','yellow','orange','purple','blue'],
+			    change: function(color) { 
+			    	colorpicker.change();
+			    }
+			});		
+			
+			select.change();
+			colorpicker.change();
+			select.selectmenu("refresh");	       
+	
 		};
 		
 		//public variables and functions
 		
 		//add controls for change the styles of the div to the specified element
 		this.appendViewerControls = function(vizgroup) {
-			createStyleSelector("Ligand",1, null).appendTo(vizgroup);
-			createStyleSelector("Results",1, null).appendTo(vizgroup);
-			createStyleSelector("Receptor",2, null).appendTo(vizgroup);
+			
+			var table = $('<table>').appendTo(vizgroup);
+			createStyleSelector("Ligand",  table, null);
+			createStyleSelector("Results", table, null);
+			createStyleSelector("Receptor",  table, null);
 			
 			//surface transparency
-			$('<label for="surfacetransparency">Receptor Surface Opacity</label>').appendTo(vizgroup);
-			var sliderdiv = $('<div>').addClass('surfacetransparencydiv').appendTo(vizgroup);
-			$('<div id="surfacetransparency">').appendTo(sliderdiv).slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8});
+			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
+			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
+			var sliderdiv = $('<div>').addClass('pharmit_surfacetransparencyslider').appendTo(stdiv);
+			$('<div id="surfaceopacity" name="surfaceopacity">').appendTo(sliderdiv)
+				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8,
+					change: function(event, ui) { 
+						surfaceStyle.opacity = ui.value;
+						if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
+						viewer.render();
+						}
+				});
+				
+			
+			//background color
+			var bcdiv = $('<div>').addClass('pharmit_backgroundcolordiv').appendTo(vizgroup);
+			$('<label for="backgroundcolor">Background Color:</label>').appendTo(bcdiv);
+			var radiodiv = $('<div id="backgroundcolor">').appendTo(bcdiv);
+			$('<input type="radio" id="whiteBackground" name="backgroundcolor"><label for="whiteBackground">White</label>').appendTo(radiodiv)
+				.change(function() {
+					if($(this).prop("checked")) {
+						viewer.setBackgroundColor("white");
+					}
+					radiodiv.buttonset("refresh");
+				}).prop("checked",true);
+			$('<input type="radio" id="blackBackground" name="backgroundcolor"><label for="blackBackground">Black</label>').appendTo(radiodiv)
+				.change(function() {
+						if($(this).prop("checked")) {
+							viewer.setBackgroundColor("black");
+						}
+						radiodiv.buttonset("refresh");
+					});
+			radiodiv.buttonset();
+		};
+		
+		//amount to offset viewer position by based on morgins
+		var xoffset = function() {
+			return (margins.left-margins.right)/2;
 		};
 		
 		this.setReceptor = function(recstr, recname) {
 			
-			if(!recstr) {
-				//clear receptor
-				if(receptor) viewer.removeModel(receptor);
-				receptor = null;
-			}
-			else {
+			var receptor = modelsAndStyles.Receptor.model;
+
+			//clear receptor
+			if(receptor) viewer.removeModel(receptor);
+			receptor = null;
+			if(surface !== null) viewer.removeSurface(surface);
+			surface = null;
+			
+			if(recstr) {
 				var ext = getExt(recname);
 				receptor = viewer.addModel(recstr, ext);
+				modelsAndStyles.Receptor.model = receptor;
+				updateStyle("Receptor");			
+				
+				//surface
+				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
+				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
+						surfaceStyle, 
+						{model:receptor}, {bonds:0, invert:true});
+				viewer.zoomTo({});
 			}
-			viewer.zoomTo();
-			viewer.render();
+			else
+				viewer.render();
 		};
 
+		this.setLigand = function(ligstr, name) {
+			
+			var ligand = modelsAndStyles.Ligand.model;
+			//lig receptor
+			if(ligand) viewer.removeModel(ligand);
+			ligand = null;
+			
+			if(ligstr) { 
+				var ext = getExt(name);
+				ligand = viewer.addModel(ligstr, ext);
+				modelsAndStyles.Ligand.model = ligand;
+				updateStyle("Ligand");
+				viewer.zoomTo({model: ligand});
+			}
+			else
+				viewer.render();
+		};
+
+		this.setResult = function(molstr) { //assumed sdf
+			//remove current result
+			var mol = modelsAndStyles.Results.model;
+			if(mol) viewer.removeModel(mol);
+			
+			if(molstr) {
+				mol = viewer.addModel(molstr, "sdf");
+				modelsAndStyles.Results.model = mol;
+				updateStyle("Results");
+				viewer.zoomTo({model: mol});
+			}
+			else
+				viewer.render();
+		};
 		
+		this.setView = function(view) {
+			if(view) viewer.setView(view);
+		};
 		
+		this.getView = function() {
+			return viewer.getView();
+		};
+		
+		//add a feature as specified by fobj
+		//returns an identifier for referencing the feature later (e.g., removeFeature)
+		this.addFeature = function(fobj, clickHandler) {
+			var sphere = {
+				center: {x: fobj.x,
+				y: fobj.y,
+				z: fobj.z},
+				radius: fobj.radius,
+				color: featureColors[fobj.name],
+				wireframe: true,
+				linewidth: 1.5,
+				clickable: true,
+				callback: clickHandler
+			};
+			
+			var shape = {sphere: null, arrows: [], label: null};
+			shape.sphere = viewer.addSphere(sphere);
+			if(fobj.selected)
+				shape.sphere.updateStyle({wireframe: false});
+
+			if(fobj.hasvec && fobj.vector_on && fobj.svector) {
+				//draw arrow
+				var vec = new $3Dmol.Vector3(fobj.svector.x, fobj.svector.y, fobj.svector.z);
+				var len = fobj.radius+1.0;
+				var mid = (len-0.5)/len; //where arrowhead starts as a ratio
+				vec = vec.normalize();
+				var start = vec.clone().multiplyScalar(fobj.radius).add(fobj);
+				var end = vec.clone().multiplyScalar(len).add(fobj);
+				var arrow = {
+					start: start,
+					end: end,
+					radius: 0.075,
+					radiusRatio: 2.0,
+					mid: mid,
+					wireframe: !fobj.selected,
+					color: featureColors[fobj.name]
+				};
+				shape.arrows.push(viewer.addArrow(arrow));
+				
+				if(fobj.name == "Aromatic") { //double arrow
+					start = vec.clone().multiplyScalar(-fobj.radius).add(fobj);
+					end = vec.clone().multiplyScalar(-len).add(fobj);
+					arrow.start = start;
+					arrow.end = end;
+					shape.arrows.push(viewer.addArrow(arrow));
+				}
+			}
+			
+			if(fobj.name == "Hydrophobic") {
+				//may have size
+				var label = fobj.minsize + ":" + fobj.maxsize;
+				if(label != ":") {
+					var lab = {
+							position: {x: fobj.x, y: fobj.y, z: fobj.z},
+							showBackground: true,
+							fontColor: 'black',
+							backgroundColor: featureColors[fobj.name],
+							backgroundOpacity: 0.5,
+							alignment: $3Dmol.SpriteAlignment.center
+					};
+					shape.label = viewer.addLabel(label, lab);
+				}
+			}
+			viewer.render();
+			shapes.push(shape);
+			return shapes.length-1;
+		};
+		
+		//change style of feature
+		this.selectFeature = function(s) {
+			var shape = shapes[s];
+			if(shape && shape.sphere) {
+				shape.sphere.updateStyle({wireframe: false});
+				
+				$.each(shape.arrows, function(i, arrow) {
+					arrow.updateStyle({wireframe:false});
+				});
+				viewer.render();
+			}
+		};
+		
+		this.unselectFeature = function(s) {
+			var shape = shapes[s];
+			if(shape && shape.sphere) {
+				shape.sphere.updateStyle({wireframe: true});
+				$.each(shape.arrows, function(i, arrow) {
+					arrow.updateStyle({wireframe:true});
+				});
+				viewer.render();
+			}
+		};
+		
+		this.removeFeature = function(s) {
+			var shape = shapes[s];
+			if(shape) {
+				if(shape.sphere) viewer.removeShape(shape.sphere);
+				$.each(shape.arrows, function(i, arrow) {
+					viewer.removeShape(arrow);
+				});
+				if(shape.label) viewer.removeLabel(shape.label);
+				viewer.render();
+			}
+			delete shapes[s];
+			//clear back of array 
+			while (shapes.length > 0 && typeof (shapes[shapes.length - 1]) === "undefined")
+				shapes.pop();
+		};
+		
+		//specify size of left div so we can move the center point of the viewer
+		this.setLeft = function(x) {
+			var dx = x-margins.left;
+			margins.left = x;
+			viewer.translate(dx/2, 0);
+		};
+		
+		//specify size of right div so we can move the center point of the viewer
+		this.setRight = function(x) {
+			var dx = margins.right-x;
+			margins.right = x;
+			viewer.translate(dx/2, 0);
+		};
+		
+		var savedRender = null;
+		this.disableRendering = function() {
+			savedRender = viewer.render;
+			viewer.render = function() {};
+		};
+		
+		this.enableRendering = function() {
+			if(savedRender) viewer.render = savedRender;
+			viewer.render();
+		};
 		//initialization code
 		viewer = new $3Dmol.GLViewer(element);
 		viewer.setBackgroundColor('white');

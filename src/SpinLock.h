@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      A very simple spinlock.  Separtes lock var (mutex) from locker so destructor can release lock.
  */
 
-#ifndef SPINLOCK_H_
-#define SPINLOCK_H_
+#ifndef PHARMITSERVER_SPINLOCK_H_
+#define PHARMITSERVER_SPINLOCK_H_
 #include <cassert>
 
 enum SpinMutexEnum {SpinMutexUnlocked, SpinMutexLocked};
@@ -82,4 +82,4 @@ public:
 	}
 };
 
-#endif /* SPINLOCK_H_ */
+#endif /* PHARMITSERVER_SPINLOCK_H_ */

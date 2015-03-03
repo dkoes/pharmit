@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef CGI_H_
-#define CGI_H_
+#ifndef PHARMITSERVER_CGI_H_
+#define PHARMITSERVER_CGI_H_
 
 /*! \file FCgiIO.h
  * \brief Class that implements input and output through a FastCGI request.
@@ -109,4 +109,4 @@ protected:
 
 } // namespace cgicc
 
-#endif /* CGI_H_ */
+#endif /* PHARMITSERVER_CGI_H_ */

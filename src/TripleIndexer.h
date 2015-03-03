@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *  Class for indexing into a multiset of triples.
  */
 
-#ifndef TRIPLEINDEXER_H_
-#define TRIPLEINDEXER_H_
+#ifndef PHARMITSERVER_TRIPLEINDEXER_H_
+#define PHARMITSERVER_TRIPLEINDEXER_H_
 
 #include <boost/multi_array.hpp>
 #include <boost/assign/list_of.hpp>
@@ -129,4 +129,4 @@ public:
 	}
 };
 
-#endif /* TRIPLEINDEXER_H_ */
+#endif /* PHARMITSERVER_TRIPLEINDEXER_H_ */

@@ -25,8 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef SPHEREGRID_H_
-#define SPHEREGRID_H_
+#ifndef PHARMITSERVER_SPHEREGRID_H_
+#define PHARMITSERVER_SPHEREGRID_H_
 
 #include <vector>
 #include <openbabel/math/vector3.h>
@@ -78,4 +78,4 @@ public:
 
 extern SphereGrid sphereGrid;
 
-#endif /* SPHEREGRID_H_ */
+#endif /* PHARMITSERVER_SPHEREGRID_H_ */

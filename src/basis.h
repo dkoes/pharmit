@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef BASIS_H_
-#define BASIS_H_
+#ifndef PHARMITSERVER_BASIS_H_
+#define PHARMITSERVER_BASIS_H_
 
 #include "pharmarec.h"
 
@@ -97,4 +97,4 @@ public:
 };
 
 
-#endif /* BASIS_H_ */
+#endif /* PHARMITSERVER_BASIS_H_ */

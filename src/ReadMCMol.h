@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef READMCMOL_H_
-#define READMCMOL_H_
+#ifndef PHARMITSERVER_READMCMOL_H_
+#define PHARMITSERVER_READMCMOL_H_
 #include <openbabel/mol.h>
 
 
@@ -191,4 +191,4 @@ public:
 	unsigned molsRead() const { return molcnt; }
 };
 
-#endif /* READMCMOL_H_ */
+#endif /* PHARMITSERVER_READMCMOL_H_ */

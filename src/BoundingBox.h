@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *      Author: dkoes
  */
 
-#ifndef BOUNDINGBOX_H_
-#define BOUNDINGBOX_H_
+#ifndef PHARMITSERVER_BOUNDINGBOX_H_
+#define PHARMITSERVER_BOUNDINGBOX_H_
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -181,4 +181,4 @@ struct BoundingBox
 	friend ostream& operator<<(ostream& out, const BoundingBox& box);
 };
 
-#endif /* BOUNDINGBOX_H_ */
+#endif /* PHARMITSERVER_BOUNDINGBOX_H_ */
