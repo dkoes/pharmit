@@ -261,8 +261,7 @@ Pharmit.Query = (function() {
 			form.append($('<input>', {'name':"data",'type':"hidden",value:JSON.stringify(qobj,null,4)}));
 			form.appendTo(document.body);
 			form.submit();
-			$(form).remove();
-			
+			$(form).remove();			
 
 		};
 		
@@ -459,7 +458,7 @@ Pharmit.Query = (function() {
 		element.append(querydiv);
 
 		var loadsession = $('<button>Load Session...</button>').button();
-		
+				
 		var loadsessionfile = $('<input type="file">').appendTo(bottomloaders).fileinput(loadsession).change(function() {readText(this,loadSession);});	
 		var savesession = $('<button>Save Session...</button>').appendTo(bottomloaders).button().click(saveSession);		
 		

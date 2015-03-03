@@ -25,17 +25,150 @@ Pharmit.MinResults = (function() {
 	function MinResults(results, viewer) {
 		//private variables and functions
 		var mindiv = null;
+		var save = null;
 		var onclose = null; //what to call when close button is clicked
 		
+		var processData = function(data) {
+			
+			if(data.status === 0)
+				return {error: data.msg};
+			
+			var ret = data.data;
+			
+			for(var i = 0; i < ret.length; i++) {
+				//round floats
+				ret[i][3] = numeral(ret[i][3]).format('0.00');
+				ret[i][4] = numeral(ret[i][4]).format('0.000');
+			}
+			return ret;
+		};
 		
 		//public variables and functions
+		var cancel = this.cancel = function() {
+			
+			if($.fn.DataTable.isDataTable(table)) {
+				table.DataTable().destroy();
+			}
+			
+			save.button( "option", "disabled", true );
+			mindiv.hide();
+		};
 		
 		//perform the query
-		this.minimize = function(qid, closer) {
+		this.minimize = function(qid, qobj, closer) {
 			onclose = closer;
-			//if we aren't hidden, need to cancel current query first
+			
+			var postData = {cmd: 'startsmina',
+					qid: qid,
+					receptorid: qobj.receptorid,
+					recname: qobj.recname
+			};
 			
 			//start provided query
+			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
+				if(ret.status) { //success
+					
+					//setup table
+					sminaid = ret.sminaid;
+					var numrows = Math.floor((body.height()-85)/28); //magic numbers!
+					table.dataTable({
+						searching: false,
+						pageLength: numrows,
+						destroy: true, //replace any existing table
+						lengthChange: false,
+						order: [[ 1, "asc" ]],
+						orderMulti: false,
+						columnDefs: [
+						                {
+						                    targets: [ 0 ], //position
+						                    visible: false
+						                },
+						                {
+						                    targets: [ 1 ], //orig position
+						                    visible: false
+						                },
+						                {
+						                    targets: [ 2 ], //name
+						                    className: "pharmit_minname",
+						                    searchable: false,
+						                    sortable: false
+						                },
+						                {
+						                    targets: [ 3 ], //score
+						                    className: "pharmit_minscore",
+						                    searchable: false
+						                },
+						                {
+						                	 targets: [ 4 ], //rmsd
+							                 className: "pharmit_minrmsd",
+							                 searchable: false
+						                }
+						            ],
+						 language: {
+							 emptyTable: "Nada, zip, zilcho",
+							 	infoFiltered: '',
+							 	infoEmpty: "",
+							 	info: "Minimizing..."
+						 },
+						 serverSide: true,
+						 processing: true,
+						 ajax: {
+						    	url: Pharmit.server,
+						    	data: {
+						    		cmd: "getsminadata",
+						    		qid: qid
+						    	},
+						    	dataSrc: processData
+						 }
+
+					});
+										
+					//event handler for loading data, keep loading until done
+					table.on('xhr.dt', function(e, settings, json) {
+						if(json.finished) {
+							save.button( "option", "disabled", false );														
+						} 
+				        else if(json.status === 0) {
+				        	alert(json.msg);
+				        }
+						else {
+				            viewer.setResult(); //clear in case clicked on
+
+							//keep polling server
+							setTimeout(function() {
+								table.DataTable().ajax.reload();
+							}, 1000);
+						}					 
+					});	
+					
+					
+					$('tbody',table).on( 'click', 'tr', function () {
+						var mid = table.DataTable().row(this).data()[0];
+						var r = this;
+				        if ( $(this).hasClass('selected') ) {
+				            $(this).removeClass('selected');
+				            viewer.setResult(); //clear
+				        }
+				        else {
+				            table.DataTable().$('tr.selected').removeClass('selected');
+				            $(this).addClass('selected');
+				            
+				            $.post(Pharmit.server,
+				            		{cmd: 'getsminamol',
+				            		 qid: qid,
+				            		 molid: mid
+				            		}).done(function(ret) {
+				            			if( $(r).hasClass('selected')) //still selected
+				            				viewer.setResult(ret);
+				            		});
+				        }
+				    });
+				} else {
+					alert("Error: "+ret.msg);
+				}
+			}).fail(function() {
+				alert("Error contacting minimization server.  Please inform "+Pharmit.email+ " if this problem persists.");
+			});	
 			
 			//show div
 			mindiv.show();
@@ -92,7 +225,7 @@ Pharmit.MinResults = (function() {
 		
 		//save button
 		var bottomrow = $('<div>').appendTo(footer).addClass('pharmit_minbottom');
-		var save = $('<button>Save...</button>').appendTo(bottomrow).button().click(saveResults);				
+		save = $('<button>Save...</button>').appendTo(bottomrow).button().click(saveResults);				
 
 		mindiv.hide();
 	}

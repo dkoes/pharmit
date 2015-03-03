@@ -25,18 +25,6 @@ Pharmit.Viewer = (function() {
 	function Viewer(element) {
 		//private variables and functions
 		var ec = $3Dmol.elementColors;
-		var colorStyles =  {
-                none:  "None",
-                rasmol:  "RasMol", 
-                whiteCarbon: "White", 
-                greenCarbon: "Green",
-                cyanCarbon:  "Cyan", 
-                magentaCarbon:"Magenta", 
-                yellowCarbon:"Yellow", 
-                orangeCarbon:"Orange", 
-                purpleCarbon:"Purple", 
-                blueCarbon:  "Blue"
-		};
 		
 		var margins = {left: 0, right: 0}; 
 		
@@ -46,6 +34,7 @@ Pharmit.Viewer = (function() {
 		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
+					defaultColor: '#C8C8C8',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
 					selectedstyle: 'stick',
 					styles: {
@@ -68,6 +57,7 @@ Pharmit.Viewer = (function() {
 					}
 					},
 				'Receptor':{model: null,
+					defaultColor: '#C8C8C8',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
 					selectedstyle: 'cartoonwire',
 					styles: {
@@ -98,6 +88,7 @@ Pharmit.Viewer = (function() {
 					}
 					}, 
 				'Results': {model: null,
+					defaultColor: 'gray',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
 					selectedstyle: 'stick',
 					styles: {
@@ -190,7 +181,7 @@ Pharmit.Viewer = (function() {
 			});
 			
 			var colorpicker = $('<input name="'+id+'color">').appendTo($('<td>').appendTo(ret));
-			colorpicker.val('#C8C8C8');
+			colorpicker.val(rec.defaultColor);
 			colorpicker.change(function() {
 				var c = this.value;
 				colorpicker.spectrum("set",c);
@@ -200,12 +191,13 @@ Pharmit.Viewer = (function() {
 			});
 			
 			colorpicker.spectrum({
-				color: '#C8C8C8',
 			    showPalette: true,
+			    color: rec.defaultcolor,
+			    preferredFormat: "hex",
 			    replacerClassName: 'ui-state-default ui-corner-all',
 			    showPaletteOnly: true,
 			    clickoutFiresChange: true,
-			    palette: ['#C8C8C8', 'white','green','cyan','magenta','yellow','orange','purple','blue'],
+			    palette: ['#C8C8C8', 'gray', 'white','green','cyan','magenta','yellow','orange','purple','blue'],
 			    change: function(color) { 
 			    	colorpicker.change();
 			    }
@@ -312,6 +304,20 @@ Pharmit.Viewer = (function() {
 				viewer.render();
 		};
 
+		this.setResult = function(molstr) { //assumed sdf
+			//remove current result
+			var mol = modelsAndStyles.Results.model;
+			if(mol) viewer.removeModel(mol);
+			
+			if(molstr) {
+				mol = viewer.addModel(molstr, "sdf");
+				modelsAndStyles.Results.model = mol;
+				updateStyle("Results");
+				viewer.zoomTo({model: mol});
+			}
+			else
+				viewer.render();
+		};
 		
 		this.setView = function(view) {
 			if(view) viewer.setView(view);

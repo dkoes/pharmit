@@ -30,7 +30,7 @@
             "svector": {
                 "x": 1,
                 "y": 0,
-                "z": 0
+                "z": 6.123233995736766e-17
             },
             "minsize": "",
             "maxsize": "",
@@ -48,7 +48,7 @@
             "svector": {
                 "x": 1,
                 "y": 0,
-                "z": 0
+                "z": 6.123233995736766e-17
             },
             "minsize": "",
             "maxsize": "",
@@ -64,11 +64,11 @@
     "minrotbonds": "",
     "maxrotbonds": "",
     "LigandMolStyleSelect": "stick",
-    "LigandMolStyleSelectcolor": "hsv(0, 0%, 78%)",
+    "LigandMolStyleSelectcolor": "#c8c8c8",
     "ResultsMolStyleSelect": "stick",
-    "ResultsMolStyleSelectcolor": "hsv(0, 0%, 78%)",
+    "ResultsMolStyleSelectcolor": "#808080",
     "ReceptorMolStyleSelect": "cartoonwire",
-    "ReceptorMolStyleSelectcolor": "hsv(0, 0%, 78%)",
+    "ReceptorMolStyleSelectcolor": "#c8c8c8",
     "backgroundcolor": "whiteBackground",
     "ligand": "HETATM 2330  N1  VX6 A 514       4.048  -5.701 -32.333  1.00 31.06           N  \nHETATM 2331  C2  VX6 A 514       4.863  -5.204 -31.177  1.00 27.96           C  \nHETATM 2332  C3  VX6 A 514       4.790  -6.119 -29.950  1.00 26.70           C  \nHETATM 2333  N4  VX6 A 514       3.373  -6.621 -29.509  1.00 23.51           N  \nHETATM 2334  C5  VX6 A 514       2.480  -6.945 -30.720  1.00 25.13           C  \nHETATM 2335  C6  VX6 A 514       2.647  -5.978 -31.939  1.00 27.26           C  \nHETATM 2336  C7  VX6 A 514       4.161  -4.762 -33.515  1.00 31.31           C  \nHETATM 2337  C8  VX6 A 514       2.941  -6.829 -28.148  1.00 21.96           C  \nHETATM 2338  C9  VX6 A 514       1.735  -7.607 -27.825  1.00 18.96           C  \nHETATM 2339  C10 VX6 A 514       1.404  -7.764 -26.439  1.00 19.55           C  \nHETATM 2340  N11 VX6 A 514       2.229  -7.197 -25.523  1.00 18.58           N  \nHETATM 2341  C12 VX6 A 514       3.300  -6.496 -25.867  1.00 19.22           C  \nHETATM 2342  N13 VX6 A 514       3.671  -6.297 -27.123  1.00 19.28           N  \nHETATM 2343  N14 VX6 A 514       0.281  -8.483 -26.123  1.00 19.63           N  \nHETATM 2344  C15 VX6 A 514      -0.318  -8.938 -24.880  1.00 17.25           C  \nHETATM 2345  C17 VX6 A 514       0.114  -8.602 -23.587  1.00 15.77           C  \nHETATM 2346  C18 VX6 A 514      -0.765  -9.246 -22.720  1.00 13.86           C  \nHETATM 2347  N19 VX6 A 514      -1.715  -9.964 -23.462  1.00 16.29           N  \nHETATM 2348  N20 VX6 A 514      -1.439  -9.774 -24.775  1.00 19.06           N  \nHETATM 2349  C21 VX6 A 514      -0.783  -9.229 -21.208  1.00 15.80           C  \nHETATM 2350  S23 VX6 A 514       4.282  -5.776 -24.527  1.00 21.32           S  \nHETATM 2351  C24 VX6 A 514       3.587  -6.260 -23.017  1.00 19.71           C  \nHETATM 2352  C25 VX6 A 514       2.860  -5.339 -22.252  1.00 20.18           C  \nHETATM 2353  C26 VX6 A 514       2.250  -5.770 -21.034  1.00 20.55           C  \nHETATM 2354  C27 VX6 A 514       2.378  -7.094 -20.602  1.00 18.76           C  \nHETATM 2355  C28 VX6 A 514       3.118  -8.023 -21.380  1.00 20.07           C  \nHETATM 2356  C29 VX6 A 514       3.736  -7.575 -22.613  1.00 20.65           C  \nHETATM 2357  N30 VX6 A 514       1.761  -7.560 -19.391  1.00 21.54           N  \nHETATM 2358  C31 VX6 A 514       1.701  -8.761 -18.743  1.00 21.45           C  \nHETATM 2359  O32 VX6 A 514       2.216  -9.805 -19.137  1.00 20.21           O  \nHETATM 2360  C33 VX6 A 514       0.885  -8.737 -17.450  1.00 23.08           C  \nHETATM 2361  C34 VX6 A 514      -0.602  -9.266 -17.389  1.00 23.05           C  \nHETATM 2362  C35 VX6 A 514       0.487  -9.810 -16.432  1.00 23.28           C  ",
     "ligandFormat": ".pdb",

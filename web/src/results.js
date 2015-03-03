@@ -37,7 +37,7 @@ Pharmit.Results = (function() {
 		//perform the query
 		this.phquery = function(qobj) {
 			// cancel current query first
-			phresults.quit();
+			phresults.cancel();
 			//start provided query
 			phresults.query(qobj);						
 			//show div

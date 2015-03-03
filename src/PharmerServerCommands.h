@@ -487,7 +487,7 @@ public:
 		{
 			IO << HTTPPlainHeader();
 			unsigned index = cgiGetInt(CGI, "loc");
-			query->outputMol(index, IO, true, cgiTagExists(CGI, "minimize"));
+			query->outputMol(index, IO, false, cgiTagExists(CGI, "minimize"));
 		}
 	}
 };
@@ -788,6 +788,12 @@ public:
 			conv.ReadString(&rec, receptor);
 			string pdbqtrec = conv.WriteString(&rec);
 
+			if (query->getSminaID() > 0) //in case there is already a query running, cancel it first
+			{
+				boost::asio::ip::tcp::iostream strm(server, port);
+				strm << "cancel\n" << query->getSminaID() << "\n";
+			}
+
 			//connect to server
 			stream_ptr minstrm(new tcp::iostream(server, port));
 			if(!minstrm) {
@@ -970,27 +976,17 @@ public:
 			SminaParameters param(CGI);
 			boost::asio::ip::tcp::iostream strm(server, port);
 			if(!strm) {
-				IO << "{\"status\" : 0, \"msg\" : \"Could not connect to minimization server.\"}";
+				IO << "{\"status\" : 0, \"error\" : \"Could not connect to minimization server.\"}";
 				return;
 			}
 
-			strm << "getscores\n";
-			strm << sminaid << "\n";
+			int drawcode = cgiGetInt(CGI, "draw");
+
+			strm << "getjsonscores\n";
+			strm << sminaid << " " << drawcode << "\n";
 			param.write(strm);
 
-			//finished, total, results.size()
-			unsigned finished = 0, total = 0, sz = 0;
-			double mintime = 0;
-			strm >> finished;
-			strm >> total;
-			strm >> sz;
-			strm >> mintime;
-			string str;
-			getline(strm, str);
-			//first line is json status
-			IO << "{\"status\" : 1, \"finished\" : " << finished <<
-					", \"total\" : " << total << ", \"size\" : " << sz << ", \"time\" : " << mintime << "}\n";
-
+			//start the json output and provide draw code
 			copy_stream(IO, strm);
 		}
 

@@ -878,17 +878,150 @@ Pharmit.MinResults = (function() {
 	function MinResults(results, viewer) {
 		//private variables and functions
 		var mindiv = null;
+		var save = null;
 		var onclose = null; //what to call when close button is clicked
 		
+		var processData = function(data) {
+			
+			if(data.status === 0)
+				return {error: data.msg};
+			
+			var ret = data.data;
+			
+			for(var i = 0; i < ret.length; i++) {
+				//round floats
+				ret[i][3] = numeral(ret[i][3]).format('0.00');
+				ret[i][4] = numeral(ret[i][4]).format('0.000');
+			}
+			return ret;
+		};
 		
 		//public variables and functions
+		var cancel = this.cancel = function() {
+			
+			if($.fn.DataTable.isDataTable(table)) {
+				table.DataTable().destroy();
+			}
+			
+			save.button( "option", "disabled", true );
+			mindiv.hide();
+		};
 		
 		//perform the query
-		this.minimize = function(qid, closer) {
+		this.minimize = function(qid, qobj, closer) {
 			onclose = closer;
-			//if we aren't hidden, need to cancel current query first
+			
+			var postData = {cmd: 'startsmina',
+					qid: qid,
+					receptorid: qobj.receptorid,
+					recname: qobj.recname
+			};
 			
 			//start provided query
+			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
+				if(ret.status) { //success
+					
+					//setup table
+					sminaid = ret.sminaid;
+					var numrows = Math.floor((body.height()-85)/28); //magic numbers!
+					table.dataTable({
+						searching: false,
+						pageLength: numrows,
+						destroy: true, //replace any existing table
+						lengthChange: false,
+						order: [[ 1, "asc" ]],
+						orderMulti: false,
+						columnDefs: [
+						                {
+						                    targets: [ 0 ], //position
+						                    visible: false
+						                },
+						                {
+						                    targets: [ 1 ], //orig position
+						                    visible: false
+						                },
+						                {
+						                    targets: [ 2 ], //name
+						                    className: "pharmit_minname",
+						                    searchable: false,
+						                    sortable: false
+						                },
+						                {
+						                    targets: [ 3 ], //score
+						                    className: "pharmit_minscore",
+						                    searchable: false
+						                },
+						                {
+						                	 targets: [ 4 ], //rmsd
+							                 className: "pharmit_minrmsd",
+							                 searchable: false
+						                }
+						            ],
+						 language: {
+							 emptyTable: "Nada, zip, zilcho",
+							 	infoFiltered: '',
+							 	infoEmpty: "",
+							 	info: "Minimizing..."
+						 },
+						 serverSide: true,
+						 processing: true,
+						 ajax: {
+						    	url: Pharmit.server,
+						    	data: {
+						    		cmd: "getsminadata",
+						    		qid: qid
+						    	},
+						    	dataSrc: processData
+						 }
+
+					});
+										
+					//event handler for loading data, keep loading until done
+					table.on('xhr.dt', function(e, settings, json) {
+						if(json.finished) {
+							save.button( "option", "disabled", false );														
+						} 
+				        else if(json.status === 0) {
+				        	alert(json.msg);
+				        }
+						else {
+				            viewer.setResult(); //clear in case clicked on
+
+							//keep polling server
+							setTimeout(function() {
+								table.DataTable().ajax.reload();
+							}, 1000);
+						}					 
+					});	
+					
+					
+					$('tbody',table).on( 'click', 'tr', function () {
+						var mid = table.DataTable().row(this).data()[0];
+						var r = this;
+				        if ( $(this).hasClass('selected') ) {
+				            $(this).removeClass('selected');
+				            viewer.setResult(); //clear
+				        }
+				        else {
+				            table.DataTable().$('tr.selected').removeClass('selected');
+				            $(this).addClass('selected');
+				            
+				            $.post(Pharmit.server,
+				            		{cmd: 'getsminamol',
+				            		 qid: qid,
+				            		 molid: mid
+				            		}).done(function(ret) {
+				            			if( $(r).hasClass('selected')) //still selected
+				            				viewer.setResult(ret);
+				            		});
+				        }
+				    });
+				} else {
+					alert("Error: "+ret.msg);
+				}
+			}).fail(function() {
+				alert("Error contacting minimization server.  Please inform "+Pharmit.email+ " if this problem persists.");
+			});	
 			
 			//show div
 			mindiv.show();
@@ -945,7 +1078,7 @@ Pharmit.MinResults = (function() {
 		
 		//save button
 		var bottomrow = $('<div>').appendTo(footer).addClass('pharmit_minbottom');
-		var save = $('<button>Save...</button>').appendTo(bottomrow).button().click(saveResults);				
+		save = $('<button>Save...</button>').appendTo(bottomrow).button().click(saveResults);				
 
 		mindiv.hide();
 	}
@@ -974,17 +1107,23 @@ var Pharmit = Pharmit || {};
 
 Pharmit.PhResults = (function() {
 	// private class variables and functions
-	var phdiv = null;
-	var table = null;
-	var body = null;
-	
+
 	function PhResults(results, viewer, minresults) {
 		//private variables and functions
 		var phdiv = null;
 		var qid = null;
-		
+		var query = null;
+		var table = null;
+		var body = null;
+		var minimize = null;
+		var save = null;
+				
 		//format that provided data (mangle the names appropriately)		
 		var processData = function(data) {
+			
+			if(data.status === 0)
+				return {error: data.msg};
+			
 			var ret = data.data;
 			
 			for(var i = 0; i < ret.length; i++) {
@@ -997,6 +1136,7 @@ Pharmit.PhResults = (function() {
 		
 		var lastheight = 0;
 		var lastnum = 0;
+		var pad = 20;
 		var resize = function() {
 			if($.fn.DataTable.isDataTable(table)) {
 				var total = body.height();
@@ -1005,7 +1145,7 @@ Pharmit.PhResults = (function() {
 					total -= $('thead', table).height();
 					total -= $('.dataTables_info', body).height();
 					total -= $('.dataTables_paginate', body).height();
-					total -= 10; //padding
+					total -= pad; //padding
 					var single = $('tr.odd',table).first().height()+1; //include border
 					var num = Math.floor(total/single);
 					if(num != lastnum) { //really only do draw calls when needed
@@ -1020,12 +1160,13 @@ Pharmit.PhResults = (function() {
 		$.fn.DataTable.ext.pager.numbers_length = 5;
 		//perform the query
 		this.query = function(qobj) {
+			query = $.extend({}, qobj);
 			//don't need receptor or ligand structures and they are big
-			delete qobj.receptor;
-			delete qobj.ligand;
+			delete query.receptor;
+			delete query.ligand;
 			//start provided query
 			var postData = {cmd: 'startquery',
-					json: JSON.stringify(qobj)
+					json: JSON.stringify(query)
 			};
 			
 			if(qid !== null) postData.oldqid = qid;
@@ -1035,7 +1176,7 @@ Pharmit.PhResults = (function() {
 					
 					//setup table
 					qid = ret.qid;
-					var numrows = Math.floor((body.height()-75)/28); //magic numbers!
+					var numrows = Math.floor((body.height()-85)/28); //magic numbers!
 					table.dataTable({
 						searching: false,
 						pageLength: numrows,
@@ -1097,11 +1238,18 @@ Pharmit.PhResults = (function() {
 							if(json.recordsTotal === 0) {
 								lang.emptyTable = lang.sEmptyTable = "No results found";
 							} else {
-								lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";								
+								lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";
+								minimize.button( "option", "disabled", false );
+								save.button( "option", "disabled", false );
 							}
 							
 						} 
+						else if(json.status === 0) {
+							alert(json.msg);
+						}
 						else {
+				            viewer.setResult(); //clear in case clicked on
+
 							//keep polling server
 							setTimeout(function() {
 								table.DataTable().ajax.reload();
@@ -1111,12 +1259,24 @@ Pharmit.PhResults = (function() {
 					
 					
 					$('tbody',table).on( 'click', 'tr', function () {
-				        if ( $(this).hasClass('selected') ) {
-				            $(this).removeClass('selected');
+						var r = this;
+						var mid = table.DataTable().row(r).data()[4];
+				        if ( $(r).hasClass('selected') ) {
+				            $(r).removeClass('selected');
+				            viewer.setResult(); //clear
 				        }
 				        else {
 				            table.DataTable().$('tr.selected').removeClass('selected');
-				            $(this).addClass('selected');
+				            $(r).addClass('selected');
+				            
+				            $.post(Pharmit.server,
+				            		{cmd: 'getmol',
+				            		 qid: qid,
+				            		 loc: mid
+				            		}).done(function(ret) {
+				            			if( $(r).hasClass('selected')) //still selected
+				            				viewer.setResult(ret);
+				            		});
 				        }
 				    });
 					
@@ -1127,11 +1287,11 @@ Pharmit.PhResults = (function() {
 				alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
 			});
 
+			phdiv.show(); //make sure we're showing
 		};
 		
 		//cancel any query. clear out the table, and hide the div
-		//note that quiting is always controlled by Results
-		var quit = this.quit = function() {
+		var cancel = this.cancel = function() {
 			
 			if(qid !== null) {
 				$.post(Pharmit.server, 
@@ -1142,18 +1302,28 @@ Pharmit.PhResults = (function() {
 			if($.fn.DataTable.isDataTable(table)) {
 				table.DataTable().destroy();
 			}
+			
+			minimize.button( "option", "disabled", true );
+			save.button( "option", "disabled", true );
+			
+			minresults.cancel();
 		};
 		
 		//download and save results
 		var saveResults = function() {
-			
+			//have to use stupid form trick - mostly because of IE and safari
+			var cmd = Pharmit.server+'?cmd=saveres&qid='+qid;
+			var form = $('<form>', { 'action': cmd, 'method': 'post'});
+			form.appendTo(document.body);
+			form.submit();
+			$(form).remove();		
 		};
 		
 		//initiate minimization
 		var minimizeResults = function() {
 			//hide us, show minresults
 			phdiv.hide();
-			minresults.minimize(0, function() {
+			minresults.minimize(qid, query, function() {
 				phdiv.show();				
 			});
 		};
@@ -1165,7 +1335,7 @@ Pharmit.PhResults = (function() {
 		var heading = $('<div>Pharmacophore Results</div>').appendTo(header).addClass('pharmit_heading').addClass("pharmit_rightheading");
 		var closediv = $('<div>').addClass('pharmit_resclose').appendTo(heading).click(function() {
 			//cancel the current query 
-			quit();
+			cancel();
 			//close our parent
 			results.close();
 		});
@@ -1190,8 +1360,8 @@ Pharmit.PhResults = (function() {
 		//minimize and save buttons
 		var bottomloaders = $('<div>').appendTo(footer).addClass("pharmit_bottomloaders").addClass('pharmit_nowrap');
 
-		var minimize = $('<button>Minimize</button>').appendTo(bottomloaders).button().click(minimizeResults);
-		var save = $('<button>Save...</button>').appendTo(bottomloaders).button().click(saveResults);		
+		minimize = $('<button>Minimize</button>').appendTo(bottomloaders).button({disabled: true}).click(minimizeResults);
+		save = $('<button>Save...</button>').appendTo(bottomloaders).button({disabled: true}).click(saveResults);		
 		
 		//resize event - set number of rows
 		$(window).resize(resize);
@@ -1463,8 +1633,7 @@ Pharmit.Query = (function() {
 			form.append($('<input>', {'name':"data",'type':"hidden",value:JSON.stringify(qobj,null,4)}));
 			form.appendTo(document.body);
 			form.submit();
-			$(form).remove();
-			
+			$(form).remove();			
 
 		};
 		
@@ -1661,7 +1830,7 @@ Pharmit.Query = (function() {
 		element.append(querydiv);
 
 		var loadsession = $('<button>Load Session...</button>').button();
-		
+				
 		var loadsessionfile = $('<input type="file">').appendTo(bottomloaders).fileinput(loadsession).change(function() {readText(this,loadSession);});	
 		var savesession = $('<button>Save Session...</button>').appendTo(bottomloaders).button().click(saveSession);		
 		
@@ -1710,7 +1879,7 @@ Pharmit.Results = (function() {
 		//perform the query
 		this.phquery = function(qobj) {
 			// cancel current query first
-			phresults.quit();
+			phresults.cancel();
 			//start provided query
 			phresults.query(qobj);						
 			//show div
@@ -1814,18 +1983,6 @@ Pharmit.Viewer = (function() {
 	function Viewer(element) {
 		//private variables and functions
 		var ec = $3Dmol.elementColors;
-		var colorStyles =  {
-                none:  "None",
-                rasmol:  "RasMol", 
-                whiteCarbon: "White", 
-                greenCarbon: "Green",
-                cyanCarbon:  "Cyan", 
-                magentaCarbon:"Magenta", 
-                yellowCarbon:"Yellow", 
-                orangeCarbon:"Orange", 
-                purpleCarbon:"Purple", 
-                blueCarbon:  "Blue"
-		};
 		
 		var margins = {left: 0, right: 0}; 
 		
@@ -1835,6 +1992,7 @@ Pharmit.Viewer = (function() {
 		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
+					defaultColor: '#C8C8C8',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
 					selectedstyle: 'stick',
 					styles: {
@@ -1857,6 +2015,7 @@ Pharmit.Viewer = (function() {
 					}
 					},
 				'Receptor':{model: null,
+					defaultColor: '#C8C8C8',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
 					selectedstyle: 'cartoonwire',
 					styles: {
@@ -1887,6 +2046,7 @@ Pharmit.Viewer = (function() {
 					}
 					}, 
 				'Results': {model: null,
+					defaultColor: 'gray',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
 					selectedstyle: 'stick',
 					styles: {
@@ -1979,7 +2139,7 @@ Pharmit.Viewer = (function() {
 			});
 			
 			var colorpicker = $('<input name="'+id+'color">').appendTo($('<td>').appendTo(ret));
-			colorpicker.val('#C8C8C8');
+			colorpicker.val(rec.defaultColor);
 			colorpicker.change(function() {
 				var c = this.value;
 				colorpicker.spectrum("set",c);
@@ -1989,12 +2149,13 @@ Pharmit.Viewer = (function() {
 			});
 			
 			colorpicker.spectrum({
-				color: '#C8C8C8',
 			    showPalette: true,
+			    color: rec.defaultcolor,
+			    preferredFormat: "hex",
 			    replacerClassName: 'ui-state-default ui-corner-all',
 			    showPaletteOnly: true,
 			    clickoutFiresChange: true,
-			    palette: ['#C8C8C8', 'white','green','cyan','magenta','yellow','orange','purple','blue'],
+			    palette: ['#C8C8C8', 'gray', 'white','green','cyan','magenta','yellow','orange','purple','blue'],
 			    change: function(color) { 
 			    	colorpicker.change();
 			    }
@@ -2101,6 +2262,20 @@ Pharmit.Viewer = (function() {
 				viewer.render();
 		};
 
+		this.setResult = function(molstr) { //assumed sdf
+			//remove current result
+			var mol = modelsAndStyles.Results.model;
+			if(mol) viewer.removeModel(mol);
+			
+			if(molstr) {
+				mol = viewer.addModel(molstr, "sdf");
+				modelsAndStyles.Results.model = mol;
+				updateStyle("Results");
+				viewer.zoomTo({model: mol});
+			}
+			else
+				viewer.render();
+		};
 		
 		this.setView = function(view) {
 			if(view) viewer.setView(view);
