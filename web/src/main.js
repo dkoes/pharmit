@@ -21,6 +21,7 @@ $(document).ready(function() {
     for (var key in window)
          globalsBefore[key] = true;
 
+    Pharmit.inFormSubmit = false; // unfortunately there doesn't seem to be a better way to distinguish beforeunload events due to forms
 	Pharmit.checkGlobals = function() {
 	    var leaked = [];
         for (var key in window)

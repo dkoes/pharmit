@@ -204,6 +204,8 @@ public:
 	void outputMol(unsigned index, ostream& out, bool jsonHeader, bool minimize = false);
 
 	void getZINCIDs(vector<unsigned>& ids);
+
+	void cancelSmina(); //cancel just min
 	//attempt to cancel, non-blocking, query neest time to wrap up
 	void cancel();
 	bool finished(); //okay to deallocate, user may still care though

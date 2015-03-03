@@ -19,7 +19,11 @@ var Pharmit = Pharmit || {};
 Pharmit.Query = (function() {
 	
 	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
+	var pharmaGistRegEx = /@<TRIPOS>MOLECULE[^@]*?@<TRIPOS>ATOM\n(\s*\d+\s*(ACC|DON|CAT|ANI|HYD|AR).*)*\n@<TRIPOS>BOND\n/g;
 
+	var endsWith = function(str, suffix) {
+	    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+	};
 	
 	function Query(element, viewer, results) {
 		//private variables and functions
@@ -117,6 +121,12 @@ Pharmit.Query = (function() {
 						//this was molecular data, save it
 						ligandName = lname;
 						ligandData = data;
+						
+						//pharmagist files embed the pharmacophore with the molecule, need to remove it
+						if(endsWith(lname,"mol2") && pharmaGistRegEx.test(data)) {
+							data = data.replace(pharmaGistRegEx, '');
+						}
+					
 						viewer.setLigand(data, lname);						
 					}
 					setFeatures(ret.points);					
@@ -234,7 +244,13 @@ Pharmit.Query = (function() {
 			//everything with a name is something we want to save
 			
 			$.each($('[name]',querydiv), function(index, elem) {
-				if(elem.name) ret[elem.name] = elem.value;
+				if(elem.name) {
+					var val = elem.value;
+					if($.isNumeric(elem.value)) {
+						val = Number(elem.value);
+					}
+					ret[elem.name] = val;
+				}
 			});
 			
 			//radio buttons have to have the same name, so have to hack around background color
@@ -404,44 +420,66 @@ Pharmit.Query = (function() {
 		var filters = $('<div>').appendTo(filtergroup);		
 		
 		var heading = $('<h3>Hit Reduction<br></h3>').appendTo(filters);
-		var hitreductionsummary = $('<span>').appendTo(heading).addClass('pharmit_headingsummary');
 
 		var hitreductions = $('<div>').addClass("pharmit_hitreduction").appendTo(filters);
 		var reducetable = $('<table>').appendTo(hitreductions);
+		
+		var setReductionStyle = function() { //change style of headings of filters are specified
+			if($('#reduceorienttext').val() !== '' ||
+					$('#reduceconfstext').val() !== '' ||
+					$('#reducehitstext').val() !== '') {
+				heading.addClass('pharmit_filtermodified');
+			} else {
+				heading.removeClass('pharmit_filtermodified');
+			}
+		};
+		
+
 		var row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
 		$('<td>').append('<label title="Maximum number of orientations returned for each conformation" value="1" for="reduceorienttext">Max Hits per Conf:</label>').appendTo(row);
 		var cell = $('<td>').appendTo(row);
-		$('<input id="reduceorienttext" name="max-orient">').appendTo(cell).spinner();
+		$('<input id="reduceorienttext" name="max-orient">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
 		
 		row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
 		$('<td>').append('<label title="Maximum number of conformations returned for each compound" value="1" for="reduceconfstext">Max Hits per Mol:</label>').appendTo(row);
 		cell = $('<td>').appendTo(row);
-		$('<input id="reduceconfstext" name="reduceConfs">').appendTo(cell).spinner();
+		$('<input id="reduceconfstext" name="reduceConfs">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
 		
 		row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
 		$('<td>').append('<label title="Maximum number of hits returned" value="1" for="reducehitstext">Max Total Hits:</label>').appendTo(row);
 		cell = $('<td>').appendTo(row);
-		$('<input id="reducehitstext" name="max-hits">').appendTo(cell).spinner();
+		$('<input id="reducehitstext" name="max-hits">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
 		
 		
-		heading = $('<h3>Hit Screening<br></h3>').appendTo(filters);
-		var hitscreeningsummary = $('<span>').appendTo(heading).addClass('pharmit_headingsummary');
+		var screenheading = $('<h3>Hit Screening<br></h3>').appendTo(filters);
 		var hitscreening = $('<div>').appendTo(filters).addClass('pharmit_hitscreening');
 		var screentable = $('<table>').appendTo(hitscreening);
 		
+		var setScreensStyle = function() { //change style of headings of filters are specified
+			if($('#minmolweight').val() !== '' ||
+					$('#maxmolweight').val() !== '' ||
+					$('#minnrot').val() !== '' ||
+					$('#maxnrot').val() !== '')  {
+				screenheading.addClass('pharmit_filtermodified');
+			} else {
+				screenheading.removeClass('pharmit_filtermodified');
+			}
+		};
+		
+		
 		row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
 		cell = $('<td>').appendTo(row);
-		$('<input id="minmolweight" name="minMolWeight">').appendTo(cell).spinner();
+		$('<input id="minmolweight" name="minMolWeight">').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
 		$('<td>').appendTo(row).append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  MolWeight &le;</label>'));
 		cell = $('<td>').appendTo(row);
-		$('<input id="maxmolweight" name=maxMolWeight>').appendTo(cell).spinner();
+		$('<input id="maxmolweight" name=maxMolWeight>').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
 
 		row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
 		cell = $('<td>').appendTo(row);
-		$('<input id="minnrot" name="minrotbonds">').appendTo(cell).spinner();
+		$('<input id="minnrot" name="minrotbonds">').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
 		$('<td>').appendTo(row).append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  RotBonds &le;</label>'));
 		cell = $('<td>').appendTo(row);
-		$('<input id="maxnrot" name="maxrotbonds">').appendTo(cell).spinner();
+		$('<input id="maxnrot" name="maxrotbonds">').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
 
 		filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
 		

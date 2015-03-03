@@ -110,6 +110,16 @@ Pharmit.Results = (function() {
 		if(resultsdiv.is(":visible")) {
 			viewer.setRight(resultsdiv.width());
 		}
+		
+		//be nice and cancel queries when finishing
+		$(window).on('beforeunload', function(){
+			if(!Pharmit.inFormSubmit) {
+				phresults.cancel();
+			}
+			else {
+				Pharmit.inFormSubmit = false; //no longer
+			}
+		});
 	}
 
 	return Results;

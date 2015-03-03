@@ -424,6 +424,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	font-weight: normal;
 }
 
+.pharmit_filtermodified {
+	font-style: italic;
+}
 /*** results styling below ***/
 
 	
@@ -578,7 +581,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	height: 100%;
 }
 
-.pharmit_phtable {
+.pharmit_phtable .pharmit_mintable {
 	width: 100%;
 	
 }
@@ -588,6 +591,11 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	text-align: center;
 	display: block;
 	white-space: nowrap;
+}
+
+
+.pharmit_mincontainer .dataTables_info {
+    height: 2.5em; /* leave space for filter line */
 }
 
 .pharmit_rescontainer .dataTables_paginate {
@@ -614,6 +622,10 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 .pharmit_bondscol {
 	   text-align: left;
 	width: 50px;
+}
+
+.pharmit_rescontainer table.dataTable tbody {
+	cursor: pointer;
 }
 
 .pharmit_rescontainer table.dataTable.compact thead th,

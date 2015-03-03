@@ -242,6 +242,7 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 					("registerzinc",shared_ptr<Command>(new RegisterZINC(LOG, logmutex,queries)))
 					("getstatus",shared_ptr<Command>(new GetStatus(LOG, logmutex, queries)))
 					("startsmina",shared_ptr<Command>(new StartSmina(LOG, logmutex, queries, logdirpath, minServer, minPort)))
+					("cancelsmina",shared_ptr<Command>(new CancelSmina(LOG, logmutex, queries)))
 					("getsminadata",shared_ptr<Command>(new GetSminaData(LOG, logmutex, queries, minServer, minPort)))
 					("getsminamol", shared_ptr<Command>(new GetSminaMol(LOG, logmutex, queries, minServer, minPort)))
 					("savesmina", shared_ptr<Command>(new SaveSmina(LOG, logmutex, queries, minServer, minPort)));

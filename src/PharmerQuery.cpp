@@ -374,6 +374,11 @@ PharmerQuery::~PharmerQuery()
 void PharmerQuery::cancel()
 {
 	stopQuery = true;
+	cancelSmina();
+}
+
+void PharmerQuery::cancelSmina()
+{
 	if (sminaid > 0 && sminaServer.length() > 0)
 	{
 		boost::asio::ip::tcp::iostream strm(sminaServer, sminaPort);
@@ -842,6 +847,9 @@ void PharmerQuery::thread_sendSmina(PharmerQuery *query, stream_ptr out,
 			filter.push(str);
 			Matrix3d rotmat = r->c->rmsd.rotationMatrix().cast<double>();
 			Vector3d trans = r->c->rmsd.translationVector().cast<double>();
+
+			//smina expects things in row major order..
+			rotmat.transposeInPlace();
 
 			filter.write((char*) rotmat.data(), sizeof(double) * 9);
 			filter.write((char*) trans.data(), sizeof(double) * 3);

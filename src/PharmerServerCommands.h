@@ -1,21 +1,21 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
-Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+ Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /*
  * PharmerServerCommands.h
@@ -40,7 +40,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/unordered_map.hpp>
 
-
 #ifndef SKIP_REGISTERZINC
 #include <curl/curl.h>
 #endif
@@ -63,28 +62,39 @@ protected:
 		IO << "{\"status\" : 0, \"msg\": \"";
 		IO << msg << "\"}\n";
 
-		if(LOG)
+		if (LOG)
 		{
 			posix_time::ptime t(posix_time::second_clock::local_time());
-			fprintf(LOG, "error %s %s %s\n", posix_time::to_simple_string(t).c_str(),
+			fprintf(LOG, "error %s %s %s\n",
+					posix_time::to_simple_string(t).c_str(),
 					CGI.getEnvironment().getRemoteAddr().c_str(), msg);
-			fprintf(LOG, "error cgi %s\n",cgiDump(CGI).c_str());
+			fprintf(LOG, "error cgi %s\n", cgiDump(CGI).c_str());
 			fflush(LOG);
 		}
 	}
 
 public:
-	Command(FILE * l, SpinMutex& logm): LOG(l), logmutex(logm) {}
-	virtual ~Command() {}
+	Command(FILE * l, SpinMutex& logm) :
+			LOG(l), logmutex(logm)
+	{
+	}
+	virtual ~Command()
+	{
+	}
 
-	virtual void execute(Cgicc& CGI, FastCgiIO& IO) { }
+	virtual void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+	}
 
 	//don't every dump
-	virtual bool isFrequent() { return false; }
+	virtual bool isFrequent()
+	{
+		return false;
+	}
 };
 
 //any command that processes an existing query that needs to be validated
-class QueryCommand : public Command
+class QueryCommand: public Command
 {
 protected:
 	WebQueryManager& queries;
@@ -118,29 +128,28 @@ protected:
 	}
 public:
 	QueryCommand(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-		Command(l, lm), queries(qs)
+			Command(l, lm), queries(qs)
 	{
 	}
 };
 
-
 //set receptor key
-class SetReceptor : public Command
+class SetReceptor: public Command
 {
 	boost::filesystem::path logdirpath;
 	SpinMutex recmutex;
 
 public:
 	SetReceptor(FILE * l, SpinMutex& lm, const boost::filesystem::path& ldp) :
-		Command(l, lm), logdirpath(ldp)
+			Command(l, lm), logdirpath(ldp)
 	{
 	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
 		string key = cgiGetString(CGI, "key");
-		string recstr = cgiGetString(CGI,"receptor");
-		boost::filesystem::path rname = logdirpath/ key;
+		string recstr = cgiGetString(CGI, "receptor");
+		boost::filesystem::path rname = logdirpath / key;
 		IO << HTTPPlainHeader();
 
 		SpinLock lock(recmutex);
@@ -161,8 +170,7 @@ public:
 	}
 };
 
-
-class StartQuery : public Command
+class StartQuery: public Command
 {
 	WebQueryManager& queries;
 	boost::filesystem::path logdirpath;
@@ -174,8 +182,10 @@ class StartQuery : public Command
 
 public:
 	StartQuery(WebQueryManager& qs, FILE * l, SpinMutex& lm,
-			const boost::filesystem::path& ldp, const Pharmas *ph, unsigned tc, unsigned tm) :
-		Command(l, lm), queries(qs), logdirpath(ldp), pharmas(ph), totalConfs(tc), totalMols(tm)
+			const boost::filesystem::path& ldp, const Pharmas *ph, unsigned tc,
+			unsigned tm) :
+			Command(l, lm), queries(qs), logdirpath(ldp), pharmas(ph), totalConfs(
+					tc), totalMols(tm)
 	{
 	}
 
@@ -185,7 +195,7 @@ public:
 		if (!cgiTagExists(CGI, "json"))
 		{
 			//no query
-			sendError(IO, CGI,"Invalid query syntax. No query data.");
+			sendError(IO, CGI, "Invalid query syntax. No query data.");
 		}
 		else
 		{
@@ -225,7 +235,8 @@ public:
 						root), oldqid);
 				if (qid == 0) //invalid query
 				{
-					sendError(IO, CGI, "Invalid query.  Three distinct features are required.");
+					sendError(IO, CGI,
+							"Invalid query.  Three distinct features are required.");
 				}
 				else
 				{
@@ -233,12 +244,14 @@ public:
 					SpinLock lock(logmutex);
 
 					posix_time::ptime t(posix_time::second_clock::local_time());
-					fprintf(LOG, "query %s %s %d ", posix_time::to_simple_string(t).c_str(),
+					fprintf(LOG, "query %s %s %d ",
+							posix_time::to_simple_string(t).c_str(),
 							CGI.getEnvironment().getRemoteAddr().c_str(), qid);
 
-					if(root.isMember("receptorid"))
+					if (root.isMember("receptorid"))
 					{
-						fprintf(LOG, "%s ", root["receptorid"].asString().c_str());
+						fprintf(LOG, "%s ",
+								root["receptorid"].asString().c_str());
 					}
 					fprintf(LOG, "\n");
 					fflush(LOG);
@@ -256,21 +269,21 @@ public:
 	}
 };
 
-class HasReceptor : public Command
+class HasReceptor: public Command
 {
 	boost::filesystem::path logdirpath;
 
 public:
 	HasReceptor(FILE * l, SpinMutex& lm, const boost::filesystem::path& ldp) :
-		Command(l, lm), logdirpath(ldp)
+			Command(l, lm), logdirpath(ldp)
 	{
 	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
-		string key = cgiGetString(CGI,"key");
+		string key = cgiGetString(CGI, "key");
 		IO << HTTPPlainHeader();
-		if(boost::filesystem::exists(logdirpath / key))
+		if (boost::filesystem::exists(logdirpath / key))
 		{
 			IO << "{\"recavail\": 1 }";
 		}
@@ -281,11 +294,11 @@ public:
 	}
 };
 
-class CancelQuery : public QueryCommand
+class CancelQuery: public QueryCommand
 {
 public:
 	CancelQuery(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-		QueryCommand(l, lm, qs)
+			QueryCommand(l, lm, qs)
 	{
 	}
 
@@ -304,11 +317,33 @@ public:
 	}
 };
 
+class CancelSmina: public QueryCommand
+{
+public:
+	CancelSmina(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
+			QueryCommand(l, lm, qs)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		unsigned qid = cgiGetInt(CGI, "qid");
+		WebQueryHandle query(queries.get(qid));
+		if (query)
+		{
+			query->cancelSmina();
+		}
+
+	}
+};
 
 class Ping: public Command
 {
 public:
-	Ping(FILE *l, SpinMutex& lm): Command(l, lm) {}
+	Ping(FILE *l, SpinMutex& lm) :
+			Command(l, lm)
+	{
+	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
@@ -316,7 +351,7 @@ public:
 	}
 };
 
-class GetData : public QueryCommand
+class GetData: public QueryCommand
 {
 
 	//load params with paramaters from data
@@ -326,22 +361,23 @@ class GetData : public QueryCommand
 		params.drawCode = cgiGetInt(data, "draw");
 		params.start = cgiGetInt(data, "start");
 		params.num = cgiGetInt(data, "length");
-		params.sort = (SortType::SortType)cgiGetInt(data,"order[0][column]");
-		if(cgiGetString(data, "order[0][dir]") == "desc")
-			params.reverseSort = true;;
+		params.sort = (SortType::SortType) cgiGetInt(data, "order[0][column]");
+		if (cgiGetString(data, "order[0][dir]") == "desc")
+			params.reverseSort = true;
+		;
 		params.extraInfo = true;
 	}
 
 public:
 	GetData(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-		QueryCommand(l, lm, qs)
+			QueryCommand(l, lm, qs)
 	{
 	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
 		WebQueryHandle query = getQuery(CGI, IO);
-		if(query)
+		if (query)
 		{
 			IO << HTTPPlainHeader();
 			DataParameters params;
@@ -352,11 +388,14 @@ public:
 		}
 	}
 
-	virtual bool isFrequent() { return true; }
+	virtual bool isFrequent()
+	{
+		return true;
+	}
 
 };
 
-class GetPharma : public Command
+class GetPharma: public Command
 {
 	const Pharmas *pharmas;
 	boost::unordered_map<string, QueryParser*>& parsers;
@@ -364,8 +403,9 @@ class GetPharma : public Command
 
 public:
 	GetPharma(FILE * l, SpinMutex& lm, const Pharmas *ph,
-			boost::unordered_map<string, QueryParser*>& p, const boost::filesystem::path& ldp) :
-		Command(l, lm), pharmas(ph), parsers(p), logdirpath(ldp)
+			boost::unordered_map<string, QueryParser*>& p,
+			const boost::filesystem::path& ldp) :
+			Command(l, lm), pharmas(ph), parsers(p), logdirpath(ldp)
 	{
 	}
 
@@ -374,7 +414,7 @@ public:
 		using namespace boost;
 		using namespace OpenBabel;
 		vector<PharmaPoint> points;
-		if (!cgiTagExists(CGI,"ligand") || !cgiTagExists(CGI,"ligandname"))
+		if (!cgiTagExists(CGI, "ligand") || !cgiTagExists(CGI, "ligandname"))
 		{
 			sendError(IO, CGI, "No ligand for pharmacophore identification.");
 			return;
@@ -382,8 +422,8 @@ public:
 		else
 		{
 			Json::Value val;
-			string filedata = cgiGetString(CGI,"ligand");
-			string filename = cgiGetString(CGI,"ligandname");
+			string filedata = cgiGetString(CGI, "ligand");
+			string filename = cgiGetString(CGI, "ligandname");
 			OBFormat* format = OBConversion::FormatFromExt(filename.c_str());
 			string ext = filesystem::extension(filename);
 			if (parsers.count(ext))
@@ -394,11 +434,12 @@ public:
 				Excluder excluder;
 				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
-					if(points.size() > 25)
+					if (points.size() > 25)
 					{
 						//this many points is a pointless query and at some point
 						//you just generate too many triplets
-						sendError(IO, CGI, "I'm sorry, your query has too many points (more than 25!).");
+						sendError(IO, CGI,
+								"I'm sorry, your query has too many points (more than 25!).");
 					}
 					else
 					{
@@ -414,7 +455,8 @@ public:
 				}
 				else
 				{
-					sendError(IO, CGI,"Error parsing query format file. Note that third party file formats (e.g. pml, ph4) are reverse engineered. Please submit any examples that do not work in the forums so we can improve the parser.");
+					sendError(IO, CGI,
+							"Error parsing query format file. Note that third party file formats (e.g. pml, ph4) are reverse engineered. Please submit any examples that do not work in the forums so we can improve the parser.");
 				}
 			}
 			else //molecular data
@@ -422,7 +464,8 @@ public:
 				if (format == NULL)
 				{
 					stringstream err;
-					err << "Could not understand molecular data in " << filename <<
+					err << "Could not understand molecular data in " << filename
+							<<
 							" (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format."
 							<< " Please request support for new formats in the ZINCPharmer forum.";
 					sendError(IO, CGI, err.str().c_str());
@@ -432,10 +475,10 @@ public:
 				//check for receptor
 				string receptor;
 				OBFormat* rformat = NULL;
-				if(cgiTagExists(CGI, "reckey") && cgiTagExists(CGI, "recname"))
+				if (cgiTagExists(CGI, "reckey") && cgiTagExists(CGI, "recname"))
 				{
 					string key = cgiGetString(CGI, "reckey");
-					filesystem::path rname = logdirpath/key;
+					filesystem::path rname = logdirpath / key;
 					if (filesystem::exists(rname))
 					{
 						ifstream rec(rname.string().c_str());
@@ -447,16 +490,18 @@ public:
 					}
 				}
 				//if we didn't get a receptor from a reckey, see if we were sent the whole thing
-				if(receptor.size() == 0 && cgiTagExists(CGI, "receptor") && cgiTagExists(CGI, "recname"))
+				if (receptor.size() == 0 && cgiTagExists(CGI, "receptor")
+						&& cgiTagExists(CGI, "recname"))
 				{
 					receptor = cgiGetString(CGI, "receptor");
 					string fname = cgiGetString(CGI, "recname");
 					rformat = OBConversion::FormatFromExt(fname.c_str());
 				}
 
-				if(!jsonPharmaQuery(*pharmas, val, filedata, format, receptor, rformat))
+				if (!jsonPharmaQuery(*pharmas, val, filedata, format, receptor,
+						rformat))
 				{
-					sendError(IO, CGI,"Could not parse molecular data.");
+					sendError(IO, CGI, "Could not parse molecular data.");
 					return;
 				}
 
@@ -472,11 +517,11 @@ public:
 	}
 };
 
-class GetMol : public QueryCommand
+class GetMol: public QueryCommand
 {
 public:
 	GetMol(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-		QueryCommand(l, lm, qs)
+			QueryCommand(l, lm, qs)
 	{
 	}
 
@@ -492,11 +537,11 @@ public:
 	}
 };
 
-class SaveRes : public QueryCommand
+class SaveRes: public QueryCommand
 {
 public:
 	SaveRes(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-		QueryCommand(l, lm, qs)
+			QueryCommand(l, lm, qs)
 	{
 	}
 
@@ -510,14 +555,15 @@ public:
 			posix_time::ptime t(
 					posix_time::second_clock::local_time());
 			fprintf(LOG, "save %s %s %lu %u\n", posix_time::to_simple_string(
-					t).c_str(), CGI.getEnvironment().getRemoteHost().c_str(), cgiGetInt(CGI, "qid"),
+					t).c_str(), CGI.getEnvironment().getRemoteHost().c_str(),
+					cgiGetInt(CGI, "qid"),
 					query->numResults());
 			fflush(LOG);
 			lock.release();
 
 			IO << "Content-Type: text/sdf\n";
 			IO
-					<< "Content-Disposition: attachment; filename=query_results.sdf\n";
+			<< "Content-Disposition: attachment; filename=query_results.sdf\n";
 			IO << endl;
 			query->outputMols(IO);
 		}
@@ -529,41 +575,44 @@ public:
  * their website, so if downloading a whole set of ZINC compounds, inform them.
  * This requires including curl, which is a pain, so make it a compile time option
  */
-class RegisterZINC : public QueryCommand
+class RegisterZINC: public QueryCommand
 {
-	static size_t curlDummyWrite( char *ptr, size_t size, size_t nmemb, void *userdata)
+	static size_t curlDummyWrite(char *ptr, size_t size, size_t nmemb,
+			void *userdata)
 	{
-		return size*nmemb;
+		return size * nmemb;
 	}
 public:
 	RegisterZINC(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-		QueryCommand(l, lm, qs)
+			QueryCommand(l, lm, qs)
 	{
 	}
 
 	//run this in its own thread because is is slow slow slow
 	//and we don't want to use up the server threads
-	static void register_zinc_thread(WebQueryHandle query) {
+	static void register_zinc_thread(WebQueryHandle query)
+	{
 #ifndef SKIP_REGISTERZINC
 
-		if(!query) return;
+		if (!query)
+			return;
 		CURL *h = curl_easy_init();
 		vector<unsigned> ids;
 		query->getZINCIDs(ids);
 
-                for(unsigned i = 0, n = ids.size(); i < n; i++)
-                 {
-                 	unsigned id = ids[i];
-                        stringstream url;
-                        url << "http://zinc.docking.org/apps/ZINCPharmer.php?";
-                        url << id;
-                        curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
-                        curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
-                        curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 3);
-                        curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, curlDummyWrite);
-                        curl_easy_perform(h);
-                 }
-                 curl_easy_cleanup(h);
+		for (unsigned i = 0, n = ids.size(); i < n; i++)
+		{
+			unsigned id = ids[i];
+			stringstream url;
+			url << "http://zinc.docking.org/apps/ZINCPharmer.php?";
+			url << id;
+			curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
+			curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
+			curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 3);
+			curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, curlDummyWrite);
+			curl_easy_perform(h);
+		}
+		curl_easy_cleanup(h);
 #endif
 	}
 
@@ -580,11 +629,11 @@ public:
 
 };
 
-class Receptor : public Command
+class Receptor: public Command
 {
 public:
 	Receptor(FILE * l, SpinMutex& lm) :
-		Command(l, lm)
+			Command(l, lm)
 	{
 	}
 
@@ -601,11 +650,11 @@ public:
 	}
 };
 
-class Echo : public Command
+class Echo: public Command
 {
 public:
 	Echo(FILE * l, SpinMutex& lm) :
-		Command(l, lm)
+			Command(l, lm)
 	{
 	}
 
@@ -625,20 +674,22 @@ public:
 };
 
 //send back non-file upload stuff to save
-class SaveData : public Command
+class SaveData: public Command
 {
 public:
 	SaveData(FILE * l, SpinMutex& lm) :
-		Command(l, lm)
+			Command(l, lm)
 	{
 	}
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
 		string type = "text/plain";
-		if(cgiTagExists(CGI, "type")) type = cgiGetString(CGI, "type");
+		if (cgiTagExists(CGI, "type"))
+			type = cgiGetString(CGI, "type");
 		string fname = "result.txt";
-		if(cgiTagExists(CGI,"fname")) fname = cgiGetString(CGI, "fname");
+		if (cgiTagExists(CGI, "fname"))
+			fname = cgiGetString(CGI, "fname");
 
 		IO << "Content-Type: " << type << "\n";
 		IO << "Content-Disposition: attachment; filename=" << fname << "\n";
@@ -647,12 +698,11 @@ public:
 	}
 };
 
-
-class GetStatus : public QueryCommand
+class GetStatus: public QueryCommand
 {
 public:
 	GetStatus(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-		QueryCommand(l, lm, qs)
+			QueryCommand(l, lm, qs)
 	{
 	}
 
@@ -673,11 +723,14 @@ public:
 		IO << "{\"msg\": \"Active: " << active << " Inactive: "
 				<< inactive << " Defunct: " << defunct
 				<< " Memory: " << gb << "GB"
-			" Load: " << load << " TotalQ: "
+						" Load: " << load << " TotalQ: "
 				<< queries.processedQueries() << "\"}\n";
 	}
 
-	virtual bool isFrequent() { return true; }
+	virtual bool isFrequent()
+	{
+		return true;
+	}
 
 };
 
@@ -693,11 +746,12 @@ protected:
 		unsigned read = 0;
 		do
 		{
-			in.read(buffer,BUFFSZ);
+			in.read(buffer, BUFFSZ);
 			read = in.gcount();
-			if(read) out.write(buffer,read);
+			if (read)
+				out.write(buffer, read);
 		}
-		while(read > 0 && in);
+		while (read > 0 && in);
 	}
 
 	string server;
@@ -705,8 +759,9 @@ protected:
 
 public:
 	SminaCommand(FILE * l, SpinMutex& lm, WebQueryManager& qs,
-			const string& s, unsigned p): QueryCommand(l, lm, qs),
-				server(s),port(boost::lexical_cast<string>(p))
+			const string& s, unsigned p) :
+			QueryCommand(l, lm, qs),
+					server(s), port(boost::lexical_cast<string>(p))
 	{
 
 	}
@@ -721,7 +776,7 @@ class StartSmina: public SminaCommand
 public:
 	StartSmina(FILE * l, SpinMutex& lm, WebQueryManager& qs,
 			const boost::filesystem::path& ldp, const string& s, unsigned p) :
-				SminaCommand(l, lm, qs, s, p), logdirpath(ldp)
+			SminaCommand(l, lm, qs, s, p), logdirpath(ldp)
 	{
 	}
 
@@ -732,7 +787,7 @@ public:
 		using namespace boost::asio::ip;
 		using namespace OpenBabel;
 
-		if(server.length() == 0)
+		if (server.length() == 0)
 		{
 			sendError(IO, CGI, "No minimization server configured");
 			return;
@@ -746,14 +801,15 @@ public:
 			fprintf(LOG, "startmin %s %s %u %u %lu\n",
 					posix_time::to_simple_string(t).c_str(),
 					CGI.getEnvironment().getRemoteHost().c_str(),
-					 query->numResults(), max, cgiGetInt(CGI,"qid"));
+					query->numResults(), max, cgiGetInt(CGI, "qid"));
 			fflush(LOG);
 			lock.release();
 
 			//need receptor
 			string receptor;
 			string rid = cgiGetString(CGI, "receptorid");
-			if (rid.size() == 0) {
+			if (rid.size() == 0)
+			{
 				sendError(IO, CGI, "Invalid receptor id.");
 				return;
 			}
@@ -768,13 +824,15 @@ public:
 				receptor = str.str();
 			}
 
-			if (receptor.size() == 0) {
+			if (receptor.size() == 0)
+			{
 				sendError(IO, CGI, "Missing receptor.");
 				return;
 			}
 
 			string fname = cgiGetString(CGI, "recname"); //need for file extension
-			if (fname.length() == 0) {
+			if (fname.length() == 0)
+			{
 				sendError(IO, CGI, "Missing receptor filename.");
 				return;
 			}
@@ -783,29 +841,24 @@ public:
 			OBConversion conv;
 			conv.SetInFormat(rformat);
 			conv.SetOutFormat("PDBQT");
-			conv.SetOptions("r",OBConversion::OUTOPTIONS);  //rigid
+			conv.SetOptions("r", OBConversion::OUTOPTIONS);  //rigid
 			OBMol rec;
 			conv.ReadString(&rec, receptor);
 			string pdbqtrec = conv.WriteString(&rec);
 
-			if (query->getSminaID() > 0) //in case there is already a query running, cancel it first
-			{
-				boost::asio::ip::tcp::iostream strm(server, port);
-				strm << "cancel\n" << query->getSminaID() << "\n";
-			}
-
 			//connect to server
 			stream_ptr minstrm(new tcp::iostream(server, port));
-			if(!minstrm) {
-				sendError(IO, CGI,"Could not connect to minimization server.");
+			if (!minstrm)
+			{
+				sendError(IO, CGI, "Could not connect to minimization server.");
 				return;
 			}
 
 			*minstrm << "startmin\n";
 			*minstrm << query->getSminaID() << "\n";
-			*minstrm << "receptor " << pdbqtrec.length() << "\n";
+			*minstrm << "receptor " << pdbqtrec.length() << " 1\n"; //ispdbqt
 			*minstrm << pdbqtrec;
-			*minstrm << "1\n"; //reorient on
+			*minstrm << "1 0\n"; //reorient on, frag off
 
 			unsigned sminaid = 0;
 			*minstrm >> sminaid;
@@ -824,7 +877,8 @@ public:
 class GetSminaMol: public SminaCommand
 {
 public:
-	GetSminaMol(FILE * l, SpinMutex& lm, WebQueryManager& qs,  const string& s, unsigned p) :
+	GetSminaMol(FILE * l, SpinMutex& lm, WebQueryManager& qs, const string& s,
+			unsigned p) :
 			SminaCommand(l, lm, qs, s, p)
 	{
 	}
@@ -844,18 +898,18 @@ public:
 			unsigned sminaid = query->getSminaID();
 
 			boost::asio::ip::tcp::iostream strm(server, port);
-			if(!strm) {
-				IO << "{\"status\" : 0, \"msg\" : \"Could not connect to minimization server.\"}";
+			if (!strm)
+			{
+				IO
+						<< "{\"status\" : 0, \"msg\" : \"Could not connect to minimization server.\"}";
 				return;
 			}
 			strm << "getmol\n" << sminaid << " " << mid << "\n";
-			IO << "{\"status\" : 1}\n";
 			copy_stream(IO, strm); //returns mol
 		}
 
 	}
 };
-
 
 //parameters for retrieving minimization results
 struct SminaParameters
@@ -873,35 +927,46 @@ struct SminaParameters
 	bool unique;
 
 	//need to default to finie numbers for parsing
-	SminaParameters(): maxScore(99999), maxRMSD(99999), start(0), num(0), sortType(0), reverseSort(false), unique(false) {}
-
-	SminaParameters(Cgicc& data): maxScore(99999), maxRMSD(99999), start(0), num(0), sortType(0), reverseSort(false), unique(false)
+	SminaParameters() :
+			maxScore(99999), maxRMSD(99999), start(0), num(0), sortType(0), reverseSort(
+					false), unique(false)
 	{
-		start = cgiGetInt(data, "startIndex");
-		num = cgiGetInt(data, "results");
-		string sort = cgiGetString(data, "sort");
-		if(sort == "score") sortType = 0;
-		else if(sort == "rmsd") sortType = 1;
-		else sortType = 2;
+	}
 
-		string dir = cgiGetString(data, "dir");
+	SminaParameters(Cgicc& data) :
+			maxScore(99999), maxRMSD(99999), start(0), num(0), sortType(0), reverseSort(
+					false), unique(false)
+	{
+		start = cgiGetInt(data, "start");
+		num = cgiGetInt(data, "length");
+
+		int sortcol = cgiGetInt(data, "order[0][column]");
+		//column 3->score, 4->rmsd
+		if (sortcol == 3)
+			sortType = 0;
+		else if (sortcol == 4)
+			sortType = 1;
+		else
+			sortType = 2;
+
+		string dir = cgiGetString(data, "order[0][dir]");
 		if (dir == "desc" || dir == "dsc")
 			reverseSort = true;
 		else
 			reverseSort = false;
 
-		if(cgiTagExists(data, "maxscore"))
+		if (cgiTagExists(data, "maxscore"))
 			maxScore = cgiGetDouble(data, "maxscore");
-		if(cgiTagExists(data,"maxrmsd"))
-			maxRMSD = cgiGetDouble(data,"maxrmsd");
+		if (cgiTagExists(data, "maxrmsd"))
+			maxRMSD = cgiGetDouble(data, "maxrmsd");
 
-		if(cgiTagExists(data,"unique"))
-			unique = cgiGetInt(data,"unique");
+		if (cgiTagExists(data, "unique"))
+			unique = cgiGetInt(data, "unique");
 
 	}
 
 	void write(ostream& out) const
-	{
+			{
 		out << maxRMSD << " ";
 		out << maxScore << " ";
 		out << start << " ";
@@ -915,7 +980,8 @@ struct SminaParameters
 class SaveSmina: public SminaCommand
 {
 public:
-	SaveSmina(FILE * l, SpinMutex& lm, WebQueryManager& qs, const string& s, unsigned p) :
+	SaveSmina(FILE * l, SpinMutex& lm, WebQueryManager& qs, const string& s,
+			unsigned p) :
 			SminaCommand(l, lm, qs, s, p)
 	{
 	}
@@ -932,25 +998,27 @@ public:
 			fprintf(LOG, "save %s %s %u %u %lu\n",
 					posix_time::to_simple_string(t).c_str(),
 					CGI.getEnvironment().getRemoteHost().c_str(),
-				 query->numResults(), max, cgiGetInt(CGI,
+					query->numResults(), max, cgiGetInt(CGI,
 							"qid"));
 			fflush(LOG);
 			lock.release();
 
 			IO << "Content-Type: text/sdf\n";
-			IO << "Content-Disposition: attachment; filename=minimized_results.sdf.gz\n";
+			IO
+					<< "Content-Disposition: attachment; filename=minimized_results.sdf.gz\n";
 			IO << endl;
 
 			boost::asio::ip::tcp::iostream strm(server, port);
-			if(!strm) {
+			if (!strm)
+			{
 				IO << "ERROR contacting minimization server.\n";
 				return;
 			}
-			strm << "getmols\n" << query->getSminaID() <<  "\n";
+			strm << "getmols\n" << query->getSminaID() << "\n";
 			SminaParameters param(CGI);
 			param.write(strm);
 
-			copy_stream(IO,strm);
+			copy_stream(IO, strm);
 		}
 
 	}
@@ -961,8 +1029,9 @@ public:
 class GetSminaData: public SminaCommand
 {
 public:
-	GetSminaData(FILE * l, SpinMutex& lm, WebQueryManager& qs, const string& s, unsigned p) :
-		SminaCommand(l, lm, qs, s, p)
+	GetSminaData(FILE * l, SpinMutex& lm, WebQueryManager& qs, const string& s,
+			unsigned p) :
+			SminaCommand(l, lm, qs, s, p)
 	{
 	}
 
@@ -975,8 +1044,10 @@ public:
 			unsigned sminaid = query->getSminaID();
 			SminaParameters param(CGI);
 			boost::asio::ip::tcp::iostream strm(server, port);
-			if(!strm) {
-				IO << "{\"status\" : 0, \"error\" : \"Could not connect to minimization server.\"}";
+			if (!strm)
+			{
+				IO
+						<< "{\"status\" : 0, \"error\" : \"Could not connect to minimization server.\"}";
 				return;
 			}
 

@@ -843,7 +843,7 @@
         function updateOriginalInput(fireCallback) {
             var color = get(),
                 displayColor = '',
-                hasChanged = !tinycolor.equals(color, colorOnShow);
+                hasChanged = true; //dkoes - we don't wait for close to use the color so always update
 
             if (color) {
                 displayColor = color.toString(currentPreferredFormat);
@@ -1021,8 +1021,8 @@
         var hasTouch = ('ontouchstart' in window);
 
         var duringDragEvents = {};
-        duringDragEvents["selectstart"] = prevent;
-        duringDragEvents["dragstart"] = prevent;
+        duringDragEvents.selectstart = prevent;
+        duringDragEvents.ragstart = prevent;
         duringDragEvents["touchmove mousemove"] = move;
         duringDragEvents["touchend mouseup"] = stop;
 
@@ -1198,16 +1198,17 @@
         }
         // If we are called as a function, call using new instead
         if (!(this instanceof tinycolor)) {
+        	/* jshint newcap: false */
             return new tinycolor(color, opts);
         }
 
         var rgb = inputToRGB(color);
-        this._originalInput = color,
-        this._r = rgb.r,
-        this._g = rgb.g,
-        this._b = rgb.b,
-        this._a = rgb.a,
-        this._roundA = mathRound(100*this._a) / 100,
+        this._originalInput = color;
+        this._r = rgb.r;
+        this._g = rgb.g;
+        this._b = rgb.b;
+        this._a = rgb.a;
+        this._roundA = mathRound(100*this._a)/100;
         this._format = opts.format || rgb.format;
         this._gradientType = opts.gradientType;
 

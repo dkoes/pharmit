@@ -192,7 +192,6 @@ Pharmit.Viewer = (function() {
 			
 			colorpicker.spectrum({
 			    showPalette: true,
-			    color: rec.defaultcolor,
 			    preferredFormat: "hex",
 			    replacerClassName: 'ui-state-default ui-corner-all',
 			    showPaletteOnly: true,

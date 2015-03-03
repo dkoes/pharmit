@@ -21,7 +21,7 @@ var Pharmit = Pharmit || {};
 Pharmit.PhResults = (function() {
 	// private class variables and functions
 
-	function PhResults(results, viewer, minresults) {
+	function PhResults(r, viewer, minresults) {
 		//private variables and functions
 		var phdiv = null;
 		var qid = null;
@@ -30,7 +30,9 @@ Pharmit.PhResults = (function() {
 		var body = null;
 		var minimize = null;
 		var save = null;
-				
+		var timeout = null;
+		var results = r;
+		
 		//format that provided data (mangle the names appropriately)		
 		var processData = function(data) {
 			
@@ -49,21 +51,21 @@ Pharmit.PhResults = (function() {
 		
 		var lastheight = 0;
 		var lastnum = 0;
-		var pad = 20;
 		var resize = function() {
-			if($.fn.DataTable.isDataTable(table)) {
+			if(qid > 0) {
 				var total = body.height();
 				if(total != lastheight) {
 					lastheight = total;
 					total -= $('thead', table).height();
 					total -= $('.dataTables_info', body).height();
 					total -= $('.dataTables_paginate', body).height();
-					total -= pad; //padding
+					total -= 20; //padding
 					var single = $('tr.odd',table).first().height()+1; //include border
 					var num = Math.floor(total/single);
 					if(num != lastnum) { //really only do draw calls when needed
 						table.DataTable().page.len(num);
 						table.DataTable().draw();
+						lastnum = num;
 					}
 				}
 			}
@@ -142,61 +144,16 @@ Pharmit.PhResults = (function() {
 						    	dataSrc: processData
 						 }
 
-					});
-										
-					//event handler for loading data, keep loading until done
-					table.on('xhr.dt', function(e, settings, json) {
-						if(json.finished) {
-							var lang = table.DataTable().settings()[0].oLanguage;
-							if(json.recordsTotal === 0) {
-								lang.emptyTable = lang.sEmptyTable = "No results found";
-							} else {
-								lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";
-								minimize.button( "option", "disabled", false );
-								save.button( "option", "disabled", false );
-							}
-							
-						} 
-						else if(json.status === 0) {
-							alert(json.msg);
-						}
-						else {
-				            viewer.setResult(); //clear in case clicked on
-
-							//keep polling server
-							setTimeout(function() {
-								table.DataTable().ajax.reload();
-							}, 1000);
-						}					 
-					});	
-					
-					
-					$('tbody',table).on( 'click', 'tr', function () {
-						var r = this;
-						var mid = table.DataTable().row(r).data()[4];
-				        if ( $(r).hasClass('selected') ) {
-				            $(r).removeClass('selected');
-				            viewer.setResult(); //clear
-				        }
-				        else {
-				            table.DataTable().$('tr.selected').removeClass('selected');
-				            $(r).addClass('selected');
-				            
-				            $.post(Pharmit.server,
-				            		{cmd: 'getmol',
-				            		 qid: qid,
-				            		 loc: mid
-				            		}).done(function(ret) {
-				            			if( $(r).hasClass('selected')) //still selected
-				            				viewer.setResult(ret);
-				            		});
-				        }
-				    });
+					});												
 					
 				} else {
+					cancel();
+					results.close();
 					alert("Error: "+ret.msg);
 				}
 			}).fail(function() {
+				cancel();
+				results.close();
 				alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
 			});
 
@@ -206,6 +163,8 @@ Pharmit.PhResults = (function() {
 		//cancel any query. clear out the table, and hide the div
 		var cancel = this.cancel = function() {
 			
+			minresults.cancel();
+			clearTimeout(timeout); //stop polling
 			if(qid !== null) {
 				$.post(Pharmit.server, 
 						{cmd: 'cancelquery',
@@ -213,13 +172,12 @@ Pharmit.PhResults = (function() {
 			}
 			
 			if($.fn.DataTable.isDataTable(table)) {
-				table.DataTable().destroy();
+				table.DataTable().clear();
 			}
-			
+			qid = null;
 			minimize.button( "option", "disabled", true );
 			save.button( "option", "disabled", true );
 			
-			minresults.cancel();
 		};
 		
 		//download and save results
@@ -228,6 +186,7 @@ Pharmit.PhResults = (function() {
 			var cmd = Pharmit.server+'?cmd=saveres&qid='+qid;
 			var form = $('<form>', { 'action': cmd, 'method': 'post'});
 			form.appendTo(document.body);
+			Pharmit.inFormSubmit = true;			
 			form.submit();
 			$(form).remove();		
 		};
@@ -236,7 +195,9 @@ Pharmit.PhResults = (function() {
 		var minimizeResults = function() {
 			//hide us, show minresults
 			phdiv.hide();
-			minresults.minimize(qid, query, function() {
+			var cnt = table.DataTable().ajax.json().recordsTotal;
+			
+			minresults.minimize(qid, query, cnt, function() {
 				phdiv.show();				
 			});
 		};
@@ -268,6 +229,56 @@ Pharmit.PhResults = (function() {
 		$('<tbody>').appendTo(table);
 		
 
+		//setup event handlers for table - this should be done but once
+		table.on('xhr.dt', function(e, settings, json) {
+			if(json.finished) {
+				var lang = table.DataTable().settings()[0].oLanguage;
+				if(json.recordsTotal === 0) {
+					lang.emptyTable = lang.sEmptyTable = "No results found";
+				} else {
+					lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ hits";								
+					minimize.button( "option", "disabled", false );
+					save.button( "option", "disabled", false );
+				}
+			} 
+			else if(json.status === 0) {
+				//alert(json.msg);
+			}
+			else {
+	            viewer.setResult(); //clear in case clicked on
+				//poll server
+	            clearTimeout(timeout); //no more than one at once
+				timeout = setTimeout(function() {
+					if(qid > 0) {
+						table.DataTable().ajax.reload();
+					}
+				}, 1000);	
+			}					 
+		});	
+		
+		
+		$('tbody',table).on( 'click', 'tr', function () {
+			var r = this;
+			var mid = table.DataTable().row(r).data()[4];
+	        if ( $(r).hasClass('selected') ) {
+	            $(r).removeClass('selected');
+	            viewer.setResult(); //clear
+	        }
+	        else {
+	            table.DataTable().$('tr.selected').removeClass('selected');
+	            $(r).addClass('selected');
+	            
+	            $.post(Pharmit.server,
+	            		{cmd: 'getmol',
+	            		 qid: qid,
+	            		 loc: mid
+	            		}).done(function(ret) {
+	            			if( $(r).hasClass('selected')) //still selected
+	            				viewer.setResult(ret);
+	            		});
+	        }
+	    });
+		
 		//footer
 		var footer = $('<div>').appendTo(phdiv).addClass("pharmit_resfooter");
 		//minimize and save buttons
@@ -277,8 +288,8 @@ Pharmit.PhResults = (function() {
 		save = $('<button>Save...</button>').appendTo(bottomloaders).button({disabled: true}).click(saveResults);		
 		
 		//resize event - set number of rows
-		$(window).resize(resize);
-		
+		$(window).resize(resize);		
+
 	}
 
 	return PhResults;
