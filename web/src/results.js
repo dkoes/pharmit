@@ -44,11 +44,6 @@ Pharmit.Results = (function() {
 			this.show();
 		};
 		
-		//hide panel, updating viewer
-		this.hide = function() {
-			resultsdiv.hide();
-			viewer.setRight(0);
-		};
 		
 		//show panel, updating viwer
 		this.show = function() {

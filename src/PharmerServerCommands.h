@@ -320,18 +320,15 @@ class GetData : public QueryCommand
 {
 
 	//load params with paramaters from data
+	//we are using the jquery datatables communication protocal
 	void initDataParams(Cgicc& data, DataParameters& params)
 	{
-		params.start = cgiGetInt(data, "startIndex");
-		params.num = cgiGetInt(data, "results");
-		string s = cgiGetString(data, "sort");
-		if(s == "RMSD")
-			params.sort = SortType::RMSD;
-		else if(s == "MolWeight")
-			params.sort = SortType::MolWeight;
-		else if(s == "RBnds")
-			params.sort = SortType::NRBnds;
-		params.reverseSort = cgiGetInt(data, "reverse");
+		params.drawCode = cgiGetInt(data, "draw");
+		params.start = cgiGetInt(data, "start");
+		params.num = cgiGetInt(data, "length");
+		params.sort = (SortType::SortType)cgiGetInt(data,"order[0][column]");
+		if(cgiGetString(data, "order[0][dir]") == "desc")
+			params.reverseSort = true;;
 		params.extraInfo = true;
 	}
 
@@ -349,7 +346,9 @@ public:
 			IO << HTTPPlainHeader();
 			DataParameters params;
 			initDataParams(CGI, params);
-			query->outputData(params, IO, true);
+			Json::Value val;
+			query->setDataJSON(params, val);
+			IO << val;
 		}
 	}
 

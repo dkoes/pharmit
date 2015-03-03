@@ -179,7 +179,10 @@ Pharmit.Query = (function() {
 		
 		var loadSession = this.loadSession = function(data) {
 
-			var query = $.parseJSON(data);
+			var query = data; //support passing an object directly
+			if(typeof(data) == "string") 
+				query = $.parseJSON(data);
+ 
 			setFeatures(query.points);
 			
 			//get named settings, including visualization

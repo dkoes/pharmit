@@ -488,7 +488,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 
 .pharmit_resbody {
 	flex:1;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     width: 100%;
 }
 
@@ -570,4 +571,70 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 .pharmit_applycell .ui-button-text-only .ui-button-text {
 	width: 3em;
 	padding: 0.25em 0.5em;
+}
+
+.pharmit_rescontainer .dataTables_wrapper {
+	width: 100%;
+	height: 100%;
+}
+
+.pharmit_phtable {
+	width: 100%;
+	
+}
+
+.pharmit_rescontainer .dataTables_info {
+	float: none;
+	text-align: center;
+	display: block;
+	white-space: nowrap;
+}
+
+.pharmit_rescontainer .dataTables_paginate {
+    float: none;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pharmit_namecol {
+	text-align: left;
+}
+
+.pharmit_rmsdcol {
+    text-align: left;
+    width: 50px;
+	}
+
+.pharmit_masscol {
+	   text-align: left;
+    width: 50px;
+
+}
+
+.pharmit_bondscol {
+	   text-align: left;
+	width: 50px;
+}
+
+.pharmit_rescontainer table.dataTable.compact thead th,
+table.dataTable.compact thead td {
+  padding: 7px 6px 3px 6px;
+}
+
+
+.pharmit_rescontainer table.dataTable.compact tbody th,
+table.dataTable.compact tbody td {
+  padding: 6px 5px;
+}
+
+.pharmit_rescontainer .dataTables_wrapper .dataTables_paginate  .paginate_button {
+	display: inline-block;
+min-width: 1em;
+padding: 0.25em .5em;
+margin-left: 2px;
+text-align: center;
+}
+
+.pharmit_rescontainer table.dataTable tbody tr.selected {
+	background-color: #BDA0CB;
 }

@@ -114,9 +114,11 @@ struct DataParameters
 	SortTyp sort;
 	bool reverseSort;
 	bool extraInfo; //get mol info (slower)
+
+	unsigned drawCode; //for datatables
 	//extract parameters from posted data
 	DataParameters() :
-		start(0), num(0), sort(SortType::Undefined), reverseSort(false), extraInfo(false)
+		start(0), num(0), sort(SortType::Undefined), reverseSort(false), extraInfo(false), drawCode(0)
 	{
 
 	}

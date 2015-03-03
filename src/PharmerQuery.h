@@ -195,6 +195,8 @@ public:
 	//output text result of query (correspondences)
 	void outputData(const DataParameters& dp, ostream& out, bool jsonHeader =
 			false);
+	//output data in datatables json format
+	void setDataJSON(const DataParameters& dp, Json::Value& data);
 	//write out all results in sdf format - NOT sorted
 	void outputMols(ostream& out);
 	//output single mol in sdf format

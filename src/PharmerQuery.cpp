@@ -600,6 +600,29 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 	}
 }
 
+void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
+{
+	vector<QueryResult*> r;
+	getResults(dp, r);
+
+	data["draw"] = dp.drawCode;
+	data["recordsTotal"] = (unsigned)results.size();
+	data["recordsFiltered"] = (unsigned)results.size();
+	data["finished"] = (tripletMatchThread == NULL);
+	data["data"].resize(0); //make empty array
+
+	for (unsigned i = 0, n = r.size(); i < n; i++)
+	{
+		//column ordre is Name,RMSD, Mass,RBnds,location
+		data["data"][i][0u] = r[i]->name;
+		data["data"][i][1] = r[i]->c->val;
+		data["data"][i][2] = r[i]->c->weight;
+		data["data"][i][3] = r[i]->c->nRBnds;
+		data["data"][i][4] = i+dp.start;
+	}
+}
+
+
 static bool locationCompare(const QueryResult* lhs, const QueryResult* rhs)
 {
 	return lhs->c->location < rhs->c->location;
