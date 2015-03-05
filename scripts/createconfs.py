@@ -9,7 +9,7 @@
 #Can also specify a subdirmod option for determining when to create subdirectories
 #to keep the number of files in each directory reasonable
 
-import sys,subprocess, re, MySQLdb, os, multiprocessing, gzip
+import sys,subprocess, re, MySQLdb, os, multiprocessing, gzip, traceback
 from rdkit.Chem import AllChem as Chem
 from optparse import OptionParser
 
@@ -163,7 +163,7 @@ if __name__ == '__main__':
             #must have name 
             print "Missing name of",vals[0]
             continue
-        name = vals[1]    
+        name = vals[1].strip()    
         #remove salts from compound
         cmpds = vals[0].split('.')
         smile = max(cmpds, key=len) #take largest component by smiles length
@@ -174,11 +174,13 @@ if __name__ == '__main__':
             #to be sure, canonicalize smile (with iso)
             can = Chem.MolToSmiles(mol,isomericSmiles=True)
             if len(can) > 250: #way too big
-                sys.stderr.write('%s too large\n' % name)
+				sys.stderr.write('%s too large\n' % name)
+				continue
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM structures WHERE smile = %s', (can,))
             #if smile is not in structures
-            isnew = cursor.fetchone() == None
+            row = cursor.fetchone()
+            isnew = (row == None)
             if isnew:
                 #insert without sdfs to get unique id 
                 cursor.execute('INSERT INTO structures (smile,weight) VALUES(%s,%s) ', (can, Chem.CalcExactMolWt(mol)))
@@ -203,7 +205,8 @@ if __name__ == '__main__':
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
-            print e,smile,name
+            print e,smile,name, len(smile),"\n\n",traceback.print_exc()
+            
     
     #clear out queues
     for _ in xrange(numt):
