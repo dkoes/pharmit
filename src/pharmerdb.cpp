@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/lexical_cast.hpp>
 #include <fcntl.h>
 #include <openbabel/mol.h>
+#include <openbabel/descriptor.h>
 #include "CommandLine2/CommandLine.h"
 #include "Triplet.h"
 #include "BitSetTree.h"
@@ -36,6 +37,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "pharmerdb.h"
 #include "TripleIndexer.h"
 #include "PMol.h"
+#include "MolProperties.h"
 
 #ifdef OUTPUTSMINA
 #include "SminaConverter.h"
@@ -48,6 +50,7 @@ using namespace OpenBabel;
 extern cl::opt<bool> Quiet;
 extern cl::opt<unsigned> ReduceConfs;
 extern cl::opt<bool> ComputeThresholds;
+
 
 //location comparison functions for pointdata
 bool comparePointDataX(const ThreePointData& lhs, const ThreePointData& rhs)
@@ -99,13 +102,15 @@ const char *rotBondsSMART =
 		"[!$([NH]!@C(=O))&!D1&!$(*#*)]-&!@[!$([NH]!@C(=O))&!D1&!$(*#*)]";
 
 //generate pharma points and database infor for mol
-void MolDataCreator::processMol(OBMol& mol, double mWeight, unsigned mid)
+void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 {
 	//identify pharma
 	vector<vector<PharmaPoint> > mcpoints;
 	getPharmaPointsMC(pharmas, mol, mcpoints);
-	double weight = mol.GetMolWt();
 
+	if(mcpoints.size() > 0) props.setHB(mcpoints[0]); //hb feature cnts are not conformer specific
+
+	double weight = mol.GetMolWt();
 	//count number of rotatable bounds
 	OBSmartsPattern rot;
 	rot.Init(rotBondsSMART);
@@ -121,7 +126,7 @@ void MolDataCreator::processMol(OBMol& mol, double mWeight, unsigned mid)
 	{
 		unsigned confidx = c;
 		mol.SetConformer(confidx);
-		confs.push_back(ConfCreator(mid, mWeight, confidx, mol));
+		confs.push_back(ConfCreator(mid, weight, confidx, mol));
 		ConfCreator& conf = confs.back();
 
 		if(!conf.isValid())
@@ -361,6 +366,9 @@ void PharmerDatabaseCreator::initializeDatabases()
 	//geoData
 	geoDataFiles.resize(tindex.size(), NULL);
 
+	//property files
+	MolProperties::createFiles(dbpath, propFiles);
+
 }
 
 
@@ -399,9 +407,8 @@ void PharmerDatabaseCreator::writeStats()
 	writeMIDs();
 }
 
-//add a multiconformer mol to the database; weighted is passed in to assure
-//weight used for segregration matches reported weight
-void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, double weight)
+//add a multiconformer mol to the database
+void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const string& name)
 {
 	static OBAromaticTyper aromatics;
 	static OBAtomTyper atyper;
@@ -434,6 +441,10 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, double weight)
 	atyper.AssignTypes(mol);
 	atyper.AssignHyb(mol);
 
+	//calculate properties
+	MolProperties props;
+	props.calculate(mol, uniqueid);
+
 	//now add back conformer coordinates, create new memory for mol
 	vector<double*> cdata(confs.size());
 	unsigned ncoords = mol.NumAtoms() * 3;
@@ -447,9 +458,11 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, double weight)
 	mol.SetConformers(cdata);
 
 	//generate moldata
-	MolDataCreator mdc(pharmas, tindex, mol, weight, stats[NumMols]);
+	MolDataCreator mdc(pharmas, tindex, mol, props, stats[NumMols]);
 	unsigned mid = mdc.write(molData, pointDataFiles);
 	mids.push_back(mid);
+
+	props.write(mid,propFiles);
 
 	//output smina data here
 #ifdef OUTPUTSMINA
@@ -479,44 +492,7 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, double weight)
 	stats[NumConfs] += mdc.NumConfs();
 	stats[NumDbPoints] += mdc.NumPoints();
 }
-/*
- * Add the molecules in infile from start offset by stride to the database.
- * Sequential molecules with the same name must be conformers of the same mol.
- *
- * This is single threaded since bottlenecks in openbabel eliminate any advantages to multithreading
- */
-void PharmerDatabaseCreator::addMolsToDatabase(istream& infile,
-		OBFormat *format, unsigned start, unsigned stride,
-		unsigned long readBytes, unsigned long lastByte)
-{
-	//add all the molecules
-	Timer t;
 
-	OBMol mol;
-	ReadMCMol reader(infile, format, stride, start, ReduceConfs);
-
-	while (reader.read(mol))
-	{
-		addMolToDatabase(mol, mol.GetMolWt());
-	}
-
-	if(ComputeThresholds)
-		thresholdComputer.printBestThresholds();
-	writeStats();
-
-	if (!Quiet)
-	{
-		cout << "\nAdded in " << t.elapsed() << "s (" << t.elapsedProcess()
-				<< "s)\n";
-		cout << "\t" << stats[NumMols] << "\tmolecules\t";
-		unsigned long location = ftell(molData);
-		location >>= (TPD_MOLDATA_BITS - TPD_MOLID_BITS);
-		cout << "(" << location << " logical)\n";
-		cout << "\t" << stats[NumConfs] << "\tconformations\n";
-		cout << "\t" << stats[NumDbPoints] << "\tpoints\n";
-		cout << "\t" << MolDataCreator::MaxIndex() << "\tmaxIndex\n";
-	}
-}
 
 //coalesce very small collections and
 //mmap pointData files, closing file pointer
@@ -1149,9 +1125,9 @@ void PharmerDatabaseSearcher::getSminaData(unsigned long molloc, ostream& out)
 {
 	ulong_pair findit(molloc, 0);
 
+	//molloc is the conformer location in molData, do binary search
 	ulong_pair *pos = lower_bound(sminaIndex.begin(), sminaIndex.end(), findit, first_pair_cmp);
 
-	//molloca may be a little larger than the index molloc (different anchor positions)
 	if(pos == sminaIndex.end())
 	{
 		pos = sminaIndex.end()-1;

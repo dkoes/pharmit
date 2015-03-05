@@ -24,7 +24,6 @@
  *      Author: dkoes
  */
 
-
 #include <google/malloc_extension.h>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -82,7 +81,8 @@ void PharmerQuery::initializeTriplets()
 	valid = true;
 }
 
-PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
+PharmerQuery::PharmerQuery(
+		const vector<shared_ptr<PharmerDatabaseSearcher> >& dbs,
 		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
 		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
 		NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
@@ -101,7 +101,7 @@ PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
 		errorStr = "Invalid format extension.";
 		return;
 	}
-	if (!parsers[ext]->parse(dbs[0].back().db->getPharmas(), in, points,
+	if (!parsers[ext]->parse(dbs.back()->getPharmas(), in, points,
 			excluder))
 	{
 		errorStr = "Could not parse query.";
@@ -114,14 +114,13 @@ PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
 		return;
 	}
 
-	BOOST_FOREACH(const vector<MolWeightDatabase>& db, dbs)
-	{
-		dbcnt += db.size();
-	}
+	dbcnt = dbs.size();
+
 	initializeTriplets();
 }
 
-PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
+PharmerQuery::PharmerQuery(
+		const vector<shared_ptr<PharmerDatabaseSearcher> >& dbs,
 		const vector<PharmaPoint>& pts, const QueryParameters& qp,
 		const Excluder& ex, unsigned nth) :
 		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
@@ -140,10 +139,9 @@ PharmerQuery::PharmerQuery(const vector<vector<MolWeightDatabase> >& dbs,
 		errorStr = "Require at least three pharmacophore points.";
 		return;
 	}
-	BOOST_FOREACH(const vector<MolWeightDatabase>& db, dbs)
-	{
-		dbcnt += db.size();
-	}
+
+	dbcnt = dbs.size();
+
 	initializeTriplets();
 }
 
@@ -303,47 +301,40 @@ void PharmerQuery::thread_tripletMatch(PharmerQuery *query)
 	unsigned db = 0;
 	while (query->dbSearchQ.pop(db))
 	{
-		for (unsigned i = 0, n = query->databases[db].size(); i < n; i++)
+		if (query->stopQuery)
+			break;
+
+		PharmerDatabaseSearcher& pharmdb = *query->databases[db];
+		vector<vector<QueryTriplet> > trips;
+		query->generateQueryTriplets(pharmdb, trips);
+		TripletMatchAllocator tmalloc(trips.size());
+		TripletMatches matches(tmalloc, query->params, trips.size(), 1);
+
+		Timer t;
+		pharmdb.generateTripletMatches(trips, matches,
+				query->stopQuery);
+		if (!Quiet)
+			cout << "PMTime " << t.elapsed() << "\n";
+		if (query->stopQuery)
+			break;
+
+		if (!Quiet)
 		{
-			if (query->stopQuery)
-				break;
-
-			if (query->databases[db][i].overlapsRange(query->params.minWeight,
-					query->params.maxWeight))
-			{
-				PharmerDatabaseSearcher& pharmdb = *query->databases[db][i].db;
-				vector<vector<QueryTriplet> > trips;
-				query->generateQueryTriplets(pharmdb, trips);
-				TripletMatchAllocator tmalloc(trips.size());
-				TripletMatches matches(tmalloc, query->params, trips.size(), 1);
-
-				Timer t;
-				pharmdb.generateTripletMatches(trips, matches,
-						query->stopQuery);
-				if (!Quiet)
-					cout << "PMTime " << t.elapsed() << "\n";
-				if (query->stopQuery)
-					break;
-
-				if (!Quiet)
-				{
-					cout << db << " TripletMatches ";
-					matches.dumpCnts();
-				}
-				query->corrsQs[db].addProducer();
-
-				Timer ct;
-				Corresponder sponder(query->databases[db][i].db,
-						query->dbID(db, i), query->maxID(),
-						query->points, trips, matches, query->coralloc, 0,
-						query->corrsQs[db], query->params, query->excluder,
-						query->stopQuery);
-				sponder();
-				if (!Quiet)
-					cout << "CTime " << ct.elapsed() << "\n";
-
-			}
+			cout << db << " TripletMatches ";
+			matches.dumpCnts();
 		}
+		query->corrsQs[db].addProducer();
+
+		Timer ct;
+		Corresponder sponder(query->databases[db],
+				db, query->databases.size(),
+				query->points, trips, matches, query->coralloc, 0,
+				query->corrsQs[db], query->params, query->excluder,
+				query->stopQuery);
+		sponder();
+		if (!Quiet)
+			cout << "CTime " << ct.elapsed() << "\n";
+
 	}
 }
 
@@ -437,17 +428,17 @@ void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 	QRCompare cmp = NULL;
 	switch (srt)
 	{
-	case SortType::RMSD:
-		cmp = rmsdCompare;
-		break;
-	case SortType::MolWeight:
-		cmp = mwCompare;
-		break;
-	case SortType::NRBnds:
-		cmp = rbndCompare;
-		break;
-	default:
-		break;
+		case SortType::RMSD:
+			cmp = rmsdCompare;
+			break;
+		case SortType::MolWeight:
+			cmp = mwCompare;
+			break;
+		case SortType::NRBnds:
+			cmp = rbndCompare;
+			break;
+		default:
+			break;
 	}
 	currsort = srt;
 	if (cmp != NULL)
@@ -611,8 +602,8 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 	getResults(dp, r);
 
 	data["draw"] = dp.drawCode;
-	data["recordsTotal"] = (unsigned)results.size();
-	data["recordsFiltered"] = (unsigned)results.size();
+	data["recordsTotal"] = (unsigned) results.size();
+	data["recordsFiltered"] = (unsigned) results.size();
 	data["finished"] = (tripletMatchThread == NULL);
 	data["data"].resize(0); //make empty array
 
@@ -623,10 +614,9 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 		data["data"][i][1] = r[i]->c->val;
 		data["data"][i][2] = r[i]->c->weight;
 		data["data"][i][3] = r[i]->c->nRBnds;
-		data["data"][i][4] = i+dp.start;
+		data["data"][i][4] = i + dp.start;
 	}
 }
-
 
 static bool locationCompare(const QueryResult* lhs, const QueryResult* rhs)
 {
@@ -636,12 +626,9 @@ static bool locationCompare(const QueryResult* lhs, const QueryResult* rhs)
 unsigned long PharmerQuery::getLocation(const QueryResult* r,
 		shared_ptr<PharmerDatabaseSearcher>& db)
 {
-	unsigned dbid = r->c->location % maxID();
-	unsigned dbi = 0;
-	unsigned index = 0;
-	dbCoords(dbid, dbi, index);
-	unsigned long loc = r->c->location / maxID();
-	db = databases[dbi][index].db;
+	unsigned dbid = r->c->location % databases.size();
+	unsigned long loc = r->c->location / databases.size();
+	db = databases[dbid];
 	return loc;
 }
 

@@ -180,7 +180,7 @@ static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Co
 
 
 //start up a server, assumes databases are segregrated by molweight
-void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& databases,
+void pharmer_server(unsigned port, vector< shared_ptr<PharmerDatabaseSearcher> >& databases,
 		const string& logdir, unsigned totalConfs, unsigned totalMols,
 		const string& minServer, unsigned minPort)
 {
@@ -189,12 +189,12 @@ void pharmer_server(unsigned port, vector< vector<MolWeightDatabase> >& database
 	SpinMutex logmutex;
 	SpinMutex recmutex;
 
-        if(databases.size() == 0 || databases.back().size() == 0)
-        {
-                cerr << "No valid databases specified\n";
-                exit(-1);
-        }
-	const Pharmas *pharmas = &databases.back().back().db->getPharmas();
+	if (databases.size() == 0)
+	{
+		cerr << "No valid databases specified\n";
+		exit(-1);
+	}
+	const Pharmas *pharmas = &databases.back()->getPharmas();
 
 	logdirpath = filesystem::path(logdir);
 	OBConversion conv; //load plugins

@@ -53,16 +53,14 @@
 using namespace boost;
 using namespace OpenBabel;
 
-cl::opt<bool> SeparateWeight("separate-weight",
-		cl::desc("Segregate database based on molecular weight"),
-		cl::init(false));
+
 cl::opt<bool> Quiet("q", cl::desc("quiet; suppress informational messages"),
 		cl::init(true));
 cl::opt<bool> ShowQuery("show-query", cl::desc("print query points"),
 		cl::init(false));
 cl::opt<bool> Print("print", cl::desc("print results"), cl::init(true));
 cl::opt<string> Cmd("cmd",
-		cl::desc("command [pharma, dbcreate, dbsearch, server]"),
+		cl::desc("command [pharma, dbcreate, dbcreateserverdir, dbsearch, server]"),
 		cl::Positional);
 cl::list<string> Database("dbdir", cl::desc("database directory(s)"));
 cl::list<string> inputFiles("in", cl::desc("input file(s)"));
@@ -108,6 +106,12 @@ cl::opt<unsigned> MinPort("min-port",cl::desc("port for minimization server"));
 
 cl::opt<string> Receptor("receptor",
 		cl::desc("Receptor file for interaction pharmacophroes"));
+
+cl::opt<string> Prefixes("prefixes",
+		cl::desc("[dbcreateserverdir] File of directory prefixes to use for striping."));
+cl::opt<string> DBInfo("dbinfo",
+		cl::desc("[dbcreateserverdir] JSON file describing database subset"));
+cl::opt<string> Ligands("ligs", cl::desc("[dbcreateserverdir] Text file listing locations of molecules"));
 
 typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&, Excluder& excluder);
 
@@ -283,19 +287,6 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 	}
 }
 
-struct FilterDBCreate
-{
-	WeightRangeFilter filter;
-	shared_ptr<PharmerDatabaseCreator> db;
-
-	FilterDBCreate()
-	{
-	}
-	FilterDBCreate(double min, double max, PharmerDatabaseCreator* d) :
-			filter(min, max), db(d)
-	{
-	}
-};
 //create a database
 static void handle_dbcreate_cmd(const Pharmas& pharmas)
 {
@@ -338,15 +329,6 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 		numBytes += filesystem::file_size(inputFiles[i]);
 	}
 
-	double weightThresholds[] =
-	{ 0, 321, 351, 376, 401, 426, 451, 476, 501, HUGE_VAL };
-	unsigned nweights = sizeof(weightThresholds) / sizeof(double);
-
-	if (!SeparateWeight)
-	{
-		nweights = 2;
-		weightThresholds[1] = HUGE_VAL;
-	}
 	//create databases
 	//openbabel can't handled multithreaded reading, so we actually have to fork off a process
 	//for each database
@@ -354,27 +336,8 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 	{
 		if (nd == 1 || fork() == 0)
 		{
-			//split by weight
-			vector<FilterDBCreate> dbs;
-			for (unsigned w = 1; w < nweights; w++)
-			{
-				double min = weightThresholds[w - 1];
-				double max = weightThresholds[w];
-				WeightRangeFilter filter(min, max);
-				string dname = Database[d] + "/w" + lexical_cast<string>(min);
-				if (!filesystem::create_directory(dname))
-				{
-					cerr << "Unable to create database directory " << dname
-							<< "\n";
-					exit(-1);
-				}
-
-				dbs.push_back(
-						FilterDBCreate(min, max,
-								new PharmerDatabaseCreator(pharmas, dname,
-										NThreads)));
-			}
-
+			PharmerDatabaseCreator db(pharmas, Database[d], NThreads);
+			unsigned long uniqueid = 1;
 			//now read files
 			unsigned long readBytes = 0;
 			for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
@@ -400,25 +363,175 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 
 				while (reader.read(mol))
 				{
-					BOOST_FOREACH(FilterDBCreate& f, dbs)
-					{
-						if (f.filter.skip(mol))
-							continue;
-						f.db->addMolToDatabase(mol, mol.GetMolWt());
-						break;
-					}
+					db.addMolToDatabase(mol, uniqueid*nd+d, mol.GetTitle());
+					uniqueid++;
 				}
-				BOOST_FOREACH(FilterDBCreate& f, dbs)
-				{
-					f.db->writeStats();
-				}
+
+				db.writeStats();
 				readBytes += filesystem::file_size(inputFiles[i]);
 			}
 
-			BOOST_FOREACH(FilterDBCreate& f, dbs)
+			db.createSpatialIndex();
+			exit(0);
+		}
+	}
+
+	int status;
+	while (wait(&status) > 0)
+	{
+		if (!WIFEXITED(status) && WEXITSTATUS(status) != 0)
+			abort();
+		continue;
+	}
+
+}
+
+//read in ligand file names and verify the files exist
+struct LigandInfo
+{
+	filesystem::path file;
+	long id;
+	string name;
+
+	LigandInfo(): id(0) {}
+};
+
+//create a database directory within the server framework
+//in this framework we provide a file of prefixes where each line is
+//a location (on a different hard drive) for creating a strip of the overall database
+//for input molecules, we provide a file where each line is the location of the conformers
+//if a single molecule in an sdf.gz file, also included on the line are the unique id of the molecule and the
+//space delimited possible names for that molecule
+//we also specify a database description file which is a json file describing the database
+//the json object is indexed by database key; the keys define the subdirectory name to use in prefixes
+static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
+{
+
+
+	cl::opt<string> Prefixes("prefixes",
+			cl::desc("File of directory prefixes to use for striping."));
+	cl::opt<string> DBInfo("dbinfo",
+			cl::desc("JSON file describing database subset"));
+	cl::opt<string> Ligands("ligs", cl::desc("Text file listing locations of molecules"));
+
+
+	ifstream prefixes(Prefixes.c_str());
+	if (Prefixes.size() == 0 || !prefixes)
+	{
+		cerr << "Problem with prefixes.\n";
+		exit(-1);
+	}
+
+	ifstream dbinfo(DBInfo.c_str());
+	if(DBInfo.size() == 0 || !dbinfo)
+	{
+		cerr << "Problem with database info.\n";
+		exit(-1);
+	}
+
+	ifstream ligs(Ligands.c_str());
+	if(Ligands.size() == 0 || !filesystem::exists(Ligands))
+	{
+		cerr << "Need ligand file\n";
+		exit(-1);
+	}
+
+	//parse dbinfo into json
+	Json::Value root; // will contains the root value after parsing.
+	Json::Reader reader;
+	if(!reader.parse(dbinfo, root)) {
+		cerr << "Error reading database info JSON\n";
+		exit(-1);
+	}
+
+
+	vector<LigandInfo> liginfos;
+	string line;
+	while(getline(ligs,line))
+	{
+		stringstream str(line);
+		LigandInfo info;
+
+		str >> info.file;
+
+		if(!filesystem::exists(info.file))
+		{
+			cerr << "File " << info.file << " does not exist\n";
+		}
+		str >> info.id;
+		if(info.id <= 0)
+		{
+			cerr << "Error in ligand file on line:\n" << line << "\n";
+			exit(-1);
+		}
+
+		info.name = str.str();
+		liginfos.push_back(info);
+
+		cout << "Name:" << info.name << "\n";
+	}
+
+	//create key for this database (subdir name)
+	//this is all the keys of the json object joined with ':'
+	//then appended with the current timestamp
+	Json::Value::Members keys = root.getMemberNames();
+	stringstream key;
+	key << algorithm::join(keys,":") << "-" << time(NULL);
+
+	//create directories
+	vector<filesystem::path> directories;
+	if(!prefixes) {
+		cerr << "Error with prefixes file\n";
+		exit(-1);
+	}
+
+	string fname;
+	while(getline(prefixes,fname))
+	{
+		if(filesystem::exists(fname))
+		{
+			filesystem::path dbpath(fname);
+			dbpath /= key.str();
+			filesystem::create_directories(dbpath);
+			directories.push_back(dbpath);
+		}
+	}
+
+
+
+	//multi-thread (fork actually, due to openbabel) across all prefixes
+
+	//create databases
+	//openbabel can't handled multithreaded reading, so we actually have to fork off a process
+	//for each database
+	for (unsigned d = 0, nd = directories.size(); d < nd; d++)
+	{
+		if (d == (nd-1) || fork() == 0)
+		{
+			PharmerDatabaseCreator db(pharmas, directories[d], NThreads);
+			OBConversion conv;
+
+			//now read files
+			for (unsigned i = 0, n = liginfos.size(); i < n; i++)
 			{
-				f.db->createSpatialIndex();
+				if( (i%nd) == d )
+				{ //part of our slice
+					const LigandInfo info = liginfos[i];
+					ifstream in(info.file.c_str());
+					OBFormat *format = conv.FormatFromExt(info.file.c_str());
+
+					ReadMCMol reader(in, format, 1, 0, ReduceConfs);
+					OBMol mol;
+
+					while (reader.read(mol))
+					{
+						db.addMolToDatabase(mol, info.id, info.name);
+					}
+
+					db.writeStats();
+				}
 			}
+			db.createSpatialIndex();
 			exit(0);
 		}
 	}
@@ -445,52 +558,24 @@ struct LoadDatabase
 
 	}
 
-	void operator()(vector<vector<MolWeightDatabase> >& databases, unsigned i,
+	void operator()( boost::shared_ptr<PharmerDatabaseSearcher>& database, unsigned i,
 			filesystem::path dbpath)
 	{
-		//look for sub directories, assume weight divided, have to sort first
-		vector<unsigned> weights;
-		for (filesystem::directory_iterator itr(dbpath), end_itr;
-				itr != end_itr; ++itr)
+		shared_ptr<PharmerDatabaseSearcher> db(new PharmerDatabaseSearcher(dbpath));
+
+		if (!db->isValid())
 		{
-			if (is_directory(itr->status())
-					&& filesystem::exists(itr->path() / "info"))
-			{
-				filesystem::path subdir = itr->path();
-				int w;
-				sscanf(subdir.filename().c_str(), "w%d", &w);
-				weights.push_back(w);
-			}
+			cerr << "Error reading database " << Database[i] << "\n";
+			exit(-1);
 		}
-
-		sort(weights.begin(), weights.end());
-
-		for (unsigned j = 0, nw = weights.size(); j < nw; j++)
-		{
-			unsigned w = weights[j];
-			filesystem::path subdir = dbpath
-					/ (string("w" + lexical_cast<string>(w)));
-			shared_ptr<PharmerDatabaseSearcher> db(
-					new PharmerDatabaseSearcher(subdir));
-			if (j > 0)
-				databases[i].back().max = w;
-			databases[i].push_back(MolWeightDatabase(db, w));
-
-			if (!db->isValid())
-			{
-				cerr << "Error reading database " << Database[i] << "\n";
-				exit(-1);
-			}
-			totalConf += db->numConformations();
-			totalMols += db->numMolecules();
-		}
-		if(databases[i].size() > 0) //otherwise we were passed invalid dir
-			databases[i].back().max = HUGE_VAL;
+		totalConf += db->numConformations();
+		totalMols += db->numMolecules();
+		database = db;
 	}
 };
 
 //load databases based on commandline arguments
-static void loadDatabases(vector<vector<MolWeightDatabase> >& databases,
+static void loadDatabases(vector< boost::shared_ptr<PharmerDatabaseSearcher> >& databases,
 		unsigned& totalConf, unsigned& totalMols)
 {
 	totalConf = 0;
@@ -508,7 +593,7 @@ static void loadDatabases(vector<vector<MolWeightDatabase> >& databases,
 		}
 
 		loading_threads.add_thread(
-				new thread(ref(loaders[i]), ref(databases), i, dbpath));
+				new thread(ref(loaders[i]), ref(databases[i]), i, dbpath));
 	}
 	loading_threads.join_all();
 
@@ -535,7 +620,7 @@ static void handle_dbsearch_cmd()
 		exit(-1);
 	}
 
-	vector<vector<MolWeightDatabase> > databases(Database.size());
+	vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases(Database.size());
 	unsigned totalC = 0;
 	unsigned totalM = 0;
 	loadDatabases(databases, totalC, totalM);
@@ -684,13 +769,17 @@ int main(int argc, char *argv[])
 	{
 		handle_dbcreate_cmd(pharmas);
 	}
+	else if(Cmd == "dbcreateserverdir")
+	{
+		handle_dbcreateserverdir_cmd(pharmas);
+	}
 	else if (Cmd == "dbsearch")
 	{
 		handle_dbsearch_cmd();
 	}
 	else if (Cmd == "server")
 	{
-		vector<vector<MolWeightDatabase> > databases;
+		vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases;
 		unsigned totalC = 0;
 		unsigned totalM = 0;
                 //total hack time - fcgi uses select which can't

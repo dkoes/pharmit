@@ -53,6 +53,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "MTQueue.h"
 #include "PMol.h"
 #include "TripleIndexer.h"
+#include "MolProperties.h"
 
 using namespace std;
 
@@ -146,7 +147,7 @@ class MolDataCreator
 
 	unsigned numConfs;
 
-	void processMol(OpenBabel::OBMol& mol, double mWeight, unsigned mid);
+	void processMol(OpenBabel::OBMol& mol, MolProperties& props, unsigned mid);
 	void createBuffer();
 
 	static unsigned maxIndex;
@@ -154,12 +155,12 @@ class MolDataCreator
 
 public:
 
-	MolDataCreator(const Pharmas& ps, const TripleIndexer& t, OpenBabel::OBMol& mol, double mw, unsigned m):
+	MolDataCreator(const Pharmas& ps, const TripleIndexer& t, OpenBabel::OBMol& mol, MolProperties& props, unsigned m):
 		pharmas(ps), tindex(t),
 		pdatas(t.size()),
 		mid(m), buffer(NULL), bufferSize(0), numConfs(0)
 	{
-		processMol(mol, mw, mid);
+		processMol(mol, props, mid);
 		createBuffer();
 	}
 	virtual ~MolDataCreator() { if(buffer) delete [] buffer; }
@@ -338,6 +339,7 @@ typedef vector<vector<PharmaPoint> > MCPoints;
 #define LENGTH_BINS (32)
 #define LENGTHDIV (500)
 
+
 //interface to an anchor oriented database
 class PharmerDatabaseCreator
 {
@@ -352,6 +354,8 @@ private:
 
 	FILE *sminaIndex; //map from mol location to location in sminadata
 	FILE *sminaData; //smina formated molecule
+
+	MolProperties::PropFiles propFiles;
 
 	vector<PointDataFile> pointDataFiles; //just pointdata objects; separate library for every pharma combo; indexed by triplet index
 	MMappedRegion<ThreePointData> *pointDataArrays;
@@ -445,13 +449,16 @@ public:
 		}
 
 		if(pointDataArrays != NULL) delete [] pointDataArrays;
+
+		for(unsigned i = 0, n = propFiles.size(); i < n; i++)
+		{
+			if(propFiles[i]) fclose(propFiles[i]);
+		}
 	}
 
-	void addMolToDatabase(OpenBabel::OBMol& mol, double weight);
-	//add all the conformations from infile into the database
-	void addMolsToDatabase(istream& infile,
-			OpenBabel::OBFormat *format, unsigned start, unsigned stride,
-			unsigned long readBytes, unsigned long lastByte);
+	//add a molecule to the database
+	void addMolToDatabase(OpenBabel::OBMol& mol, long uniqueid, const string& name);
+
 	//create the spatial index
 	//requirs pointdata to have been filled out
 	void createSpatialIndex();
@@ -503,7 +510,7 @@ class PharmerDatabaseSearcher
 	MMappedRegion<unsigned char> molData;
 	MMappedRegion<ThreePointData>  * tripletDataArrays;
 	MMappedRegion<GeoKDPage> * geoDataArrays;
-	MMappedRegion<unsigned> midList;
+	MMappedRegion<unsigned> midList; //index from location-based id to "actual" mid
 
 	MMappedRegion< pair<unsigned long, unsigned long> > sminaIndex; //maps moldata location to sminadata
 	MMappedRegion<char> sminaData;

@@ -37,7 +37,7 @@ using namespace std;
 
 #define SERVERTHREADS 16
 void pharmer_server(unsigned port,
-		vector<vector<MolWeightDatabase> >& databases, const string& logdir,
+		vector< boost::shared_ptr<PharmerDatabaseSearcher> >& databases, const string& logdir,
 		unsigned totalConfs, unsigned totalMols, const string& minServer,
 		unsigned minPort);
 
@@ -77,11 +77,11 @@ class WebQueryManager
 	unsigned nextID; //counter to generate unique IDs
 	typedef boost::unordered_map<unsigned, PharmerQuery*> QueryMap;
 	QueryMap queries;
-	vector<vector<MolWeightDatabase> > databases;
+	vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases;
 
 	boost::mutex lock;
 public:
-	WebQueryManager(vector<vector<MolWeightDatabase> >& dbs): nextID(1), databases(dbs)
+	WebQueryManager(vector< boost::shared_ptr<PharmerDatabaseSearcher> >& dbs): nextID(1), databases(dbs)
 	{
 	}
 

@@ -71,29 +71,11 @@ struct QueryResult
 	}
 };
 
-struct MolWeightDatabase
-{
-	double min; // >=
-	double max; // <
-	boost::shared_ptr<PharmerDatabaseSearcher> db;
-
-	MolWeightDatabase(boost::shared_ptr<PharmerDatabaseSearcher> d, double _min): min(_min), max(HUGE_VAL), db(d)
-	{
-
-	}
-	MolWeightDatabase(): min(0), max(0) {}
-
-	bool overlapsRange(double minR, double maxR) const
-	{
-		return minR < max && maxR >= min;
-	}
-};
-
 
 class PharmerQuery
 {
 	string errorStr;
-	vector< vector<MolWeightDatabase> > databases;
+	vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases;
 
 	vector<PharmaPoint> points;
 	vector<QueryTriplet> triplets; //all n^3 triangles
@@ -145,34 +127,18 @@ class PharmerQuery
 
 	bool isExcluded(QueryResult* result);
 
-	unsigned dbID(unsigned db, unsigned i) const
-	{
-		return i*databases.size() + db;
-	}
-
-	void dbCoords(unsigned dbid, unsigned& db, unsigned& i) const
-	{
-		db = dbid % databases.size();
-		i = dbid / databases.size();
-	}
-
-	unsigned maxID() const
-	{
-		return dbcnt;
-	}
-
 	unsigned long getLocation(const QueryResult* r,boost::shared_ptr<PharmerDatabaseSearcher>& db);
 
 	static void thread_sendSmina(PharmerQuery *query, stream_ptr out, unsigned max);
 
 public:
 	//input stream and format specified as extension
-	PharmerQuery(const vector< vector<MolWeightDatabase> >& dbs,
+	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> >& dbs,
 			istream& in, const string& ext, const QueryParameters& qp =
 					QueryParameters(), unsigned nth =
 					boost::thread::hardware_concurrency());
 
-	PharmerQuery(const vector< vector<MolWeightDatabase> >& dbs,
+	PharmerQuery(const vector<  boost::shared_ptr<PharmerDatabaseSearcher> >& dbs,
 			const vector<PharmaPoint>& pts, const QueryParameters& qp =
 					QueryParameters(), const Excluder& ex = Excluder(), unsigned nth = 1);
 
