@@ -173,7 +173,8 @@ if __name__ == '__main__':
             Chem.SanitizeMol(mol)
             #to be sure, canonicalize smile (with iso)
             can = Chem.MolToSmiles(mol,isomericSmiles=True)
-
+            if len(can) > 250: #way too big
+                sys.stderr.write('%s too large\n' % name)
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM structures WHERE smile = %s', (can,))
             #if smile is not in structures
