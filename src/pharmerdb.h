@@ -378,10 +378,6 @@ private:
 
 	void generateAtomData();
 
-	static void thread_start_createPharmaSpatialIndex(PharmerDatabaseCreator *db);
-	static void thread_start_doSplitInPage(PharmerDatabaseCreator *db, unsigned pharma, FILE *geoFile, GeoKDPage& page, unsigned pos,
-			ThreePointData *start, ThreePointData *end, ThreePointData *begin, unsigned depth);
-
 	void writeMIDs();
 
 	unsigned long stats[LastStat];
@@ -391,20 +387,18 @@ private:
 
 	boost::shared_mutex fileAccessLock;
 	long pdatasFitInMemory;
-	ThreadCounter tcnt;
 
 	MTQueue< vector<MolDataCreator*> > molDataWorkQ;
 
 	vector<unsigned> mids;
-	unsigned nThreads;
+
+	Json::Value dbinfo;
 
 public:
 	PharmerDatabaseCreator(const Pharmas& ps, const boost::filesystem::path& dbp,
-			 unsigned nt) :
+			 Json::Value& dbi) :
 				dbpath(dbp), info(NULL), molData(NULL), midList(NULL), pointDataArrays(NULL),
-				  pharmas(ps), tindex(ps.size()),
-				tcnt(nt), molDataWorkQ(32),
-				nThreads(nt)
+				  pharmas(ps), tindex(ps.size()), molDataWorkQ(32), dbinfo(dbi)
 	{
 		memset(&stats, 0, sizeof(stats));
 
@@ -601,5 +595,14 @@ public:
 
 };
 
+//class for holding databases that have been striped across hard drives
+struct StripedSearchers
+{
+	vector< boost::shared_ptr<PharmerDatabaseSearcher> > stripes;
+	unsigned long totalConfs;
+	unsigned long totalMols;
+
+	StripedSearchers(): totalConfs(0), totalMols(0) {}
+};
 
 #endif /* PHARMITSERVER_PHARMERDB_H_ */

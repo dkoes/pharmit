@@ -38,6 +38,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "TripleIndexer.h"
 #include "PMol.h"
 #include "MolProperties.h"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #ifdef OUTPUTSMINA
 #include "SminaConverter.h"
@@ -405,6 +406,18 @@ void PharmerDatabaseCreator::writeStats()
 		tindex.dump(lookup);
 	}
 	writeMIDs();
+
+	//annotate db json and output
+	dbinfo["numMols"] = numMolecules();
+	dbinfo["numConfs"] = numConformations();
+
+	posix_time::ptime time(posix_time::second_clock::local_time());
+	dbinfo["updated"] = boost::posix_time::to_simple_string(time);
+
+	filesystem::path dbipath = dbpath / "dbinfo.json";
+	ofstream dbfile(dbipath.c_str());
+	Json::StyledStreamWriter jwrite;
+	jwrite.write(dbfile, dbinfo);
 }
 
 //add a multiconformer mol to the database
@@ -459,9 +472,9 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 
 	//generate moldata
 	MolDataCreator mdc(pharmas, tindex, mol, props, stats[NumMols]);
+
 	unsigned mid = mdc.write(molData, pointDataFiles);
 	mids.push_back(mid);
-
 	props.write(mid,propFiles);
 
 	//output smina data here
@@ -664,19 +677,8 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 
 		if (2 * pos + 1 < SPLITS_PER_GEOPAGE) //stay on internal page
 		{
-			if ((end - start) < pdatasFitInMemory && tcnt.threadAvailable())
-			{
-				thread t(thread_start_doSplitInPage, this, pharma, geoFile, boost::ref(
-						page), 2 * pos, start, median, begin, depth);
-				doSplitInPage(pharma, geoFile, page, 2 * pos + 1, median, end, begin, depth);
-				t.join();
-				tcnt.reduceThreadCount();
-			}
-			else
-			{
-				doSplitInPage(pharma, geoFile, page, 2 * pos, start, median, begin, depth);
-				doSplitInPage(pharma, geoFile, page, 2 * pos + 1, median, end, begin, depth);
-			}
+			doSplitInPage(pharma, geoFile, page, 2 * pos, start, median, begin, depth);
+			doSplitInPage(pharma, geoFile, page, 2 * pos + 1, median, end, begin, depth);
 		}
 		else //children pushed to new page
 		{
@@ -688,14 +690,6 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 			page.nextPages[rpos] = doSplitNewPage(pharma, geoFile, median, end, begin, depth);
 		}
 	}
-}
-
-void PharmerDatabaseCreator::thread_start_doSplitInPage(
-		PharmerDatabaseCreator *pharmdb, unsigned pharma, FILE *geoFile, GeoKDPage& page,
-		unsigned pos, ThreePointData *start, ThreePointData *end, ThreePointData *begin,
-		unsigned depth)
-{
-	pharmdb->doSplitInPage(pharma, geoFile, page, pos, start, end, begin, depth);
 }
 
 //create a geokdpage that indexes the data between start and end in geoFile

@@ -37,9 +37,8 @@ using namespace std;
 
 #define SERVERTHREADS 16
 void pharmer_server(unsigned port,
-		vector< boost::shared_ptr<PharmerDatabaseSearcher> >& databases, const string& logdir,
-		unsigned totalConfs, unsigned totalMols, const string& minServer,
-		unsigned minPort);
+		boost::unordered_map<string, vector< boost::shared_ptr<PharmerDatabaseSearcher> > >& databases,
+		const string& logdir, const string& minServer,unsigned minPort);
 
 
 //wrapper for webquery that automatically takes care of usecnt

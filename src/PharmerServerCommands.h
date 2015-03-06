@@ -177,15 +177,11 @@ class StartQuery: public Command
 	SpinMutex recmutex;
 
 	const Pharmas *pharmas;
-	unsigned totalConfs;
-	unsigned totalMols;
 
 public:
 	StartQuery(WebQueryManager& qs, FILE * l, SpinMutex& lm,
-			const boost::filesystem::path& ldp, const Pharmas *ph, unsigned tc,
-			unsigned tm) :
-			Command(l, lm), queries(qs), logdirpath(ldp), pharmas(ph), totalConfs(
-					tc), totalMols(tm)
+			const boost::filesystem::path& ldp, const Pharmas *ph) :
+			Command(l, lm), queries(qs), logdirpath(ldp), pharmas(ph)
 	{
 	}
 
@@ -571,63 +567,6 @@ public:
 
 };
 
-/* Distribution of major portions of ZINC needs to be tracked through
- * their website, so if downloading a whole set of ZINC compounds, inform them.
- * This requires including curl, which is a pain, so make it a compile time option
- */
-class RegisterZINC: public QueryCommand
-{
-	static size_t curlDummyWrite(char *ptr, size_t size, size_t nmemb,
-			void *userdata)
-	{
-		return size * nmemb;
-	}
-public:
-	RegisterZINC(FILE * l, SpinMutex& lm, WebQueryManager& qs) :
-			QueryCommand(l, lm, qs)
-	{
-	}
-
-	//run this in its own thread because is is slow slow slow
-	//and we don't want to use up the server threads
-	static void register_zinc_thread(WebQueryHandle query)
-	{
-#ifndef SKIP_REGISTERZINC
-
-		if (!query)
-			return;
-		CURL *h = curl_easy_init();
-		vector<unsigned> ids;
-		query->getZINCIDs(ids);
-
-		for (unsigned i = 0, n = ids.size(); i < n; i++)
-		{
-			unsigned id = ids[i];
-			stringstream url;
-			url << "http://zinc.docking.org/apps/ZINCPharmer.php?";
-			url << id;
-			curl_easy_setopt(h, CURLOPT_URL, url.str().c_str());
-			curl_easy_setopt(h, CURLOPT_TIMEOUT, 3);
-			curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 3);
-			curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, curlDummyWrite);
-			curl_easy_perform(h);
-		}
-		curl_easy_cleanup(h);
-#endif
-	}
-
-	void execute(Cgicc& CGI, FastCgiIO& IO)
-	{
-#ifndef SKIP_REGISTERZINC
-		WebQueryHandle query = getQuery(CGI, IO);
-		if (query)
-		{
-			boost::thread t(register_zinc_thread, query);
-		}
-#endif
-	}
-
-};
 
 class Receptor: public Command
 {

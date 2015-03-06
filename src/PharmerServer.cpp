@@ -58,10 +58,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <boost/assign/list_of.hpp>
 
-#ifndef SKIP_REGISTERZINC
-#include <curl/curl.h>
-#endif
-
 #include "pharmerdb.h"
 #include "pharmarec.h"
 #include "queryparsers.h"
@@ -180,9 +176,9 @@ static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Co
 
 
 //start up a server, assumes databases are segregrated by molweight
-void pharmer_server(unsigned port, vector< shared_ptr<PharmerDatabaseSearcher> >& databases,
-		const string& logdir, unsigned totalConfs, unsigned totalMols,
-		const string& minServer, unsigned minPort)
+void pharmer_server(unsigned port,
+		boost::unordered_map<string, vector< shared_ptr<PharmerDatabaseSearcher> > >& databases,
+		const string& logdir, const string& minServer, unsigned minPort)
 {
 	FILE *LOG;
 	filesystem::path logdirpath;
@@ -211,9 +207,6 @@ void pharmer_server(unsigned port, vector< shared_ptr<PharmerDatabaseSearcher> >
 	WebQueryManager queries(databases);
 
 	FCGX_Init();
-#ifndef SKIP_REGISTERZINC
-	curl_global_init(CURL_GLOBAL_ALL);
-#endif
 
 	int listenfd = open_listenfd(port);
 	if (listenfd < 0)
@@ -223,11 +216,8 @@ void pharmer_server(unsigned port, vector< shared_ptr<PharmerDatabaseSearcher> >
 	}
 	cout << "Listening on port " << port << "\n";
 
-	cout << totalConfs << " conformations of " << totalMols << " compounds; "
-			<< (double) totalConfs / (double) totalMols << " average per mol\n";
-
 	unordered_map<string, shared_ptr<Command> > commands = assign::map_list_of
-			("startquery",shared_ptr<Command>(new StartQuery(queries, LOG, logmutex, logdirpath,pharmas, totalConfs, totalMols)))
+			("startquery",shared_ptr<Command>(new StartQuery(queries, LOG, logmutex, logdirpath,pharmas)))
 					("hasreceptor", shared_ptr<Command>(new HasReceptor(LOG, logmutex,logdirpath)))
 					("setreceptor", shared_ptr<Command>(new SetReceptor(LOG, logmutex,logdirpath)))
 					("cancelquery",shared_ptr<Command>(new CancelQuery(LOG, logmutex, queries)))
@@ -239,7 +229,6 @@ void pharmer_server(unsigned port, vector< shared_ptr<PharmerDatabaseSearcher> >
 					("receptor",shared_ptr<Command>(new Receptor(LOG, logmutex)))
 					("echo",shared_ptr<Command>(new Echo(LOG, logmutex)))
 					("savedata",shared_ptr<Command>(new SaveData(LOG, logmutex)))
-					("registerzinc",shared_ptr<Command>(new RegisterZINC(LOG, logmutex,queries)))
 					("getstatus",shared_ptr<Command>(new GetStatus(LOG, logmutex, queries)))
 					("startsmina",shared_ptr<Command>(new StartSmina(LOG, logmutex, queries, logdirpath, minServer, minPort)))
 					("cancelsmina",shared_ptr<Command>(new CancelSmina(LOG, logmutex, queries)))

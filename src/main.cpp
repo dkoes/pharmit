@@ -47,6 +47,7 @@
 #include "PharmerServer.h"
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <glob.h>
 #include "ReadMCMol.h"
 #include "Excluder.h"
 
@@ -108,7 +109,7 @@ cl::opt<string> Receptor("receptor",
 		cl::desc("Receptor file for interaction pharmacophroes"));
 
 cl::opt<string> Prefixes("prefixes",
-		cl::desc("[dbcreateserverdir] File of directory prefixes to use for striping."));
+		cl::desc("[dbcreateserverdir,server] File of directory prefixes to use for striping."));
 cl::opt<string> DBInfo("dbinfo",
 		cl::desc("[dbcreateserverdir] JSON file describing database subset"));
 cl::opt<string> Ligands("ligs", cl::desc("[dbcreateserverdir] Text file listing locations of molecules"));
@@ -336,7 +337,8 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 	{
 		if (nd == 1 || fork() == 0)
 		{
-			PharmerDatabaseCreator db(pharmas, Database[d], NThreads);
+			Json::Value blank;
+			PharmerDatabaseCreator db(pharmas, Database[d], blank);
 			unsigned long uniqueid = 1;
 			//now read files
 			unsigned long readBytes = 0;
@@ -406,15 +408,6 @@ struct LigandInfo
 //the json object is indexed by database key; the keys define the subdirectory name to use in prefixes
 static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 {
-
-
-	cl::opt<string> Prefixes("prefixes",
-			cl::desc("File of directory prefixes to use for striping."));
-	cl::opt<string> DBInfo("dbinfo",
-			cl::desc("JSON file describing database subset"));
-	cl::opt<string> Ligands("ligs", cl::desc("Text file listing locations of molecules"));
-
-
 	ifstream prefixes(Prefixes.c_str());
 	if (Prefixes.size() == 0 || !prefixes)
 	{
@@ -465,21 +458,22 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 			exit(-1);
 		}
 
-		info.name = str.str();
+		getline(str, info.name); //get rest as name
 		liginfos.push_back(info);
-
-		cout << "Name:" << info.name << "\n";
 	}
 
-	//create key for this database (subdir name)
-	//this is all the keys of the json object joined with ':'
-	//then appended with the current timestamp
-	Json::Value::Members keys = root.getMemberNames();
+	//get key for database, this is the name of the subdir
+	if(!root.isMember("key") || !root.isMember("name"))
+	{
+		cerr << "Database info needs key and name fields.";
+	}
 	stringstream key;
-	key << algorithm::join(keys,":") << "-" << time(NULL);
+	key << root["key"].asString() << "-" << time(NULL);
+	string subset = root["key"].asString();
 
 	//create directories
 	vector<filesystem::path> directories;
+	vector<filesystem::path> symlinks;
 	if(!prefixes) {
 		cerr << "Error with prefixes file\n";
 		exit(-1);
@@ -494,10 +488,16 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 			dbpath /= key.str();
 			filesystem::create_directories(dbpath);
 			directories.push_back(dbpath);
+
+			filesystem::path link(fname);
+			link /= subset;
+			symlinks.push_back(link);
+		}
+		else
+		{
+			cerr << "Prefix " << fname << " does not exist\n";
 		}
 	}
-
-
 
 	//multi-thread (fork actually, due to openbabel) across all prefixes
 
@@ -508,7 +508,7 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	{
 		if (d == (nd-1) || fork() == 0)
 		{
-			PharmerDatabaseCreator db(pharmas, directories[d], NThreads);
+			PharmerDatabaseCreator db(pharmas, directories[d], root);
 			OBConversion conv;
 
 			//now read files
@@ -532,7 +532,8 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				}
 			}
 			db.createSpatialIndex();
-			exit(0);
+			if(d != nd-1)
+				exit(0);
 		}
 	}
 
@@ -544,6 +545,25 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		continue;
 	}
 
+	//all done, create symlinks to non-timestamped directories
+	assert(symlinks.size() == directories.size());
+	for (unsigned d = 0, nd = directories.size(); d < nd; d++)
+	{
+		if(filesystem::exists(symlinks[d]))
+		{
+			//remove preexisting symlink
+			if(filesystem::is_symlink(symlinks[d]))
+			{
+				filesystem::remove(symlinks[d]);
+			}
+			else
+			{
+				cerr << "Trying to replace a non-symlink: " << symlinks[d] << "\n";
+				exit(-1);
+			}
+		}
+		filesystem::create_directory_symlink(directories[d], symlinks[d]);
+	}
 }
 
 //thread class for loading database info
@@ -575,32 +595,73 @@ struct LoadDatabase
 };
 
 //load databases based on commandline arguments
-static void loadDatabases(vector< boost::shared_ptr<PharmerDatabaseSearcher> >& databases,
-		unsigned& totalConf, unsigned& totalMols)
+static void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& databases)
 {
-	totalConf = 0;
-	totalMols = 0;
-	databases.resize(Database.size());
-	vector<LoadDatabase> loaders(Database.size());
+	databases.totalConfs = 0;
+	databases.totalMols = 0;
+	databases.stripes.resize(dbpaths.size());
+	vector<LoadDatabase> loaders(dbpaths.size());
 	thread_group loading_threads;
-	for (unsigned i = 0, n = Database.size(); i < n; i++)
+	for (unsigned i = 0, n = dbpaths.size(); i < n; i++)
 	{
-		filesystem::path dbpath(Database[i]);
-		if (!filesystem::is_directory(dbpath))
+		if (!filesystem::is_directory(dbpaths[i]))
 		{
-			cerr << "Invalid database directory path: " << Database[i] << "\n";
+			cerr << "Invalid database directory path: " << dbpaths[i] << "\n";
 			exit(-1);
 		}
 
 		loading_threads.add_thread(
-				new thread(ref(loaders[i]), ref(databases[i]), i, dbpath));
+				new thread(ref(loaders[i]), ref(databases.stripes[i]), i, dbpaths[i]));
 	}
 	loading_threads.join_all();
 
 	BOOST_FOREACH(const LoadDatabase& ld, loaders)
 	{
-		totalConf += ld.totalConf;
-		totalMols += ld.totalMols;
+		databases.totalConfs += ld.totalConf;
+		databases.totalMols += ld.totalMols;
+	}
+}
+
+//from stack overflow
+inline vector<string> glob(const std::string& pat){
+    glob_t glob_result;
+    glob(pat.c_str(),GLOB_TILDE,NULL,&glob_result);
+    vector<string> ret;
+    for(unsigned int i=0;i<glob_result.gl_pathc;++i){
+        ret.push_back(string(glob_result.gl_pathv[i]));
+    }
+    globfree(&glob_result);
+    return ret;
+}
+
+//load striped databases from the specified prefixes
+//get the keys for each database from the database json file
+static void loadFromPrefixes(vector<filesystem::path>& prefixes, unordered_map<string, StripedSearchers >& databases)
+{
+	assert(prefixes.size() > 0);
+	string jsons = prefixes[0] / "*" / "dbinfo.json";
+	vector<string> infos = glob(jsons.c_str());
+
+	for(unsigned i = 0, n = infos.size(); i < n; i++)
+	{
+		filesystem::path subdir(jsons);
+		subdir = subdir.remove_filename();
+
+		cout << infos[i] << "\n";
+		Json::Value json;
+		Json::Reader reader;
+		ifstream info(infos[i].c_str());
+		if(!reader.parse(info, json)) {
+			cerr << "Error reading database info " << infos[i] << "\n";
+			exit(-1);
+		}
+		if(!json.isMember("key")) {
+			cerr << "Missing key from database info " << infos[i] << "\n";
+			exit(-1);
+		}
+		string k = json["key"];
+
+		vector<string> dbpaths(prefixes.size());
 	}
 }
 
@@ -620,10 +681,16 @@ static void handle_dbsearch_cmd()
 		exit(-1);
 	}
 
-	vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases(Database.size());
+	StripedSearchers databases;
 	unsigned totalC = 0;
 	unsigned totalM = 0;
-	loadDatabases(databases, totalC, totalM);
+
+	vector<filesystem::path> dbpaths;
+	for(unsigned i = 0, n = Database.size(); i < n; i++)
+	{
+		dbpaths.push_back(filesystem::path(Database[i]));
+	}
+	loadDatabases(dbpaths, databases);
 
 	if (!Quiet)
 		cout << "Searching " << totalC << " conformations of " << totalM
@@ -681,7 +748,7 @@ static void handle_dbsearch_cmd()
 
 		PharmerQuery query(databases, qfile,
 				filesystem::extension(inputFiles[i]), params,
-				NThreads * databases.size());
+				NThreads * databases.stripes.size());
 
 		string err;
 		if (!query.isValid(err))
@@ -779,9 +846,8 @@ int main(int argc, char *argv[])
 	}
 	else if (Cmd == "server")
 	{
-		vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases;
-		unsigned totalC = 0;
-		unsigned totalM = 0;
+		unordered_map<string, StripedSearchers > databases;
+
                 //total hack time - fcgi uses select which can't
 		//deal with file descriptors higher than 1024, so let's reserve some
 		#define MAXRESERVEDFD (SERVERTHREADS*2)
@@ -791,7 +857,41 @@ int main(int argc, char *argv[])
 				reservedFD[i] = open("/dev/null",O_RDONLY);
 		}
 		//loadDatabases will open a whole bunch of files
-		loadDatabases(databases, totalC, totalM);
+		if(Prefixes.length() > 0 && Database.size() > 0)
+		{
+			cerr << "Cannot specify both dbdir and prefixes\n";
+			exit(-1);
+		}
+		else if(Database.size() > 0)
+		{
+			//only one subset
+			vector<filesystem::path> dbpaths;
+			for(unsigned i = 0, n = Database.size(); i < n; i++)
+			{
+				dbpaths.push_back(filesystem::path(Database[i]));
+			}
+			loadDatabases(dbpaths, databases["default"]);
+		}
+		else
+		{
+			//use prefixes
+			ifstream prefixes(Prefixes.c_str());
+			vector<filesystem::path> dbpaths;
+			string line;
+			while(getline(prefixes, line))
+			{
+				if(filesystem::exists(line))
+					dbpaths.push_back(filesystem::path(line));
+				else
+					cerr << line << " does not exist\n";
+			}
+			if(dbpaths.size() == 0)
+			{
+				cerr << "No valid prefixes\n";
+				exit(-1);
+			}
+			loadFromPrefixes(dbpaths, databases);
+		}
 		//now free reserved fds
 		for(unsigned i = 0; i < MAXRESERVEDFD; i++)
 		{

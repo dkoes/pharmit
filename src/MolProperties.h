@@ -27,7 +27,6 @@ struct MolProperties
 	unsigned char hbd;
 	float logP;
 	float psa;
-	float mr;
 
 	//for querying, need to mmap a file for each of the above
 	struct MolPropertyReader
@@ -37,10 +36,9 @@ struct MolProperties
 		MMappedRegion<unsigned char> num_aromatics;
 		MMappedRegion<float> logP;
 		MMappedRegion<float> psa;
-		MMappedRegion<float> mr;
 	};
 
-	MolProperties(): uniqueid(0), num_rings(0), num_aromatics(0), hba(0), hbd(0), logP(0), psa(0), mr(0) {}
+	MolProperties(): uniqueid(0), num_rings(0), num_aromatics(0), hba(0), hbd(0), logP(0), psa(0) {}
 
 	void calculate(OpenBabel::OBMol& mol, unsigned long id);
 

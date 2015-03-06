@@ -82,14 +82,14 @@ void PharmerQuery::initializeTriplets()
 }
 
 PharmerQuery::PharmerQuery(
-		const vector<shared_ptr<PharmerDatabaseSearcher> >& dbs,
+		const StripedSearchers& dbs,
 		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
-		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
-		NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
+		databases(dbs.stripes), params(qp), valid(false), stopQuery(false), tripletMatchThread(
+		NULL), lastAccessed(time(NULL)), corrsQs(dbs.stripes.size()), currsort(
 				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0), sminaid(
 				0)
 {
-	if (dbs.size() == 0)
+	if (dbs.stripes.size() == 0)
 	{
 		errorStr = "No databases provided.";
 		return;
@@ -101,7 +101,7 @@ PharmerQuery::PharmerQuery(
 		errorStr = "Invalid format extension.";
 		return;
 	}
-	if (!parsers[ext]->parse(dbs.back()->getPharmas(), in, points,
+	if (!parsers[ext]->parse(dbs.stripes.back()->getPharmas(), in, points,
 			excluder))
 	{
 		errorStr = "Could not parse query.";
@@ -114,21 +114,21 @@ PharmerQuery::PharmerQuery(
 		return;
 	}
 
-	dbcnt = dbs.size();
+	dbcnt = dbs.stripes.size();
 
 	initializeTriplets();
 }
 
 PharmerQuery::PharmerQuery(
-		const vector<shared_ptr<PharmerDatabaseSearcher> >& dbs,
+		const StripedSearchers& dbs,
 		const vector<PharmaPoint>& pts, const QueryParameters& qp,
 		const Excluder& ex, unsigned nth) :
-		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
+		databases(dbs.stripes), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
 				false), tripletMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
-				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
+				dbs.stripes.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
 				0), inUseCnt(0), sminaid(0)
 {
-	if (dbs.size() == 0)
+	if (dbs.stripes.size() == 0)
 	{
 		errorStr = "No databases provided.";
 		return;
@@ -140,7 +140,7 @@ PharmerQuery::PharmerQuery(
 		return;
 	}
 
-	dbcnt = dbs.size();
+	dbcnt = dbs.stripes.size();
 
 	initializeTriplets();
 }

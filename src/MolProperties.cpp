@@ -33,15 +33,12 @@ void MolProperties::calculate(OpenBabel::OBMol& mol, unsigned long id)
 	desc = OBDescriptor::FindType("TPSA");
 	if (desc)
 		psa = desc->Predict(&mol);
-	desc = OBDescriptor::FindType("MR");
-	if (desc)
-		mr = desc->Predict(&mol);
 
 	//HBA and HBD are set by pharmacophore detector
 }
 
 vector<const char*> MolProperties::fileNames = assign::list_of("prop_uniqueid")
-		("prop_nrings")("prop_naromatics")("prop_logP")("prop_psa")("prop_mr")("prop_hba")("prop_hbd");
+		("prop_nrings")("prop_naromatics")("prop_logP")("prop_psa")("prop_hba")("prop_hbd");
 
 //create files in spec
 void MolProperties::createFiles(const boost::filesystem::path& dbpath,
@@ -77,9 +74,8 @@ void MolProperties::write(unsigned mid, const PropFiles& files)
 	WRITE(num_aromatics, 2);
 	WRITE(logP, 3);
 	WRITE(psa, 4);
-	WRITE(mr, 5);
-	WRITE(hba, 6);
-	WRITE(hbd, 7);
+	WRITE(hba, 5);
+	WRITE(hbd, 6);
 }
 
 
