@@ -177,7 +177,7 @@ static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Co
 
 //start up a server, assumes databases are segregrated by molweight
 void pharmer_server(unsigned port,
-		boost::unordered_map<string, vector< shared_ptr<PharmerDatabaseSearcher> > >& databases,
+		boost::unordered_map<string, StripedSearchers >& databases,
 		const string& logdir, const string& minServer, unsigned minPort)
 {
 	FILE *LOG;
@@ -190,7 +190,8 @@ void pharmer_server(unsigned port,
 		cerr << "No valid databases specified\n";
 		exit(-1);
 	}
-	const Pharmas *pharmas = &databases.back()->getPharmas();
+	//these all better be the same...
+	const Pharmas *pharmas = &databases.begin()->second.stripes.back()->getPharmas();
 
 	logdirpath = filesystem::path(logdir);
 	OBConversion conv; //load plugins
@@ -272,7 +273,8 @@ void pharmer_server(unsigned port,
 //add a query
 //first parse the text and return 0 if invalid
 unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
-		const QueryParameters& qp, unsigned oldqid)
+		const QueryParameters& qp, unsigned oldqid,
+		unsigned& totalMols, unsigned& totalConfs, string& msg)
 {
 	vector<PharmaPoint> queryPoints;
 
@@ -284,12 +286,26 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	//check result - need at least 3 points to define a triangle
 	if (queryPoints.size() < 3)
 	{
+		msg = "Invalid query.  Three features are required.";
+		return 0;
+	}
+
+	//identify databases to search
+	vector< boost::shared_ptr<PharmerDatabaseSearcher> > dbs;
+	if(databases.count(qp.subset))
+	{
+		dbs = databases[qp.subset].stripes;
+		totalMols = databases[qp.subset].totalMols;
+		totalConfs = databases[qp.subset].totalConfs;
+	}
+	else
+	{
+		msg = "Unknown subset.";
 		return 0;
 	}
 
 	unique_lock<mutex>(lock);
 
-	//TODO: optimize successive but similar queries
 	if (oldqid > 0 && queries.count(oldqid) > 0)
 	{
 		PharmerQuery *oldq = queries[oldqid];
@@ -302,7 +318,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		}
 	}
 	unsigned id = nextID++;
-	queries[id] = new PharmerQuery(databases, queryPoints, qp, excluder, databases.size());
+	queries[id] = new PharmerQuery(dbs, queryPoints, qp, excluder, databases.size());
 	queries[id]->execute(false); //don't wait for result
 	return id;
 }

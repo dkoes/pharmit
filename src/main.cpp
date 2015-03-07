@@ -463,13 +463,13 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	}
 
 	//get key for database, this is the name of the subdir
-	if(!root.isMember("key") || !root.isMember("name"))
+	if(!root.isMember("subdir"))
 	{
-		cerr << "Database info needs key and name fields.";
+		cerr << "Database info needs subdir field.";
 	}
 	stringstream key;
-	key << root["key"].asString() << "-" << time(NULL);
-	string subset = root["key"].asString();
+	key << root["subdir"].asString() << "-" << time(NULL);
+	string subset = root["subdir"].asString();
 
 	//create directories
 	vector<filesystem::path> directories;
@@ -639,15 +639,15 @@ inline vector<string> glob(const std::string& pat){
 static void loadFromPrefixes(vector<filesystem::path>& prefixes, unordered_map<string, StripedSearchers >& databases)
 {
 	assert(prefixes.size() > 0);
-	string jsons = prefixes[0] / "*" / "dbinfo.json";
+	filesystem::path jsons = prefixes[0] / "*" / "dbinfo.json";
 	vector<string> infos = glob(jsons.c_str());
 
 	for(unsigned i = 0, n = infos.size(); i < n; i++)
 	{
-		filesystem::path subdir(jsons);
+		filesystem::path subdir(infos[i]);
 		subdir = subdir.remove_filename();
+		filesystem::path name = subdir.filename();
 
-		cout << infos[i] << "\n";
 		Json::Value json;
 		Json::Reader reader;
 		ifstream info(infos[i].c_str());
@@ -655,13 +655,30 @@ static void loadFromPrefixes(vector<filesystem::path>& prefixes, unordered_map<s
 			cerr << "Error reading database info " << infos[i] << "\n";
 			exit(-1);
 		}
-		if(!json.isMember("key")) {
+		if(!json.isMember("subdir")) {
 			cerr << "Missing key from database info " << infos[i] << "\n";
 			exit(-1);
 		}
-		string k = json["key"];
+		string specified = json["subdir"].asString();
 
-		vector<string> dbpaths(prefixes.size());
+		if(specified != name.string())
+		{
+			cout << "Ignoring " << name << "\n";
+			continue;
+		}
+		else
+		{
+			cout << "Loading " << name << "\n";
+		}
+
+		vector<filesystem::path> dbpaths(prefixes.size());
+		for(unsigned p = 0, np = prefixes.size(); p < np; p++)
+		{
+			filesystem::path dir = prefixes[p] / name;
+			dbpaths[p] = dir;
+		}
+
+		loadDatabases(dbpaths, databases[specified]);
 	}
 }
 
@@ -746,7 +763,7 @@ static void handle_dbsearch_cmd()
 			exit(-1);
 		}
 
-		PharmerQuery query(databases, qfile,
+		PharmerQuery query(databases.stripes, qfile,
 				filesystem::extension(inputFiles[i]), params,
 				NThreads * databases.stripes.size());
 
@@ -870,7 +887,7 @@ int main(int argc, char *argv[])
 			{
 				dbpaths.push_back(filesystem::path(Database[i]));
 			}
-			loadDatabases(dbpaths, databases["default"]);
+			loadDatabases(dbpaths, databases[""]);
 		}
 		else
 		{
@@ -897,7 +914,7 @@ int main(int argc, char *argv[])
 		{
 				close(reservedFD[i]);
 		}
-		pharmer_server(Port, databases, LogDir, totalC, totalM, MinServer, MinPort);
+		pharmer_server(Port, databases, LogDir, MinServer, MinPort);
 	}
 	else
 	{

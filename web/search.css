@@ -608,20 +608,50 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	text-align: left;
 }
 
+th.pharmit_rmsdcol {
+	text-align: left;
+}
 .pharmit_rmsdcol {
-    text-align: left;
+    text-align: center;
     width: 50px;
 	}
 
+th.pharmit_masscol {
+	text-align: left;
+}
+
 .pharmit_masscol {
-	   text-align: left;
+	   text-align: center;
     width: 50px;
 
 }
 
+th.pharmit_bondscol {
+	text-align: left;
+}
 .pharmit_bondscol {
-	   text-align: left;
+	   text-align: center;
+	width: 55px;
+}
+
+.pharmmit_minname {
+	text-align: left;
+}
+
+th.pharmit_minscore {
+	text-align: left;
+}
+.pharmit_minscore {
+	text-align: center;
 	width: 50px;
+}
+
+th.pharmit_minrmsd {
+	text-align: left;
+}
+.pharmit_minrmsd {
+	text-align: center;
+	width: 65px;
 }
 
 .pharmit_rescontainer table.dataTable tbody {

@@ -62,6 +62,8 @@ struct QueryParameters
 	unsigned minRot;
 	unsigned maxRot;
 
+	string subset;
+
 	QueryParameters() :
 		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),
 		sort(SortType::Undefined), minWeight(0), maxWeight(UINT_MAX), reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX)
@@ -102,6 +104,8 @@ struct QueryParameters
 		if(data["maxrotbonds"].isNumeric())
 			maxRot = data["maxrotbonds"].asUInt();
 
+		if(data["subset"].isString())
+			subset = data["subset"].asString();
 	}
 };
 

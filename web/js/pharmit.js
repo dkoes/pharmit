@@ -952,10 +952,11 @@ Pharmit.MinResults = (function() {
 					recname: qobj.recname
 			};
 			
+			table.hide(); //don't show it until it is setup
 			//start provided query
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
-					
+					table.show();
 					//setup table
 					sminaid = ret.sminaid;
 					var numrows = Math.floor((body.height()-95)/28); //magic numbers!

@@ -226,13 +226,14 @@ public:
 					}
 				}
 
+				unsigned totalMols = 0, totalConfs = 0;
+				string msg;
 				unsigned oldqid = cgiGetInt(CGI, "oldqid");
-				unsigned qid = queries.add(*pharmas, root, QueryParameters(
-						root), oldqid);
+				unsigned qid = queries.add(*pharmas, root,
+						QueryParameters(root), oldqid, totalMols, totalConfs, msg);
 				if (qid == 0) //invalid query
 				{
-					sendError(IO, CGI,
-							"Invalid query.  Three distinct features are required.");
+					sendError(IO, CGI, msg.c_str());
 				}
 				else
 				{
@@ -252,6 +253,7 @@ public:
 					fprintf(LOG, "\n");
 					fflush(LOG);
 					lock.release();
+
 
 					//output json with query id and size of database
 					IO << HTTPPlainHeader();

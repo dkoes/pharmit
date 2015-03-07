@@ -37,7 +37,7 @@ using namespace std;
 
 #define SERVERTHREADS 16
 void pharmer_server(unsigned port,
-		boost::unordered_map<string, vector< boost::shared_ptr<PharmerDatabaseSearcher> > >& databases,
+		boost::unordered_map<string, StripedSearchers>& databases,
 		const string& logdir, const string& minServer,unsigned minPort);
 
 
@@ -76,18 +76,21 @@ class WebQueryManager
 	unsigned nextID; //counter to generate unique IDs
 	typedef boost::unordered_map<unsigned, PharmerQuery*> QueryMap;
 	QueryMap queries;
-	vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases;
+	boost::unordered_map<string, StripedSearchers> databases;
 
 	boost::mutex lock;
 public:
-	WebQueryManager(vector< boost::shared_ptr<PharmerDatabaseSearcher> >& dbs): nextID(1), databases(dbs)
+	WebQueryManager(boost::unordered_map<string, StripedSearchers>& dbs): nextID(1), databases(dbs)
 	{
 	}
 
 	//add a query
 	//first parse the text and return 0 if invalid
 	//if oldqid is set, then deallocate/reuse it
-	unsigned add(const Pharmas& pharma, Json::Value& data, const QueryParameters& qp, unsigned oldqid);
+	//also set the number of conformers/mols that will be searched
+	//if there is an error, put the message in msg
+	unsigned add(const Pharmas& pharma, Json::Value& data, const QueryParameters& qp,
+			unsigned oldqid, unsigned& totalMols, unsigned& totalConfs, string& msg);
 
 	//return pointer to query qid (or null if not present)
 	//increments inUse on query, caller must decrement
@@ -97,8 +100,6 @@ public:
 
 	void getCounts(unsigned& active, unsigned& inactive, unsigned& defunct);
 	unsigned processedQueries() const { return nextID-1; }
-
-
 };
 
 #endif /* PHARMITSERVER_PHARMERSERVER_H_ */

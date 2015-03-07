@@ -133,12 +133,12 @@ class PharmerQuery
 
 public:
 	//input stream and format specified as extension
-	PharmerQuery(const StripedSearchers& dbs,
+	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> > & dbs,
 			istream& in, const string& ext, const QueryParameters& qp =
 					QueryParameters(), unsigned nth =
 					boost::thread::hardware_concurrency());
 
-	PharmerQuery(const StripedSearchers& dbs,
+	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> > & dbs,
 			const vector<PharmaPoint>& pts, const QueryParameters& qp =
 					QueryParameters(), const Excluder& ex = Excluder(), unsigned nth = 1);
 
