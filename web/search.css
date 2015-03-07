@@ -82,6 +82,17 @@ body {
 	position: absolute;
 }
 
+.pharmit_subsetmenu, .pharmit_subsetmenu.ui-state-focus {
+	font-size: 110%;
+	font-weight: bold;
+}
+
+.pharmit_subsetcnts,.pharmit_subsettime {
+	display: block;
+	font-weight: normal;
+	font-size: 80%;
+}
+
 .pharmit_nowrap {
 	white-space: nowrap;
 	display: inline-block;

@@ -805,6 +805,7 @@ $(document).ready(function() {
     for (var key in window)
          globalsBefore[key] = true;
 
+    $( document ).tooltip();
     Pharmit.inFormSubmit = false; // unfortunately there doesn't seem to be a better way to distinguish beforeunload events due to forms
 	Pharmit.checkGlobals = function() {
 	    var leaked = [];
@@ -1597,8 +1598,14 @@ Pharmit.Query = (function() {
 				} else {
 					alert("Error: "+ret.msg);
 				}
-			}).fail(function() {
-				alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
+			}).fail(function(obj,err) {
+				if(err == "parsererror") {
+					alert("Didn't understand the the server resonse.  If you can reproduce this error, please "+
+							"send your input files to "+Pharmit.email+".");
+				}
+				else {
+					alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
+				}
 			});
 			
 		};
@@ -1746,20 +1753,35 @@ Pharmit.Query = (function() {
 		
 		
 		//create a split button from a list of vendors and prepend it to header
-		var createSearchButton = function(header,vendors) {
+		var createSearchButton = function(header,subsetinfo) {
 			var buttons = $('<div>').addClass('pharmit_searchdiv');
-			var run = $('<button>Search '+vendors[0]+'</button>').appendTo(buttons).button();
+			var run = $('<button name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
 			var select = $('<button>Select subset to search</button>').appendTo(buttons).button({text: false, icons: {primary: "ui-icon-triangle-1-s"}});
+			run.val(subsetinfo[0].subdir);
 			
 			buttons.buttonset();
 			var ul = $('<ul>').appendTo($('body')).addClass('pharmit_floatmenu'); //can't be in query div because of overflow truncation
 			var lis = [];
-			for(var i = 0, n = vendors.length; i < n; i++) {
-				lis[i] = '<li>'+vendors[i]+'</li>';
+			for(var i = 0, n = subsetinfo.length; i < n; i++) {
+				var info = subsetinfo[i];
+				var display = info.name;
+				if(info.html) display = info.html; //optionally can provide html
+				lis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
+				lis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
+				lis[i] += '<span class="pharmit_subsettime">Updated: '+info.updated+'</span>';
+				lis[i] += '</li>';
+				
+				//default to molport for now
+				if(info.subdir == 'molport') {
+					run.button("option",'label',"Search "+info.name);
+					run.val(info.subdir);
+				}
 			}
 			ul.append(lis);
 			ul.hide().menu().on('menuselect', function(event, ui) {
-				run.button("option",'label',"Search "+ui.item.text());
+				var info = subsetinfo[ui.item.val()];
+				run.button("option",'label',"Search "+info.name);
+				run.val(info.subdir);
 			});
 			
 			//handlers
@@ -1821,12 +1843,19 @@ Pharmit.Query = (function() {
 		});
 		
 		var header = $('<div>').appendTo(querydiv).addClass("pharmit_queryheader");
-		createSearchButton(header,['MolPort','ZINC']);
+		
+		$.post(Pharmit.server, {cmd: "getsubsets"}, null, 'json').done(function(ret) {
+			createSearchButton(header, ret);
+		}).fail(function() {
+			alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
+		});
+		
 		
 		//load features and load receptor
 		var loaders = $('<div>').appendTo(header).addClass('pharmit_loaderdiv').addClass('pharmit_nowrap');
 		var loadrec = $('<button>Load Receptor...</button>').button();
-		var loadfeatures = $('<button>Load Features...</button>').button();
+		var titletext = "Pharmacophore features can be provided as pharmacophore query formats (MOE, LigBuilder, LigandScout, Pharmer) or automatically extracted from ligand structures (sdf, pdf, mol2, xyz). If a receptor is loaded, only interacting features will be enabled.";
+		var loadfeatures = $('<button title="'+titletext+'">Load Features...</button>').button();
 		
 		//fileinput needs the file inputs in the dom
 		element.append(querydiv);
@@ -4664,7 +4693,7 @@ Pharmit.Viewer = (function() {
 				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, 
-						{model:receptor}, {bonds:0, invert:true});
+						{model:receptor, bonds: 0, invert:true});
 				viewer.zoomTo({});
 			}
 			else

@@ -758,9 +758,12 @@ bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points)
 
 		for (unsigned j = 0, nv = points[i].vecs.size(); j < nv; j++)
 		{
-			pt["vector"][j]["x"] = points[i].vecs[j].x();
-			pt["vector"][j]["y"] = points[i].vecs[j].y();
-			pt["vector"][j]["z"] = points[i].vecs[j].z();
+			if(isfinite(points[i].vecs[j].length()))
+			{
+				pt["vector"][j]["x"] = points[i].vecs[j].x();
+				pt["vector"][j]["y"] = points[i].vecs[j].y();
+				pt["vector"][j]["z"] = points[i].vecs[j].z();
+			}
 		}
 
 		pt["radius"] = points[i].radius;

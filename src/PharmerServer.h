@@ -76,7 +76,9 @@ class WebQueryManager
 	unsigned nextID; //counter to generate unique IDs
 	typedef boost::unordered_map<unsigned, PharmerQuery*> QueryMap;
 	QueryMap queries;
-	boost::unordered_map<string, StripedSearchers> databases;
+
+	typedef boost::unordered_map<string, StripedSearchers> DBMap;
+	DBMap databases;
 
 	boost::mutex lock;
 public:
@@ -100,6 +102,8 @@ public:
 
 	void getCounts(unsigned& active, unsigned& inactive, unsigned& defunct);
 	unsigned processedQueries() const { return nextID-1; }
+
+	Json::Value getJSONInfo();
 };
 
 #endif /* PHARMITSERVER_PHARMERSERVER_H_ */

@@ -529,6 +529,8 @@ class PharmerDatabaseSearcher
 	unsigned emptyCnt;
 	unsigned processCnt;
 	unsigned matchedCnt;
+
+	Json::Value dbinfo;
 public:
 	PharmerDatabaseSearcher(const boost::filesystem::path& dbp) :
 		dbpath(dbp), info(NULL),  valid(false), emptyCnt(0), processCnt(0), matchedCnt(0)
@@ -556,6 +558,7 @@ public:
 		return stats[NumConfs];
 	}
 
+	const Json::Value& getJSON() const { return dbinfo; }
 	//translate file-offset mid to true (lowest of cmpd) mid
 	unsigned getBaseMID(unsigned lmid) const
 	{
@@ -603,6 +606,12 @@ struct StripedSearchers
 	unsigned long totalMols;
 
 	StripedSearchers(): totalConfs(0), totalMols(0) {}
+
+	const Json::Value& getJSON() const {
+		assert(stripes.size() > 0);
+		//each stripe should have same info
+		return stripes[0]->getJSON();
+	}
 };
 
 #endif /* PHARMITSERVER_PHARMERDB_H_ */

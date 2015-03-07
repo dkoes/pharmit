@@ -73,6 +73,14 @@ protected:
 		}
 	}
 
+	//acknowledge a command that has no resonse to avoid http errors
+	void sendAck(FastCgiIO& IO, const char *msg)
+	{
+		using namespace boost;
+		IO << HTTPPlainHeader();
+		IO << msg << "\n";
+	}
+
 public:
 	Command(FILE * l, SpinMutex& logm) :
 			LOG(l), logmutex(logm)
@@ -133,6 +141,7 @@ public:
 	}
 };
 
+
 //set receptor key
 class SetReceptor: public Command
 {
@@ -169,6 +178,25 @@ public:
 		}
 	}
 };
+
+//return subset info
+class GetSubsets: public Command
+{
+	WebQueryManager& queries;
+
+public:
+	GetSubsets(WebQueryManager& qs, FILE * l, SpinMutex& lm):
+		Command(l, lm), queries(qs) {}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		IO << HTTPPlainHeader();
+		Json::FastWriter writer;
+		Json::Value info = queries.getJSONInfo();
+		IO << writer.write(info);
+	}
+};
+
 
 class StartQuery: public Command
 {
@@ -312,6 +340,7 @@ public:
 		}
 		//make sure the handle is out of scope before purging
 		queries.purgeOldQueries();
+		sendAck(IO,"");
 	}
 };
 
@@ -331,7 +360,7 @@ public:
 		{
 			query->cancelSmina();
 		}
-
+		sendAck(IO,"");
 	}
 };
 

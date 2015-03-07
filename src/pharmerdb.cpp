@@ -816,6 +816,15 @@ void PharmerDatabaseSearcher::initializeDatabases()
 		abort();
 	}
 
+	//json info
+	filesystem::path dbipath = dbpath / "dbinfo.json";
+	ifstream json(dbipath.c_str());
+	Json::Reader reader;
+	if(!reader.parse(json, dbinfo)) {
+		cerr << "Error reading database info JSON\n";
+		exit(-1);
+	}
+
 	//pharmas
 	filesystem::path pharmpath = dbpath / "pharmas";
 	ifstream pharmain(pharmpath.string().c_str());

@@ -224,6 +224,7 @@ void pharmer_server(unsigned port,
 					("cancelquery",shared_ptr<Command>(new CancelQuery(LOG, logmutex, queries)))
 					("getdata",shared_ptr<Command>(new GetData(LOG, logmutex, queries)))
 					("getpharma",shared_ptr<Command>(new GetPharma(LOG, logmutex, pharmas, parsers, logdirpath)))
+					("getsubsets",shared_ptr<Command>(new GetSubsets(queries, LOG, logmutex)))
 					("getmol",shared_ptr<Command>(new GetMol(LOG, logmutex, queries)))
 					("saveres",shared_ptr<Command>(new SaveRes(LOG, logmutex, queries)))
 					("ping", shared_ptr<Command>(new Ping(LOG, logmutex)))
@@ -321,6 +322,32 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	queries[id] = new PharmerQuery(dbs, queryPoints, qp, excluder, databases.size());
 	queries[id]->execute(false); //don't wait for result
 	return id;
+}
+
+//order json's
+static bool jsonInfoSorter(const Json::Value& a, const Json::Value& b)
+{
+	return a["name"] < b["name"];
+}
+
+//return json of the dbinfos, sorted
+Json::Value WebQueryManager::getJSONInfo()
+{
+	vector<Json::Value> jsons;
+	BOOST_FOREACH(DBMap::value_type i, databases )
+	{
+		jsons.push_back(i.second.getJSON());
+	}
+
+	sort(jsons.begin(), jsons.end(), jsonInfoSorter);
+
+	Json::Value ret;
+	ret.resize(jsons.size());
+	for(unsigned i = 0, n = jsons.size(); i < n; i++)
+	{
+		ret[i] = jsons[i];
+	}
+	return ret;
 }
 
 WebQueryHandle WebQueryManager::get(unsigned qid)
