@@ -469,7 +469,7 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 	}
 
 	mol.SetConformers(cdata);
-
+	mol.SetTitle(name.c_str());
 	//generate moldata
 	MolDataCreator mdc(pharmas, tindex, mol, props, stats[NumMols]);
 
