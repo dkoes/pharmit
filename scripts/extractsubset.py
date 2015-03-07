@@ -42,5 +42,7 @@ for row in rows:
 #for each compound, get sdf location and id, output with sorted names
 for smile in compounds.iterkeys():
     cursor.execute("SELECT id, sdfloc FROM structures WHERE smile = %s", (smile,))
-    (i, sdfloc) = cursor.fetchall()[0]
-    print sdfloc,i,' '.join(sortNames(prefix,compounds[smile]))
+    rows = cursor.fetchall() #should be one
+    if len(rows) >= 1:
+        (i, sdfloc) = rows[0]
+        print sdfloc,i,' '.join(sortNames(prefix,compounds[smile]))
