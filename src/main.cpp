@@ -520,17 +520,19 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 					ifstream in(info.file.c_str());
 					OBFormat *format = conv.FormatFromExt(info.file.c_str());
 
-					ReadMCMol reader(in, format, 1, 0, ReduceConfs);
-					OBMol mol;
-
-					while (reader.read(mol))
+					if(format != NULL)
 					{
-						db.addMolToDatabase(mol, info.id, info.name);
-					}
+						ReadMCMol reader(in, format, 1, 0, ReduceConfs);
+						OBMol mol;
 
-					db.writeStats();
+						while (reader.read(mol))
+						{
+							db.addMolToDatabase(mol, info.id, info.name);
+						}
+					}
 				}
 			}
+			db.writeStats();
 			db.createSpatialIndex();
 			if(d != nd-1)
 				exit(0);
