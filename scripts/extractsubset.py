@@ -4,6 +4,7 @@
 #that have a name that starts with the prefix.
 
 import sys,subprocess, re, MySQLdb, os, collections
+import itertools
 
 def sortNames(prefix, names):
     #sort alphabetically, but with prefixed names first
@@ -31,18 +32,22 @@ conn = MySQLdb.connect (host = "localhost",user = "pharmit",db="conformers")
 cursor = conn.cursor()
 cursor.execute("SELECT smile,name FROM names WHERE name LIKE %s", (prefix+'%',))
 
-compounds = collections.defaultdict(list) #smile -> [names]
+smiles = set()
 rows = cursor.fetchall()
 for row in rows:
     smile = row[0]
     name = row[1].strip()
     if name.startswith(prefix): #should be redundant
-        compounds[smile].append(name)
+        smiles.add(smile)
         
 #for each compound, get sdf location and id, output with sorted names
-for smile in compounds.iterkeys():
+for smile in smiles:
     cursor.execute("SELECT id, sdfloc FROM structures WHERE smile = %s", (smile,))
     rows = cursor.fetchall() #should be one
     if len(rows) >= 1:
         (i, sdfloc) = rows[0]
-        print sdfloc,i,' '.join(sortNames(prefix,compounds[smile]))
+        #get all names
+        cursor.execute("SELECT name FROM names WHERE smile = %s", (smile,))
+        names = cursor.fetchall()
+        names = list(itertools.chain.from_iterable(names)) 
+        print sdfloc,i,' '.join(sortNames(prefix,names))
