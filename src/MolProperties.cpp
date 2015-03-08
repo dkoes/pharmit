@@ -60,13 +60,10 @@ void MolProperties::createFiles(const boost::filesystem::path& dbpath,
 
 void MolProperties::write(unsigned mid, const PropFiles& files)
 {
-	//sanitycheck, once I confirm this is the case can remove mid
-	unsigned long location = ftell(files[0]);
-	unsigned long expected = mid*sizeof(uniqueid);
-	assert(location == expected);
+	//there are gaps in the mids if molecules get too large
+	//which certainly happens with our crazy names..
 
-
-#define WRITE(NAME, I) fwrite(&NAME, sizeof(NAME), 1, files[I]);
+#define WRITE(NAME, I) fseek(files[I], sizeof(NAME)*mid, SEEK_SET); fwrite(&NAME, sizeof(NAME), 1, files[I]);
 	//write to individual files that were opened with createFiles
 
 	WRITE(uniqueid, 0);
