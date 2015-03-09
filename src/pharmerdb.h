@@ -607,10 +607,20 @@ struct StripedSearchers
 
 	StripedSearchers(): totalConfs(0), totalMols(0) {}
 
-	const Json::Value& getJSON() const {
+	Json::Value getJSON() const {
 		assert(stripes.size() > 0);
-		//each stripe should have same info
-		return stripes[0]->getJSON();
+		//each stripe should have same db info, but the totals need to be summed
+		Json::Value ret = stripes[0]->getJSON();
+		unsigned totalConfs = 0;
+		unsigned totalMols = 0;
+		for(unsigned i = 0, n = stripes.size(); i < n; i++)
+		{
+			totalConfs += stripes[i]->numConformations();
+			totalMols += stripes[i]->numMolecules();
+		}
+		ret["numConfs"] = totalConfs;
+		ret["numMols"] = totalMols;
+		return ret;
 	}
 };
 
