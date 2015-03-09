@@ -1002,7 +1002,7 @@ Pharmit.MinResults = (function() {
 							 	info: "Minimizing..."
 						 },
 						 serverSide: true,
-						 processing: true,
+						 processing: false,
 						 ajax: {
 						    	url: Pharmit.server,
 						    	data: ajaxData,
@@ -1302,7 +1302,7 @@ Pharmit.PhResults = (function() {
 							 	info: "Searching..."
 						 },
 						 serverSide: true,
-						 processing: true,
+						 processing: false,
 						 ajax: {
 						    	url: Pharmit.server,
 						    	data: {

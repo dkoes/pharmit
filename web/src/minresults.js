@@ -147,7 +147,7 @@ Pharmit.MinResults = (function() {
 							 	info: "Minimizing..."
 						 },
 						 serverSide: true,
-						 processing: true,
+						 processing: false,
 						 ajax: {
 						    	url: Pharmit.server,
 						    	data: ajaxData,

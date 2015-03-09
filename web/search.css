@@ -617,6 +617,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 
 .pharmit_namecol {
 	text-align: left;
+	white-space: nowrap;
 }
 
 th.pharmit_rmsdcol {
@@ -647,6 +648,7 @@ th.pharmit_bondscol {
 
 .pharmmit_minname {
 	text-align: left;
+	white-space: nowrap;
 }
 
 th.pharmit_minscore {

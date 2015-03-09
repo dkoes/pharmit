@@ -134,7 +134,7 @@ Pharmit.PhResults = (function() {
 							 	info: "Searching..."
 						 },
 						 serverSide: true,
-						 processing: true,
+						 processing: false,
 						 ajax: {
 						    	url: Pharmit.server,
 						    	data: {
