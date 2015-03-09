@@ -901,6 +901,8 @@ Pharmit.MinResults = (function() {
 				//round floats
 				ret[i][3] = numeral(ret[i][3]).format('0.00');
 				ret[i][4] = numeral(ret[i][4]).format('0.000');
+				ret[i][2] = results.mangleName(ret[i][0]);
+
 			}
 			return ret;
 		};
