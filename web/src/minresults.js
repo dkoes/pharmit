@@ -210,8 +210,8 @@ Pharmit.MinResults = (function() {
 		$('<th>mid</th>').appendTo(headrow);
 		$('<th>origpos</th>').appendTo(headrow);
 		$('<th>Name</th>').appendTo(headrow);
-		$('<th>Score</th>').appendTo(headrow);
-		$('<th>mRMSD</th>').appendTo(headrow);
+		$('<th title="Computed using the AutoDock Vina scoring function">Score</th>').appendTo(headrow);
+		$('<th title="The minimized RMSD, the heavy atom difference between the pharmacophore aligned pose and the minimized pose.  Small values imply a closer agreement to the query pharmacophore.">mRMSD</th>').appendTo(headrow);
 		$('<tbody>').appendTo(table);
 		
 		//event handler for loading data, only install this once
