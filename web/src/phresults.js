@@ -44,7 +44,9 @@ Pharmit.PhResults = (function() {
 			for(var i = 0; i < ret.length; i++) {
 				//round rmsd
 				ret[i][1] = numeral(ret[i][1]).format('0.000');
+				ret[i][0] = Pharmit.Results.mangleName(ret[i][0]);
 			}
+			
 			return ret;
 		};
 		

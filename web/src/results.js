@@ -57,6 +57,15 @@ Pharmit.Results = (function() {
 			viewer.setRight(0);
 		};
 		
+		//convert a mol name into something more presentable
+		this.mangleName = function(name) {
+			var names = name.split(" ");
+			var ret = '<span title="' + names.join("<br>") +
+						'">'+names[0]+'</span>';
+			
+			return ret;
+		};
+		
 		//initialization code
 		var closer = $('<div>').appendTo(resultsdiv).addClass('pharmit_rightclose');
 		var closericon = $('<span>').addClass("ui-icon ui-icon-carat-1-e").appendTo(closer);

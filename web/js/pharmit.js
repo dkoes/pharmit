@@ -1212,7 +1212,9 @@ Pharmit.PhResults = (function() {
 			for(var i = 0; i < ret.length; i++) {
 				//round rmsd
 				ret[i][1] = numeral(ret[i][1]).format('0.000');
+				ret[i][0] = Pharmit.Results.mangleName(ret[i][0]);
 			}
+			
 			return ret;
 		};
 		
@@ -2062,6 +2064,15 @@ Pharmit.Results = (function() {
 		this.close = function() {
 			resultsdiv.hide();
 			viewer.setRight(0);
+		};
+		
+		//convert a mol name into something more presentable
+		this.mangleName = function(name) {
+			var names = name.split(" ");
+			var ret = '<span title="' + names.join("<br>") +
+						'">'+names[0]+'</span>';
+			
+			return ret;
 		};
 		
 		//initialization code

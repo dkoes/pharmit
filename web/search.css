@@ -93,6 +93,16 @@ body {
 	font-size: 80%;
 }
 
+.pharmit_subsetmenu a.ui-icon {
+	display: inline-block;
+	top: auto;
+	bottom: auto;
+}
+
+.pharmit_subsetmenu span {
+    position: relative;
+}
+
 .pharmit_nowrap {
 	white-space: nowrap;
 	display: inline-block;
