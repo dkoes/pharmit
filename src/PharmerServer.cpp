@@ -293,9 +293,11 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 
 	//identify databases to search
 	vector< boost::shared_ptr<PharmerDatabaseSearcher> > dbs;
+	unsigned numslices = 1;
 	if(databases.count(qp.subset))
 	{
 		dbs = databases[qp.subset].stripes;
+		numslices = dbs.size(); //how many threads we should run
 		totalMols = databases[qp.subset].totalMols;
 		totalConfs = databases[qp.subset].totalConfs;
 	}
@@ -319,7 +321,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		}
 	}
 	unsigned id = nextID++;
-	queries[id] = new PharmerQuery(dbs, queryPoints, qp, excluder, databases.size());
+	queries[id] = new PharmerQuery(dbs, queryPoints, qp, excluder, numslices);
 	queries[id]->execute(false); //don't wait for result
 	return id;
 }
