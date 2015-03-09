@@ -269,6 +269,8 @@ Pharmit.Query = (function() {
 			ret.receptor = receptorData;
 			ret.recname = receptorName;
 			ret.receptorid = receptorKey;
+			
+			ret.view = viewer.getView();
 			return ret;
 		};
 		
