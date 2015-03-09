@@ -1212,7 +1212,7 @@ Pharmit.PhResults = (function() {
 			for(var i = 0; i < ret.length; i++) {
 				//round rmsd
 				ret[i][1] = numeral(ret[i][1]).format('0.000');
-				ret[i][0] = Pharmit.Results.mangleName(ret[i][0]);
+				ret[i][0] = results.mangleName(ret[i][0]);
 			}
 			
 			return ret;
@@ -1556,7 +1556,7 @@ Pharmit.Query = (function() {
 			viewer.enableRendering();
 			var end = new Date().getTime();
 			var time = end - start;
-			console.log('setFeatures time: ' + time);
+			//console.log('setFeatures time: ' + time);
 		};
 		
 		//query server to get pharmacophore

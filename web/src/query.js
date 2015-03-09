@@ -90,7 +90,7 @@ Pharmit.Query = (function() {
 			viewer.enableRendering();
 			var end = new Date().getTime();
 			var time = end - start;
-			console.log('setFeatures time: ' + time);
+			//console.log('setFeatures time: ' + time);
 		};
 		
 		//query server to get pharmacophore
