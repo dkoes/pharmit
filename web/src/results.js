@@ -60,7 +60,7 @@ Pharmit.Results = (function() {
 		//convert a mol name into something more presentable
 		this.mangleName = function(name) {
 			var names = name.split(" ");
-			var ret = '<span title="' + names.join("<br>") +
+			var ret = '<span title="' + names.join("\n") +
 						'">'+names[0]+'</span>';
 			
 			return ret;
