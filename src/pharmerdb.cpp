@@ -777,7 +777,7 @@ void PharmerDatabaseCreator::createIJKSpatialIndex(int p)
 void PharmerDatabaseCreator::createSpatialIndex()
 {
 	Timer t;
-	cout << "Creating spatial index...\n";
+	cout << "Creating spatial index..." << endl;
 	//close and then mmap pointinfo file
 	initPointDataArrays();
 
@@ -885,6 +885,8 @@ void PharmerDatabaseSearcher::initializeDatabases()
 			geoDataArrays[i].map(gpath.string(), true, true);
 	}
 
+	//property data
+	MolProperties::initializeReader(dbpath, props);
 	valid = true;
 }
 

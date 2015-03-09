@@ -509,6 +509,8 @@ class PharmerDatabaseSearcher
 	MMappedRegion< pair<unsigned long, unsigned long> > sminaIndex; //maps moldata location to sminadata
 	MMappedRegion<char> sminaData;
 
+	MolProperties::MolPropertyReader props;
+
 	unsigned goodChunkSize;
 
 	void initializeDatabases();
@@ -568,6 +570,12 @@ public:
 		if(lmid >= len)
 			return midList[len-1];
 		return midList[lmid];
+	}
+
+	//retreive a molecular property, casted to double
+	double getMolProp(MolProperties::PropIDs kind, unsigned mid)
+	{
+		return props.get(kind, mid);
 	}
 
 	//generate ranking and return index of best triplet

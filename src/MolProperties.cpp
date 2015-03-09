@@ -66,13 +66,13 @@ void MolProperties::write(unsigned mid, const PropFiles& files)
 #define WRITE(NAME, I) fseek(files[I], sizeof(NAME)*mid, SEEK_SET); fwrite(&NAME, sizeof(NAME), 1, files[I]);
 	//write to individual files that were opened with createFiles
 
-	WRITE(uniqueid, 0);
-	WRITE(num_rings, 1);
-	WRITE(num_aromatics, 2);
-	WRITE(logP, 3);
-	WRITE(psa, 4);
-	WRITE(hba, 5);
-	WRITE(hbd, 6);
+	WRITE(uniqueid, UniqueID);
+	WRITE(num_rings, NRings);
+	WRITE(num_aromatics, NAromatics);
+	WRITE(logP, LogP);
+	WRITE(psa, PSA);
+	WRITE(hba, HBA);
+	WRITE(hbd, HBD);
 }
 
 
@@ -87,4 +87,25 @@ void MolProperties::setHB(const vector<PharmaPoint>& pts)
 		else if(pts[i].pharma->name == "HydrogenAcceptor")
 			hba++;
 	}
+}
+
+//setup mmaps
+void MolProperties::initializeReader(const boost::filesystem::path& dbpath, MolPropertyReader& reader)
+{
+	filesystem::path fname = dbpath / fileNames[UniqueID];
+	reader.uniqueid.map(fname.string(), true);
+	fname = dbpath / fileNames[NRings];
+	reader.num_rings.map(fname.string(), true);
+	fname = dbpath / fileNames[NAromatics];
+	reader.num_aromatics.map(fname.string(), true);
+	fname = dbpath / fileNames[LogP];
+	reader.logP.map(fname.string(), true);
+	fname = dbpath / fileNames[PSA];
+	reader.psa.map(fname.string(), true);
+
+	fname = dbpath / fileNames[HBA];
+	reader.hba.map(fname.string(), true);
+	fname = dbpath / fileNames[HBD];
+	reader.hbd.map(fname.string(), true);
+
 }

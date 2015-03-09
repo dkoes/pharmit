@@ -1757,6 +1757,7 @@ Pharmit.Query = (function() {
 			var buttons = $('<div>').addClass('pharmit_searchdiv');
 			var run = $('<button name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
 			var select = $('<button>Select subset to search</button>').appendTo(buttons).button({text: false, icons: {primary: "ui-icon-triangle-1-s"}});
+			select.tooltip().tooltip("disable"); //conflicts with menu
 			run.val(subsetinfo[0].subdir);
 			
 			buttons.buttonset();
@@ -1948,31 +1949,37 @@ Pharmit.Query = (function() {
 		var screentable = $('<table>').appendTo(hitscreening);
 		
 		var setScreensStyle = function() { //change style of headings of filters are specified
-			if($('#minmolweight').val() !== '' ||
-					$('#maxmolweight').val() !== '' ||
-					$('#minnrot').val() !== '' ||
-					$('#maxnrot').val() !== '')  {
+			var nothingset = true;
+			$('[name]',hitscreening).each( function(index, element) {
+				if(element.value !== '')
+					nothingset = false;
+			});
+			if(!nothingset)  {
 				screenheading.addClass('pharmit_filtermodified');
 			} else {
 				screenheading.removeClass('pharmit_filtermodified');
 			}
 		};
 		
+		var addScreeningRow = function(name, label, title, minval) {
+			//boilerplate for screening row
+			var row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
+			var cell = $('<td>').appendTo(row);
+			$('<input name="min'+name+'">').appendTo(cell).spinner({min: minval, stop: setScreensStyle}).change(setScreensStyle);
+			$('<td>').appendTo(row).append($('<label title="'+title+'" value="1" >&le;  '+label+' &le;</label>'));
+			cell = $('<td>').appendTo(row);
+			$('<input name="max'+name+'">').appendTo(cell).spinner({min: minval, stop: setScreensStyle}).change(setScreensStyle);
+
+		};
 		
-		row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
-		cell = $('<td>').appendTo(row);
-		$('<input id="minmolweight" name="minMolWeight">').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
-		$('<td>').appendTo(row).append($('<label title="Minimum/maximum molecular weight (weights are approximate)" value="1" for="maxmolweight">&le;  MolWeight &le;</label>'));
-		cell = $('<td>').appendTo(row);
-		$('<input id="maxmolweight" name=maxMolWeight>').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
-
-		row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
-		cell = $('<td>').appendTo(row);
-		$('<input id="minnrot" name="minrotbonds">').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
-		$('<td>').appendTo(row).append($('<label title="Minimum/maximum number of rotatable bonds" value="1" for="maxnrot"> &le;  RotBonds &le;</label>'));
-		cell = $('<td>').appendTo(row);
-		$('<input id="maxnrot" name="maxrotbonds">').appendTo(cell).spinner({min: 0, stop: setScreensStyle}).change(setScreensStyle);
-
+		addScreeningRow("MolWeight", "MolWeight", "Minimum/maximum molecular weight (weights are approximate)", 0);
+		addScreeningRow("rotbonds", "RotBonds", "Minimum/maximum number of rotatable bonds", 0);
+		addScreeningRow("logp", "LogP", "Minimum/maximum partition coefficient as calculated by OpenBabel");
+		addScreeningRow("psa", "PSA", "Minimum/maximum polar surface area as calculated by OpenBabel");
+		addScreeningRow("aromatics", "Aromatics", "Minimum/maximum number of smallest aromatic rings", 0);
+		addScreeningRow("hba", "HBA", "Minimum/maximum number of hydrogen bond acceptors",0);
+		addScreeningRow("hbd", "HBD", "Minimum/maximum number of hydrogen bond donors",0);
+		
 		filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
 		
 		//viewer settings
@@ -4692,8 +4699,7 @@ Pharmit.Viewer = (function() {
 				//surface
 				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
 				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
-						surfaceStyle, 
-						{model:receptor, bonds: 0, invert:true});
+						surfaceStyle, {model:receptor, bonds: 0, invert:true});
 				viewer.zoomTo({});
 			}
 			else

@@ -423,7 +423,7 @@ public:
 			bool needtowait = false;
 			for(unsigned i = 0; i < me; i++)
 			{
-				if(filesystem::exists(infofiles[i]))
+				if(!filesystem::exists(infofiles[i]))
 				{
 					needtowait = true;
 					break;

@@ -136,13 +136,29 @@ class Corresponder
 
 					if (tmpresult->val <= qparams.maxRMSD)
 					{
-						if (!excluder.isDefined() || !isExcluded(tmpresult))
+						bool goodprops = true;
+						for(unsigned i = 0, n = qparams.propfilters.size(); i < n; i++)
 						{
-							resultQ.push(alloc.newCorResult(*tmpresult));
-							thisConfCnt++;
-							if (thisConfCnt >= qparams.orientationsPerConf)
+							const PropFilter& prop = qparams.propfilters[i];
+							//look up value for property
+							double val = dbptr->getMolProp(prop.kind, tmpresult->dbid);
+							if(val < prop.min || val > prop.max)
 							{
-								return false; //terminate early
+								goodprops = false;
+								break;
+							}
+						}
+
+						if(goodprops)
+						{
+							if (!excluder.isDefined() || !isExcluded(tmpresult))
+							{
+								resultQ.push(alloc.newCorResult(*tmpresult));
+								thisConfCnt++;
+								if (thisConfCnt >= qparams.orientationsPerConf)
+								{
+									return false; //terminate early
+								}
 							}
 						}
 					}

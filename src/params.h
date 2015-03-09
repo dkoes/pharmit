@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <json/json.h>
 
 #include "ThreePointData.h"
+#include "MolProperties.h"
 
 using namespace std;
 
@@ -43,6 +44,17 @@ namespace SortType {
 enum SortType {Undefined, RMSD, MolWeight, NRBnds};
 }
 typedef SortType::SortType SortTyp;
+
+//mol property min/max specification
+struct PropFilter
+{
+	MolProperties::PropIDs kind;
+	double min;
+	double max;
+
+	PropFilter(): kind(MolProperties::None), min(-HUGE_VAL), max(HUGE_VAL) {}
+	PropFilter(MolProperties::PropIDs k, double low, double high): kind(k), min(low), max(high) {}
+};
 
 // Isolates parameters of a query.
 struct QueryParameters
@@ -64,11 +76,33 @@ struct QueryParameters
 
 	string subset;
 
+	vector<PropFilter> propfilters;
+
 	QueryParameters() :
 		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),
 		sort(SortType::Undefined), minWeight(0), maxWeight(UINT_MAX), reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX)
 	{
 
+	}
+
+
+	void addPropFilter(MolProperties::PropIDs p, string name, Json::Value& data)
+	{
+		string min("min");
+		min += name;
+		string max("max");
+		max += name;
+
+		if(data[min].isNumeric() || data[max].isNumeric())
+		{
+			PropFilter f;
+			f.kind = p;
+			if(data[min].isNumeric())
+				f.min = data[min].asDouble();
+			if(data[max].isNumeric())
+				f.max = data[max].asDouble();
+			propfilters.push_back(f);
+		}
 	}
 
 	//extract parameters from json
@@ -106,7 +140,14 @@ struct QueryParameters
 
 		if(data["subset"].isString())
 			subset = data["subset"].asString();
+
+		addPropFilter(MolProperties::LogP, "logp", data);
+		addPropFilter(MolProperties::PSA, "psa", data);
+		addPropFilter(MolProperties::NAromatics, "aromatics", data);
+		addPropFilter(MolProperties::HBA, "hba", data);
+		addPropFilter(MolProperties::HBD, "hbd", data);
 	}
+
 };
 
 //parameters for retrieving data

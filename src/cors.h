@@ -107,12 +107,13 @@ struct CorrespondenceResult
 	RMSDResult rmsd; //weighted by radii
 	float val; //unweighted rmsd val of weighted orientation
 	float weight;
-	unsigned molid;
+	unsigned molid;// also incorporates db - used for hit reduction
+	unsigned dbid; //molid for db
 	unsigned short nRBnds;
 	CorrespondenceInline cor;
 
 	CorrespondenceResult(unsigned numPoints) :
-		location(0), val(0), weight(0), nRBnds(0), cor(numPoints)
+		location(0), val(0), weight(0), molid(0), dbid(0), nRBnds(0), cor(numPoints)
 	{
 	}
 
@@ -122,6 +123,7 @@ struct CorrespondenceResult
 		weight = tm.weight;
 		nRBnds = tm.nRBnds;
 		molid = tm.molid*numdb+db;
+		dbid = tm.molid;
 		rmsd.clear();
 		cor.clear();
 	}
