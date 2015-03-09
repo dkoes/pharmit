@@ -93,10 +93,11 @@ body {
 	font-size: 80%;
 }
 
-.pharmit_subsetmenu a.ui-icon {
+.pharmit_subsetmenu span a.ui-icon {
 	display: inline-block;
-	top: auto;
-	bottom: auto;
+	top: 2px;
+	bottom: 0;
+	position: relative;
 }
 
 .pharmit_subsetmenu span {
