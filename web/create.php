@@ -3,14 +3,16 @@ session_start();
 
 //configuration variable
 $db_user = "pharmit";
+#$db_host = "192.168.6.4";
 $db_host = "localhost";
-$db_name = "pharmitusers";
+$db_name = "pharmit";
 $debug = 1;
 
 
 //this is called for errors that should not be exposed to the user
 function fail($pub, $pvt = '')
 {
+	global $debug;
 	$msg = $pub;
 	if ($debug && $pvt !== '')
 		$msg .= ": $pvt";
@@ -81,6 +83,7 @@ function headerhtml()
 <meta http-equiv="content-script-type" content="text/javascript">
 <meta http-equiv="content-style-type" content="text/css">
 <link rel="stylesheet" type="text/css" href="create.css" />
+<script src="js/jquery-2.1.3.js" ></script> 
 
 <title>Pharmit Library Creation</title>
 </head>
@@ -110,9 +113,9 @@ Login to build or manage public or private libraries.
 <form action="create.php" method="POST">
 <input type="hidden" name="op" value="login">
 Email:<br>
-<input type="text" autofocus="autofocus" name="user" size="60"><br>
+<input type="text" autocomplete="on" autofocus="autofocus" name="user" size="60"><br>
 Password:<br>
-<input type="password" name="pass" size="60"><br>
+<input type="password" autocomplete="on" name="pass" size="60"><br>
 <input type="submit" value="Log in">
 </form>
 </div>
@@ -137,20 +140,24 @@ else if(isset($_REQUEST["op"])) //operation
 			if (mysqli_connect_errno())
 				fail('MySQL connect', mysqli_connect_error());
 			
-			($stmt = $db->prepare('SELECT password FROM users WHERE email=?')) ||
+			($stmt = $db->prepare('SELECT password, maxprivatedbs, maxprivateconfs, maxdbs, maxconfs FROM users WHERE email=?')) ||
 				fail('Prepare users', $db->error);
 			$stmt->bind_param('s', $user) || fail('Bind user', $db->error);
 			$stmt->execute();
 			$stmt->store_result();
 			if($stmt->num_rows > 0) { //have valid username
 				$correctpass = "";
-				$stmt->bind_result($correctpass) || fail('Bind pass', $db->error);
+				$maxprivatedbs = 0; $maxprivateconfs = 0; $maxdbs = 0; $maxconfs = 0;
+				$stmt->bind_result($correctpass, $maxprivatedbs, $maxprivateconfs, $maxdbs, $maxconfs) || fail('Bind pass', $db->error);
 				if(!$stmt->fetch() && $db->errno)
 					fail('Fetch pass', $db->error);
 				
 				if($correctpass == $pass) {
 					session_regenerate_id();
 					$_SESSION['userid']  = $user;
+					$_SESSION['maxprivatedbs'] = $maxprivatedbs;
+					$_SESSION['maxprivateconfs'] = $maxprivateconfs;
+					$_SESSION['maxconfs'] = $maxconfs;
 					session_write_close();
 					header("location:create.php");
 					exit();
@@ -165,6 +172,9 @@ else if(isset($_REQUEST["op"])) //operation
 			break;
 		case "guestlogin":
 			$_SESSION['userid']  = "guest";
+			$_SESSION['maxprivatedbs'] = 0;
+			$_SESSION['maxprivateconfs'] = 0;
+			$_SESSION['maxconfs'] = 10000;
 			header("location:create.php"); //reload now that session is set with no op
 			exit();
 			break;
@@ -218,23 +228,56 @@ else if(isset($_REQUEST["op"])) //operation
 			}
 			else {
 				mail( $email, "Pharmit Password" , 
-				"Your password is:\n$pass\n\nIf you lose this password you can simply re-register with the same email.");
+				"Your password is:\n$pass\n\nIf you lose this password you can simply re-register with the same email.",
+						"From: do-not-reply@pharmit.csb.pitt.edu");
 				echo("Your password has been mailed to $email.  Please check your spam filters.");
+				echo("<a href='create.php'>Continue</a>");
 			}
 			$stmt->close();
 			
 			break;
-		case "create":
-			//have to validate all the inputs
-			headerhtml();
-			echo("Under construction...");
-			footerhtml();
-			break;
 		case "status":
-			//have to validate all the inputs
-			headerhtml();
-			echo("Under construction...");
-			footerhtml();
+			//get all the info for this user's databases
+			$db = new mysqli($db_host, $db_user, "", $db_name);
+			if (mysqli_connect_errno())
+				fail('MySQL connect', mysqli_connect_error());
+				
+			($stmt = $db->prepare('SELECT name, id, isprivate, status, message, submitted, completed, nummols, numconfs FROM `databases` WHERE email=? ORDER BY submitted DESC')) ||
+				fail('Prepare databases', $db->error);
+			$stmt->bind_param('s', $_SESSION["userid"]);
+			if (!$stmt->execute()) {
+				failhtml('Unexpected error checking status. ');
+			}
+			else {
+				$stmt->store_result();
+				headerhtml();
+				
+				if($stmt->num_rows > 0) { //have already created databases
+					
+					$stmt->bind_result($name, $id, $isprivate, $status, $message, $submitted, $completed, $nummols, $numconfs);
+					while($stmt->fetch()) {
+						echo("<div class='librarystatus'>");
+						echo("$name : $message <br>");
+						echo("Submitted: $submitted <br>");
+						if($isprivate) echo("<b>Private</b><br>");
+						else echo("Public<br>");
+						
+						if($status == "Finished") {
+							echo("Completed: $completed<br>");
+							echo(number_format($numconfs) . " conformers of ".number_format($nummols));
+						}
+						
+						echo("</div>");
+					}
+				} 
+				else { //no databases
+					echo("You have not created any databases.");
+				}
+
+				footerhtml();
+			}
+			
+
 			break;		
 		case "logout":
 			//remove session totally
@@ -263,10 +306,12 @@ else //logged in, let's create some databases
 {
 	headerhtml();
 	?>
+	
 	<div class="createpage">
 	<div class="loginbox">
-	<form action="create.php" method="POST">
+	<form id="createform" action="#" >
 	
+	<!--  TODO: add more input validation (name and file are required, check file name extension - sdf,smi,sdf.gz, or smi.gz - all in the client -->
 	<input type="hidden" name="op" value="create">
 	A short descriptive name of the database:<br>
 	<input type="text" autofocus="autofocus" name="dbname" size="60"><br>
@@ -277,15 +322,56 @@ else //logged in, let's create some databases
   <option value="public">Public - Anyone will be able to view and search</option>
   <option value="private">Private - A passcode is required to view and search.  There are additional limitations on the number and size of private databases. </option>
 </select> 
-	<br>Compound file.  Either .smi or .sdf.gz.
+<br> <!-- want these messages to depend on the select above -->
+  <?php 
+  echo("You may create a maximum of ". number_format($_SESSION["maxprivatedbs"])." private databases each with at most ". number_format($_SESSION["maxprivateconfs"]) . " conformers.");
+  echo("Public databases may have as many as ".number_format($_SESSION["maxconfs"]) . " conformers. ");
+  echo("These limits can be increased by submitting a short justification to dkoes@pitt.edu.<br>");
+  echo("File sizes are limited to 200MB.  It is highly recommended that you submit a compressed (.gz) file.");
+  
+  echo("<input type=hidden name=\"email\" value=\"".$_SESSION["userid"]."\">");
+  		
+  ?>
+	<br>Compound file.  Either .smi.gz or .sdf.gz.  Conformers will be automatically generated from SMILES files while the conformers
+	present in the SDF file will be used.  Conformers of the same molecule are assumed to have the same name.  If the SMILES molecules
+	do not have a name, they will be assigned an id corresponding to the line number.
 	<input type="file" name="compounds">
 	<br>
 	<input type="submit" value="Submit">
 	</form>
+	<div id="createstatus"></div>
 	</div>
 
 	
 	</div>
+	<script>
+	var form = $('#createform').submit(function(event) {
+		$('#createstatus').text("Uploading...");
+		var fd = new FormData($('#createform').get(0));
+		event.preventDefault(); //do our own submission with ajax
+		$.ajax({
+			url: '/fcgi-bin/createlib.fcgi',
+			data: fd,
+			cache: false,
+			processData: false,
+			contentType: false,
+			type: 'POST'
+		}).done(function(ret) {
+			//this returns the unique id for referencing this library
+			if(ret.lastIndexOf("Error",0) === 0) {
+				$('#createstatus').html(ret);
+			}
+			else { //every okay so far, future errors will happen asynchronously
+				$('#createstatus').html('Processing library.  Check status <a href="create.php?op=status">here</a>');
+			}
+		}).fail(function(x, status, e) {
+			$('#createstatus').text("Error: "+e);
+			
+		}); 
+		return false;
+	});
+
+	</script>
 <?php 
 				
 	footerhtml();
