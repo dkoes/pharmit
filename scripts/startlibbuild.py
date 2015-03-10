@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 
 #takes an fcgi request to create a compound database, sets up the diretory 
 #with the input files and inserts the request into the Database
