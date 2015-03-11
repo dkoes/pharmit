@@ -83,10 +83,10 @@ function headerhtml()
 <meta http-equiv="content-script-type" content="text/javascript">
 <meta http-equiv="content-style-type" content="text/css">
 <link rel="stylesheet" type="text/css" href="create.css" />
-<script src="js/jquery-2.1.3.js" ></script> 
+<script src="js/jquery-2.1.3.js" ></script>
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 
-<title>Pharmit Library Creation</title>
+<title>pharmit library creation</title>
 </head>
 
 <body>
@@ -96,7 +96,7 @@ function headerhtml()
 
 function footerhtml()
 {
-	echo('</body></html>');
+	echo("</body></html>");
 }
 
 
@@ -107,16 +107,15 @@ if (!isset($_REQUEST["op"]) && !isset($_SESSION['userid']))
 ?>
 <div class="loginpage">
 <span class="font-3">log in</span><br>
-<span class="font">log in to build or manage public or private libraries.</span><br><br>
+<span class="font">log in to build or manage public or private libraries</span><br><br>
 <div class="loginbox">
 <form action="create.php" method="POST">
 <input type="hidden" name="op" value="login">
-
 <span class="font-2">email:</span>
-<input type="text" autocomplete="on" autofocus="autofocus" name="user" size="60"><br>
-Password:<br>
-<input type="password" autocomplete="on" name="pass" size="60"><br>
-<input type="submit" value="Log in">
+<input type="text" autocomplete="on" autofocus="autofocus" name="user" size="60" class="input"><br><br>
+<span class="font-2">password:</span>
+<input type="password" name="pass" size="60" class="input"><br><br>
+<input type="submit" value="log in" class="submit">
 </form>
 </div>
 <br><br><br>
@@ -140,7 +139,7 @@ else if(isset($_REQUEST["op"])) //operation
 			$db = new mysqli($db_host, $db_user, "", $db_name);
 			if (mysqli_connect_errno())
 				fail('MySQL connect', mysqli_connect_error());
-			
+
 			($stmt = $db->prepare('SELECT password, maxprivatedbs, maxprivateconfs, maxdbs, maxconfs FROM users WHERE email=?')) ||
 				fail('Prepare users', $db->error);
 			$stmt->bind_param('s', $user) || fail('Bind user', $db->error);
@@ -185,7 +184,7 @@ else if(isset($_REQUEST["op"])) //operation
 			?>
 			<div class="loginpage">
 			<span class="font-3">register</span><br>
-			<span class="font">provide your information and we will email you a password.</span><br><br>
+			<span class="font">provide your information and we will email you a password</span><br><br>
 			<div class="loginbox">
 			<form action="create.php" method="POST">
 			<input type="hidden" name="op" value="doregister">
@@ -199,6 +198,7 @@ else if(isset($_REQUEST["op"])) //operation
 			</form>
 			</div>
 			<br><br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>
+
 
 			</div>
 			<?php
@@ -229,11 +229,10 @@ else if(isset($_REQUEST["op"])) //operation
 					failhtml('Unexpected error registering. Please try again later or contact the site administrator. ');
 			}
 			else {
-				mail( $email, "Pharmit Password" , 
+				mail( $email, "Pharmit Password" ,
 				"Your password is:\n$pass\n\nIf you lose this password you can simply re-register with the same email.",
 						"From: do-not-reply@pharmit.csb.pitt.edu");
-
-				echo("Your password has been mailed to $email.  Please check your spam filters.");
+				echo("Your password has been mailed to $email.  Please check your spam filters. ");
 				echo("<a href='create.php'>Continue</a>");
 			}
 			$stmt->close();
@@ -244,7 +243,7 @@ else if(isset($_REQUEST["op"])) //operation
 			$db = new mysqli($db_host, $db_user, "", $db_name);
 			if (mysqli_connect_errno())
 				fail('MySQL connect', mysqli_connect_error());
-				
+
 			($stmt = $db->prepare('SELECT name, id, isprivate, status, message, submitted, completed, nummols, numconfs FROM `databases` WHERE email=? ORDER BY submitted DESC')) ||
 				fail('Prepare databases', $db->error);
 			$stmt->bind_param('s', $_SESSION["userid"]);
@@ -254,9 +253,9 @@ else if(isset($_REQUEST["op"])) //operation
 			else {
 				$stmt->store_result();
 				headerhtml();
-				
+
 				if($stmt->num_rows > 0) { //have already created databases
-					
+
 					$stmt->bind_result($name, $id, $isprivate, $status, $message, $submitted, $completed, $nummols, $numconfs);
 					while($stmt->fetch()) {
 						echo("<div class='librarystatus'>");
@@ -264,25 +263,24 @@ else if(isset($_REQUEST["op"])) //operation
 						echo("Submitted: $submitted <br>");
 						if($isprivate) echo("<b>Private</b><br>");
 						else echo("Public<br>");
-						
+
 						if($status == "Finished") {
 							echo("Completed: $completed<br>");
 							echo(number_format($numconfs) . " conformers of ".number_format($nummols));
 						}
-						
+
 						echo("</div>");
 					}
-				} 
+				}
 				else { //no databases
 					echo("You have not created any databases.");
 				}
 
 				footerhtml();
 			}
-			
 
-			break;		
 
+			break;
 		case "logout":
 			//remove session totally
 
@@ -310,43 +308,53 @@ else //logged in, let's create some databases
 {
 	headerhtml();
 	?>
-	
+
 	<div class="createpage">
 	<span class="font-3">create</span><br>
 	<div class="loginbox">
 	<form id="createform" action="#" >
-	
 	<!--  TODO: add more input validation (name and file are required, check file name extension - sdf,smi,sdf.gz, or smi.gz - all in the client -->
-
 	<input type="hidden" name="op" value="create">
+	<span class="font">new databases from compounds</span><br><br>
 	<span class="font-2">a short descriptive name of the database:</span><br>
 	<input type="text" autofocus="autofocus" name="dbname" size="60" class="input-2"><br><br>
 	<span class="font-2">a longer description: </span><br>
 	<textarea rows="4" cols="50" name="description">
-	</textarea><br>
- <select name="access">
-  <option value="public">Public - Anyone will be able to view and search</option>
-  <option value="private">Private - A passcode is required to view and search.  There are additional limitations on the number and size of private databases. </option>
-</select> 
-<br> <!-- want these messages to depend on the select above -->
-  <?php 
-  echo("You may create a maximum of ". number_format($_SESSION["maxprivatedbs"])." private databases each with at most ". number_format($_SESSION["maxprivateconfs"]) . " conformers.");
+</textarea><br>
+	<span class="font-4">please include any information you think may be useful (supports HTML markup)</i></span><br><br>
+
+	<span class="font-2">access:</span><br>
+ 	<select name="access">
+  		<option value="public">public - anyone will be able to view and search</option>
+  		<option value="private">private - a passcode will be required to view and search</option>
+	</select><br>
+	<br><span class="font-2">compound file:</span>
+	<input type="file" name="compounds">
+	<br><br>
+    <span class="font-4">Either .smi.gz or .sdf.gz.  Conformers will be automatically generated from SMILES files while the conformers
+    present in the SDF file will be used.  Conformers of the same molecule are assumed to have the same name.  If the SMILES molecules
+    do not have a name, they will be assigned an ID corresponding to the line number.</span><br>
+    <br> <!-- want these messages to depend on the select above -->
+  <?php
+  echo('<span class="font-4">');
+  echo("You may create a maximum of ". number_format($_SESSION["maxprivatedbs"])." private databases each with at most ". number_format($_SESSION["maxprivateconfs"]) . " conformers. ");
   echo("Public databases may have as many as ".number_format($_SESSION["maxconfs"]) . " conformers. ");
   echo("These limits can be increased by submitting a short justification to dkoes@pitt.edu.<br>");
   echo("File sizes are limited to 200MB.  It is highly recommended that you submit a compressed (.gz) file.");
-  
+  echo("</span>");
   echo("<input type=hidden name=\"email\" value=\"".$_SESSION["userid"]."\">");
-  		
-  ?>
-	<br>Compound file.  Either .smi.gz or .sdf.gz.  Conformers will be automatically generated from SMILES files while the conformers
-	present in the SDF file will be used.  Conformers of the same molecule are assumed to have the same name.  If the SMILES molecules
-	do not have a name, they will be assigned an id corresponding to the line number.
 
-	<input type="file" name="compounds">
-	<br>
+  ?>
+  <br><br>
 	<input type="submit" value="submit" class="submit">
-	</form>
-	<div id="createstatus"></div>
+    </form>
+   	<br><br>
+   	<div id="createstatus" class="font-4"></div>
+	<br>
+    <form action="create.php" method="POST">
+    <input type="hidden" name="op" value="logout">
+    <input type="submit" value="log out" class="submit-2">
+    <br><br><br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>
 	</div>
 
 
@@ -373,14 +381,13 @@ else //logged in, let's create some databases
 			}
 		}).fail(function(x, status, e) {
 			$('#createstatus').text("Error: "+e);
-			
-		}); 
+
+		});
 		return false;
 	});
 
 	</script>
-<?php 
-				
+<?php
 
 	footerhtml();
 }

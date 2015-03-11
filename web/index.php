@@ -86,7 +86,7 @@
 						</div>
 						<div class="colwrapper-9">
 							<div class="cont-34">
-								<input type="text" autofocus="autofocus" name="user" class="input-2">
+								<input type="text" autofocus="autofocus" name="user" class="input-2" autocomplete="on">
 							</div>
 						</div>
 					</div>
