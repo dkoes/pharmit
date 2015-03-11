@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=960">
+		<title>pharmit: interactive exploration of chemical space</title>
+		<link rel="stylesheet" type="text/css" href="index.css">
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+	</head>
+	<body id="body">
+		<div class="cont">
+			<div class="section">
+				<div class="cont-2">
+					<div class="colwrapper">
+						<div class="cont-3">
+							<img src="images/pasted-image-448.png" alt="" class="img">
+						</div>
+					</div>
+					<div class="colwrapper-2">
+						<div class="cont-4">
+							<div class="cont-5"><p class="para"><span class="font"><a href="http://sourceforge.net/projects/pharmit/">code</a></span></p></div>
+						</div>
+						<div class="cont-6">
+							<div class="cont-7"><p class="para-2"><span class="font-2"><a href="help.html">help</a></span></p></div>
+						</div>
+						<div class="cont-8">
+							<div class="cont-9"><p class="para-3"><span class="font-3"><a href="mailto:dkoes+pharmit@pitt.edu">contact</a></span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="section-2">
+			<div class="cont-10">
+				<div class="colwrapper-3">
+					<div class="cont-11">
+						<div class="cont-12"><p class="para-4"><span class="font-4">pharmit</span></p></div>
+					</div>
+					<div class="cont-13">
+						<div class="cont-14"><p class="para-5"><span class="font-5">interactive exploration of chemical space</span></p></div>
+					</div>
+				</div>
+			</div>
+			<div class="cont-15"></div>
+		</div>
+		<div class="cont-16">
+			<div class="section-3">
+				<div class="cont-17">
+					<div class="colwrapper-4">
+						<div class="cont-18">
+							<div class="cont-19"><p class="para-6"><span class="font-6">search</span></p></div>
+						</div>
+						<div class="cont-20">
+							<div class="cont-21"><p class="para-7"><span class="font-7">virtual screening in your browser</span></p></div>
+						</div>
+					</div>
+					<div class="colwrapper-5">
+						<div class="cont-22">
+							<div class="cont-23"><p class="para-8"><span class="font-8">create</span></p></div>
+						</div>
+						<div class="cont-24">
+							<div class="cont-25"><p class="para-9"><span class="font-9">submit your own chemical libraries</span></p></div>
+						</div>
+					</div>
+				</div>
+				<div class="loginbox">
+					<form action="create.php" method="POST">
+					<input type="hidden" name="op" value="login">
+					<div class="cont-26">
+						<div class="colwrapper-6">
+							<div class="cont-27">
+								<div class="cont-28"><p class="para-10"><span class="font-10"><a href="search.html">enter pharmit search</a></span></p></div>
+							</div>
+						</div>
+						<div class="colwrapper-7">
+							<div class="cont-29">
+								<div class="cont-30"><p class="para-11"><span class="font-11">log in to manage libraries</span></p></div>
+							</div>
+						</div>
+					</div>
+					<div class="cont-31">
+						<div class="colwrapper-8">
+							<div class="cont-32">
+								<div class="cont-33"><p class="para-12"><span class="font-10"><a href="">search by PDB</a></span></p></div>
+							</div>
+						</div>
+						<div class="colwrapper-9">
+							<div class="cont-34">
+								<input type="text" autofocus="autofocus" name="user" class="input-2">
+							</div>
+						</div>
+					</div>
+					<div class="cont-35">
+						<div class="cont-36"><p class="para-13"><span class="font-13">email:</span></p></div>
+					</div>
+					<div class="cont-37">
+						<div class="colwrapper-10">
+						</div>
+						<div class="colwrapper-11">
+							<div class="cont-39">
+								<div class="cont-40"><p class="para-14"><span class="font-14">password:</span></p></div>
+							</div>
+						</div>
+						<div class="colwrapper-12">
+							<div class="cont-41">
+								<input type="password" name="pass" class="input-2">
+							</div>
+							<div class="cont-42">
+								<div class="cont-43">
+								<p class="para-15"><span class="submit"><input type="submit" value="log in" class="submit" /></span></p></div>
+							</div>
+						</div>
+					</div>
+					</form>
+				</div>
+				<div class="cont-44">
+					<div class="colwrapper-13">
+						<div class="cont-45">
+							<div class="cont-46"><p class="para-16"><span class="font-16"><a href="examples.html">search examples</a></span></p></div>
+						</div>
+					</div>
+					<div class="colwrapper-14">
+						<div class="cont-47">
+							<div class="cont-48"><p class="para-17"><span class="font-17"><a href="create.php?op=register">register new account</a></span></p></div>
+						</div>
+					</div>
+					<div class="colwrapper-15">
+						<div class="cont-49">
+							<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php?op=guestlogin">log in as guest</a></span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="cont-51">
+			<div class="section-4">
+				<div class="cont-52">
+					<div class="cont-53"><p class="para-19"><span class="font-21">pharmit currently has</span></p><p class="para-20"><span class="font-22">N built-in libraries</span><span class="font-23"> containing</span></p><p class="para-21"><span class="font-24">xxxxxxxxxx conformations</span><span class="font-25"> of </span><span class="font-26">xxxxxxxxxx distinct compounds</span><span class="font-27"> and</span></p><p class="para-22"><span class="font-28">M publicly accessible user-contributed libraries.</span></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="cont-54"></div>
+		<div class="section-5">
+			<div class="cont-55">
+				<div class="cont-56"><p class="para-23"><span class="font-29">updates</span></p><p class="para-24"><span class="font-30">Month Day, Year</span><span class="font-31"> PubChem rebuilt with xxxxxx total compounds</span></p><p class="para-25"><span class="font-32">Month Day, Year</span><span class="font-33"> Kinase Inhibitors created by Some Guy</span></p><p class="para-26"><span class="font-34">Month Day, Year</span><span class="font-35"> MolPort updated</span></p></div>
+			</div>
+		</div>
+		<div class="cont-57">
+			<div class="section-6">
+				<div class="cont-58">
+					<div class="cont-59"><p class="para-27"><span class="font-36">acknowledgements</span></p><p class="para-28"><span class="font-37">pharmit is funded through R01GM108340 from the National Institute of General Medical Sciences. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institute of General Medical Sciences or the National Institutes of Health.</span></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="cont-60">
+			<div class="section-7">
+				<div class="cont-61">
+					<div class="colwrapper-16">
+						<div class="cont-62">
+							<div class="cont-63"><p class="para-29"><span class="font-38">&COPY; David Ryan Koes and the University of Pittsburgh, all rights reserved.</span></p></div>
+						</div>
+					</div>
+					<div class="colwrapper-17">
+						<div class="cont-64">
+							<div class="cont-65"><p class="para-30"><span class="font-39"><a href="privacy.html">privacy policy</a></span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/jquery-2.1.3.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+	</body>
+</html>

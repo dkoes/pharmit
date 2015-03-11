@@ -1,7 +1,7 @@
 
 /*! normalize.css v3.0.0 | MIT License | git.io/normalize */html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background:0 0}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}h1{font-size:2em;margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}img{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{-moz-box-sizing:content-box;box-sizing:content-box;height:0}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}button,input,optgroup,select,textarea{color:inherit;font:inherit;margin:0}button{overflow:visible}button,select{text-transform:none}button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}input{line-height:normal}input[type=checkbox],input[type=radio]{box-sizing:border-box;padding:0}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{height:auto}input[type=search]{-webkit-appearance:textfield;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box}input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none}fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}legend{border:0;padding:0}textarea{overflow:auto}optgroup{font-weight:700}table{border-collapse:collapse;border-spacing:0}td,th{padding:0}
 body {
-	font-size: 0px;
+	font-size: 12px;
 }
 div {
 	font-size: 0px;
@@ -50,12 +50,63 @@ a {
 .cont-2 {
 	display: inline-block;
 	vertical-align: top;
+	min-width: 541px;
+	width: 541px;
+	min-height: 150px;
+	position: relative;
+	margin-left: 410px;
+	margin-top: 0px;
+}
+.colwrapper {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 502px;
+	width: 502px;
+	min-height: 150px;
+	position: relative;
+	margin-left: 0px;
+	margin-top: 0px;
+	line-height: 0;
+}
+.cont-3 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 502px;
+	width: 502px;
+	min-height: 150px;
+	position: relative;
+	z-index: 3;
+	margin-left: 0px;
+	margin-top: 0px;
+	height: 150px;
+}
+.img {
+	position: absolute;
+	left: 27px;
+	width: 448px;
+	height: 150px;
+	top: 0;
+}
+.colwrapper-2 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 141px;
+	width: 141px;
+	min-height: 150px;
+	position: relative;
+	margin-left: 400px;
+	margin-top: -150px;
+	line-height: 0;
+}
+.cont-4 {
+	display: inline-block;
+	vertical-align: top;
 	min-width: 113px;
 	width: 113px;
 	min-height: 50px;
 	position: relative;
 	z-index: 4;
-	margin-left: 837px;
+	margin-left: 27px;
 	margin-top: 0px;
 	overflow: visible;
 }
@@ -76,18 +127,18 @@ a {
 	line-height: 32pt;
 	letter-spacing: normal;
 }
-.cont-3 {
+.cont-5 {
 	overflow: hidden;
 }
-.cont-4 {
+.cont-6 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 128px;
 	width: 128px;
 	min-height: 50px;
 	position: relative;
-	z-index: 5;
-	margin-left: 822px;
+	z-index: 6;
+	margin-left: 12px;
 	margin-top: 0px;
 	overflow: visible;
 }
@@ -108,18 +159,18 @@ a {
 	line-height: 29pt;
 	letter-spacing: normal;
 }
-.cont-5 {
+.cont-7 {
 	overflow: hidden;
 }
-.cont-6 {
+.cont-8 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 141px;
 	width: 141px;
 	min-height: 50px;
 	position: relative;
-	z-index: 7;
-	margin-left: 810px;
+	z-index: 8;
+	margin-left: 0px;
 	margin-top: 0px;
 	overflow: hidden;
 }
@@ -140,7 +191,7 @@ a {
 	line-height: 27pt;
 	letter-spacing: normal;
 }
-.cont-7 {
+.cont-9 {
 	overflow: visible;
 }
 .section-2 {
@@ -152,7 +203,7 @@ a {
 	margin-right: auto;
 	display: block;
 }
-.cont-8 {
+.cont-10 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 714px;
@@ -162,7 +213,7 @@ a {
 	margin-left: 4px;
 	margin-top: 0px;
 }
-.colwrapper {
+.colwrapper-3 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 714px;
@@ -173,14 +224,14 @@ a {
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-9 {
+.cont-11 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 714px;
 	width: 714px;
 	min-height: 164px;
 	position: relative;
-	z-index: 3;
+	z-index: 5;
 	margin-left: 0px;
 	margin-top: 0px;
 	overflow: hidden;
@@ -202,17 +253,17 @@ a {
 	line-height: 82pt;
 	letter-spacing: normal;
 }
-.cont-10 {
+.cont-12 {
 	overflow: visible;
 }
-.cont-11 {
+.cont-13 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 600px;
 	width: 600px;
 	min-height: 68px;
 	position: relative;
-	z-index: 6;
+	z-index: 7;
 	margin-left: 5px;
 	margin-top: -77px;
 	overflow: visible;
@@ -234,10 +285,10 @@ a {
 	line-height: 37pt;
 	letter-spacing: normal;
 }
-.cont-12 {
+.cont-14 {
 	overflow: hidden;
 }
-.cont-13 {
+.cont-15 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 20px;
@@ -251,7 +302,7 @@ a {
 	border: 0;
 	background-color: rgb(39,0,72);
 }
-.cont-14 {
+.cont-16 {
 	display: inline-block;
 	vertical-align: top;
 	width: 100%;
@@ -273,7 +324,7 @@ a {
 	margin-right: auto;
 	display: block;
 }
-.cont-15 {
+.cont-17 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 940px;
@@ -283,7 +334,7 @@ a {
 	margin-left: 10px;
 	margin-top: 0px;
 }
-.colwrapper-2 {
+.colwrapper-4 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 436px;
@@ -294,7 +345,7 @@ a {
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-16 {
+.cont-18 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 198px;
@@ -323,17 +374,17 @@ a {
 	line-height: 49pt;
 	letter-spacing: normal;
 }
-.cont-17 {
+.cont-19 {
 	overflow: visible;
 }
-.cont-18 {
+.cont-20 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 435px;
 	width: 435px;
 	min-height: 40px;
 	position: relative;
-	z-index: 13;
+	z-index: 14;
 	margin-left: 1px;
 	margin-top: -50px;
 	overflow: visible;
@@ -355,10 +406,10 @@ a {
 	line-height: 29pt;
 	letter-spacing: normal;
 }
-.cont-19 {
+.cont-21 {
 	overflow: hidden;
 }
-.colwrapper-3 {
+.colwrapper-5 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 435px;
@@ -369,7 +420,7 @@ a {
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-20 {
+.cont-22 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 198px;
@@ -398,17 +449,17 @@ a {
 	line-height: 49pt;
 	letter-spacing: normal;
 }
-.cont-21 {
+.cont-23 {
 	overflow: visible;
 }
-.cont-22 {
+.cont-24 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 435px;
 	width: 435px;
 	min-height: 40px;
 	position: relative;
-	z-index: 15;
+	z-index: 16;
 	margin-left: 0px;
 	margin-top: -50px;
 	overflow: visible;
@@ -430,20 +481,20 @@ a {
 	line-height: 29pt;
 	letter-spacing: normal;
 }
-.cont-23 {
+.cont-25 {
 	overflow: hidden;
 }
-.cont-24 {
+.cont-26 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 941px;
-	width: 941px;
+	min-width: 940px;
+	width: 940px;
 	min-height: 40px;
 	position: relative;
 	margin-left: 10px;
 	margin-top: 5px;
 }
-.colwrapper-4 {
+.colwrapper-6 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 433px;
@@ -454,7 +505,7 @@ a {
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-25 {
+.cont-27 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 433px;
@@ -483,28 +534,28 @@ a {
 	line-height: 29pt;
 	letter-spacing: normal;
 }
-.cont-26 {
+.cont-28 {
 	overflow: visible;
 }
-.colwrapper-5 {
+.colwrapper-7 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 433px;
 	width: 433px;
 	min-height: 40px;
 	position: relative;
-	margin-left: 75px;
+	margin-left: 74px;
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-27 {
+.cont-29 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 433px;
 	width: 433px;
 	min-height: 40px;
 	position: relative;
-	z-index: 14;
+	z-index: 13;
 	margin-left: 0px;
 	margin-top: 0px;
 	overflow: hidden;
@@ -521,25 +572,25 @@ a {
 	font-size: 21.0pt;
 	font-weight: 400;
 	font-style: normal;
-	text-decoration: underline;
+	text-decoration: none;
 	color: rgb(108,113,196);
 	line-height: 29pt;
 	letter-spacing: normal;
 }
-.cont-28 {
+.cont-30 {
 	overflow: visible;
 }
-.cont-29 {
+.cont-31 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 941px;
-	width: 941px;
-	min-height: 50px;
+	min-width: 940px;
+	width: 940px;
+	min-height: 45px;
 	position: relative;
 	margin-left: 10px;
 	margin-top: 0px;
 }
-.colwrapper-6 {
+.colwrapper-8 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 433px;
@@ -550,14 +601,14 @@ a {
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-30 {
+.cont-32 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 433px;
 	width: 433px;
 	min-height: 40px;
 	position: relative;
-	z-index: 16;
+	z-index: 15;
 	margin-left: 0px;
 	margin-top: 0px;
 	overflow: hidden;
@@ -579,30 +630,58 @@ a {
 	line-height: 29pt;
 	letter-spacing: normal;
 }
-.cont-31 {
+.cont-33 {
 	overflow: visible;
 }
-.colwrapper-7 {
+.colwrapper-9 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 433px;
-	width: 433px;
-	min-height: 40px;
+	min-width: 240px;
+	width: 240px;
+	min-height: 25px;
 	position: relative;
-	margin-left: 75px;
-	margin-top: 10px;
+	margin-left: 267px;
+	margin-top: 20px;
 	line-height: 0;
 }
-.cont-32 {
+.cont-34 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 433px;
-	width: 433px;
-	min-height: 40px;
+	min-width: 240px;
+	width: 240px;
+	min-height: 25px;
 	position: relative;
 	z-index: 17;
 	margin-left: 0px;
 	margin-top: 0px;
+}
+.input {
+	width: 240px;
+	height: 25px;
+	font-size: 9.0pt;
+	font-family: "Open Sans", sans-serif;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(0,0,0);
+	line-height: 11pt;
+	letter-spacing: normal;
+	text-indent: 0;
+	padding-top: 0pt;
+	margin-top: -0pt;
+	margin-bottom: 0pt;
+	text-align: left;
+}
+.cont-35 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 68px;
+	width: 68px;
+	min-height: 40px;
+	position: relative;
+	z-index: 18;
+	margin-left: 571px;
+	margin-top: -22px;
 	overflow: hidden;
 }
 .para-13 {
@@ -610,22 +689,22 @@ a {
 	padding-top: 0pt;
 	margin-top: 0pt;
 	margin-bottom: 0pt;
-	text-align: right;
+	text-align: left;
 }
 .font-13 {
 	font-family: "Open Sans", sans-serif;
-	font-size: 21.0pt;
+	font-size: 13.5pt;
 	font-weight: 400;
 	font-style: normal;
-	text-decoration: underline;
-	color: rgb(108,113,196);
-	line-height: 29pt;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 18pt;
 	letter-spacing: normal;
 }
-.cont-33 {
+.cont-36 {
 	overflow: visible;
 }
-.cont-34 {
+.cont-37 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 941px;
@@ -633,9 +712,9 @@ a {
 	min-height: 100px;
 	position: relative;
 	margin-left: 10px;
-	margin-top: -10px;
+	margin-top: -23px;
 }
-.colwrapper-8 {
+.colwrapper-10 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 400px;
@@ -646,7 +725,7 @@ a {
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-35 {
+.cont-38 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 400px;
@@ -654,31 +733,31 @@ a {
 	min-height: 100px;
 	height: 100px;
 	position: relative;
-	z-index: 18;
+	z-index: 19;
 	margin-left: 0px;
 	margin-top: 0px;
 	border: 0;
 	background-color: rgb(108,113,196);
 }
-.colwrapper-9 {
+.colwrapper-11 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 433px;
-	width: 433px;
+	min-width: 89px;
+	width: 89px;
 	min-height: 40px;
 	position: relative;
-	margin-left: 108px;
-	margin-top: 20px;
+	margin-left: 161px;
+	margin-top: 23px;
 	line-height: 0;
 }
-.cont-36 {
+.cont-39 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 433px;
-	width: 433px;
+	min-width: 89px;
+	width: 89px;
 	min-height: 40px;
 	position: relative;
-	z-index: 19;
+	z-index: 21;
 	margin-left: 0px;
 	margin-top: 0px;
 	overflow: hidden;
@@ -688,9 +767,81 @@ a {
 	padding-top: 0pt;
 	margin-top: 0pt;
 	margin-bottom: 0pt;
-	text-align: right;
+	text-align: left;
 }
 .font-14 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 18pt;
+	letter-spacing: normal;
+}
+.cont-40 {
+	overflow: visible;
+}
+.colwrapper-12 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 241px;
+	width: 241px;
+	min-height: 70px;
+	position: relative;
+	margin-left: 50px;
+	margin-top: 20px;
+	line-height: 0;
+}
+.cont-41 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 240px;
+	width: 240px;
+	min-height: 25px;
+	position: relative;
+	z-index: 20;
+	margin-left: 0px;
+	margin-top: 0px;
+}
+.input-2 {
+	width: 240px;
+	height: 25px;
+	font-size: 9.0pt;
+	font-family: "Open Sans", sans-serif;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(0,0,0);
+	line-height: 11pt;
+	letter-spacing: normal;
+	text-indent: 0;
+	padding-top: 0pt;
+	margin-top: -0pt;
+	margin-bottom: 0pt;
+	text-align: left;
+}
+.cont-42 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 213px;
+	width: 213px;
+	min-height: 40px;
+	position: relative;
+	z-index: 22;
+	margin-left: 28px;
+	margin-top: 5px;
+	overflow: hidden;
+}
+.para-15 {
+	text-indent: 0;
+	padding-top: 0pt;
+	margin-top: 0pt;
+	margin-bottom: 0pt;
+	text-align: right;
+}
+.font-15 {
+
 	font-family: "Open Sans", sans-serif;
 	font-size: 21.0pt;
 	font-weight: 400;
@@ -700,29 +851,63 @@ a {
 	line-height: 29pt;
 	letter-spacing: normal;
 }
-.cont-37 {
+.submit {
+	background: none;
+    border: none;
+    text-decoration: underline;
+	font-family: "Open Sans", sans-serif;
+	font-size: 21.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: underline;
+	color: rgb(108,113,196);
+	line-height: 29pt;
+	letter-spacing: normal;
+}
+.cont-43 {
 	overflow: visible;
 }
-.cont-38 {
+.cont-44 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 941px;
+	width: 941px;
+	min-height: 30px;
+	position: relative;
+	margin-left: 10px;
+	margin-top: 10px;
+}
+.colwrapper-13 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 433px;
 	width: 433px;
 	min-height: 30px;
 	position: relative;
-	z-index: 20;
-	margin-left: 10px;
-	margin-top: 10px;
+	margin-left: 0px;
+	margin-top: 0px;
+	line-height: 0;
+}
+.cont-45 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 433px;
+	width: 433px;
+	min-height: 30px;
+	position: relative;
+	z-index: 24;
+	margin-left: 0px;
+	margin-top: 0px;
 	overflow: hidden;
 }
-.para-15 {
+.para-16 {
 	text-indent: 0;
 	padding-top: 0pt;
 	margin-top: 0pt;
 	margin-bottom: 0pt;
 	text-align: left;
 }
-.font-15 {
+.font-16 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 15.0pt;
 	font-weight: 400;
@@ -732,17 +917,123 @@ a {
 	line-height: 20pt;
 	letter-spacing: normal;
 }
-.cont-39 {
+.cont-46 {
 	overflow: visible;
 }
-.cont-40 {
+.colwrapper-14 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 213px;
+	width: 213px;
+	min-height: 30px;
+	position: relative;
+	margin-left: 74px;
+	margin-top: 0px;
+	line-height: 0;
+}
+.cont-47 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 213px;
+	width: 213px;
+	min-height: 30px;
+	position: relative;
+	z-index: 23;
+	margin-left: 0px;
+	margin-top: 0px;
+	overflow: hidden;
+}
+.para-17 {
+	text-indent: 0;
+	padding-top: 0pt;
+	margin-top: 0pt;
+	margin-bottom: 0pt;
+	text-align: right;
+}
+.font-17 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 15.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: underline;
+	color: rgb(108,113,196);
+	line-height: 20pt;
+	letter-spacing: normal;
+}
+.font-18 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 15.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: underline;
+	color: rgb(108,113,196);
+	line-height: 20pt;
+	letter-spacing: normal;
+}
+.cont-48 {
+	overflow: visible;
+}
+.colwrapper-15 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 230px;
+	width: 230px;
+	min-height: 30px;
+	position: relative;
+	margin-left: 711px;
+	margin-top: -30px;
+	line-height: 0;
+}
+.cont-49 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 230px;
+	width: 230px;
+	min-height: 30px;
+	position: relative;
+	z-index: 33;
+	margin-left: 0px;
+	margin-top: 0px;
+	overflow: hidden;
+}
+.para-18 {
+	text-indent: 0;
+	padding-top: 0pt;
+	margin-top: 0pt;
+	margin-bottom: 0pt;
+	text-align: right;
+}
+.font-19 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 15.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: underline;
+	color: rgb(108,113,196);
+	line-height: 20pt;
+	letter-spacing: normal;
+}
+.font-20 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 15.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: underline;
+	color: rgb(108,113,196);
+	line-height: 20pt;
+	letter-spacing: normal;
+}
+.cont-50 {
+	overflow: visible;
+}
+.cont-51 {
 	display: inline-block;
 	vertical-align: top;
 	width: 100%;
 	min-width: 960px;
 	min-height: 200px;
 	position: relative;
-	z-index: 8;
+	z-index: 25;
 	margin-top: 25px;
 	border: 0;
 	background-color: rgb(255,255,255);
@@ -757,26 +1048,26 @@ a {
 	margin-right: auto;
 	display: block;
 }
-.cont-41 {
+.cont-52 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 940px;
 	width: 940px;
 	min-height: 175px;
 	position: relative;
-	z-index: 21;
+	z-index: 26;
 	margin-left: 8px;
 	margin-top: 0px;
 	overflow: visible;
 }
-.para-16 {
+.para-19 {
 	text-indent: 0;
 	padding-top: 6pt;
 	margin-top: 0pt;
 	margin-bottom: -6pt;
 	text-align: left;
 }
-.font-16 {
+.font-21 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 21.0pt;
 	font-weight: 400;
@@ -786,69 +1077,12 @@ a {
 	line-height: 40pt;
 	letter-spacing: normal;
 }
-.para-17 {
+.para-20 {
 	text-indent: 0;
 	padding-top: 4pt;
 	margin-top: 0pt;
 	margin-bottom: -4pt;
 	text-align: left;
-}
-.font-17 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
-	color: rgb(108,113,196);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
-.font-18 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
-	color: rgb(64,64,64);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
-.para-18 {
-	text-indent: 0;
-	padding-top: 4pt;
-	margin-top: 0pt;
-	margin-bottom: -4pt;
-	text-align: left;
-}
-.font-19 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
-	color: rgb(108,113,196);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
-.font-20 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
-	color: rgb(64,64,64);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
-.font-21 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
-	color: rgb(108,113,196);
-	line-height: 26pt;
-	letter-spacing: normal;
 }
 .font-22 {
 	font-family: "Open Sans", sans-serif;
@@ -856,16 +1090,9 @@ a {
 	font-weight: 400;
 	font-style: normal;
 	text-decoration: none;
-	color: rgb(64,64,64);
+	color: rgb(108,113,196);
 	line-height: 26pt;
 	letter-spacing: normal;
-}
-.para-19 {
-	text-indent: 0;
-	padding-top: 4pt;
-	margin-top: 0pt;
-	margin-bottom: -4pt;
-	text-align: left;
 }
 .font-23 {
 	font-family: "Open Sans", sans-serif;
@@ -873,63 +1100,8 @@ a {
 	font-weight: 400;
 	font-style: normal;
 	text-decoration: none;
-	color: rgb(108,113,196);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
-.cont-42 {
-	overflow: hidden;
-}
-.cont-43 {
-	display: inline-block;
-	vertical-align: top;
-	width: 100%;
-	min-width: 960px;
-	min-height: 200px;
-	height: 200px;
-	position: relative;
-	z-index: 22;
-	margin-top: 50px;
-	border: 0;
-	background-color: rgb(255,255,255);
-	box-shadow: 0px 2px 5px rgb(128,128,128);
-}
-.section-5 {
-	position: relative;
-	margin-top: -185px;
-	min-width: 960px;
-	width: 960px;
-	margin-left: auto;
-	margin-right: auto;
-	display: block;
-}
-.cont-44 {
-	display: inline-block;
-	vertical-align: top;
-	min-width: 940px;
-	width: 940px;
-	min-height: 200px;
-	position: relative;
-	z-index: 23;
-	margin-left: 10px;
-	margin-top: 0px;
-	overflow: visible;
-}
-.para-20 {
-	text-indent: 0;
-	padding-top: 6pt;
-	margin-top: 0pt;
-	margin-bottom: -6pt;
-	text-align: left;
-}
-.font-24 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 21.0pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
 	color: rgb(64,64,64);
-	line-height: 40pt;
+	line-height: 26pt;
 	letter-spacing: normal;
 }
 .para-21 {
@@ -939,7 +1111,7 @@ a {
 	margin-bottom: -4pt;
 	text-align: left;
 }
-.font-25 {
+.font-24 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 13.5pt;
 	font-weight: 400;
@@ -949,7 +1121,27 @@ a {
 	line-height: 26pt;
 	letter-spacing: normal;
 }
+.font-25 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
 .font-26 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(108,113,196);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+.font-27 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 13.5pt;
 	font-weight: 400;
@@ -966,98 +1158,62 @@ a {
 	margin-bottom: -4pt;
 	text-align: left;
 }
-.font-27 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
-	color: rgb(108,113,196);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
 .font-28 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 13.5pt;
 	font-weight: 400;
 	font-style: normal;
 	text-decoration: none;
-	color: rgb(64,64,64);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
-.para-23 {
-	text-indent: 0;
-	padding-top: 4pt;
-	margin-top: 0pt;
-	margin-bottom: -4pt;
-	text-align: left;
-}
-.font-29 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
 	color: rgb(108,113,196);
 	line-height: 26pt;
 	letter-spacing: normal;
 }
-.font-30 {
-	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
-	font-weight: 400;
-	font-style: normal;
-	text-decoration: none;
-	color: rgb(64,64,64);
-	line-height: 26pt;
-	letter-spacing: normal;
-}
-.cont-45 {
+.cont-53 {
 	overflow: hidden;
 }
-.cont-46 {
+.cont-54 {
 	display: inline-block;
 	vertical-align: top;
 	width: 100%;
 	min-width: 960px;
 	min-height: 200px;
+	height: 200px;
 	position: relative;
-	z-index: 24;
-	margin-top: 35px;
+	z-index: 27;
+	margin-top: 50px;
 	border: 0;
 	background-color: rgb(255,255,255);
 	box-shadow: 0px 2px 5px rgb(128,128,128);
 }
-.section-6 {
+.section-5 {
 	position: relative;
-	margin-top: 15px;
+	margin-top: -185px;
 	min-width: 960px;
 	width: 960px;
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
 }
-.cont-47 {
+.cont-55 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 940px;
 	width: 940px;
-	min-height: 175px;
+	min-height: 200px;
 	position: relative;
-	z-index: 25;
+	z-index: 28;
 	margin-left: 10px;
 	margin-top: 0px;
 	overflow: visible;
 }
-.para-24 {
+.para-23 {
 	text-indent: 0;
 	padding-top: 6pt;
 	margin-top: 0pt;
 	margin-bottom: -6pt;
 	text-align: left;
 }
-.font-31 {
+.font-29 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 21.0pt;
 	font-weight: 400;
@@ -1065,6 +1221,33 @@ a {
 	text-decoration: none;
 	color: rgb(64,64,64);
 	line-height: 40pt;
+	letter-spacing: normal;
+}
+.para-24 {
+	text-indent: 0;
+	padding-top: 4pt;
+	margin-top: 0pt;
+	margin-bottom: -4pt;
+	text-align: left;
+}
+.font-30 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(108,113,196);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+.font-31 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 26pt;
 	letter-spacing: normal;
 }
 .para-25 {
@@ -1080,21 +1263,129 @@ a {
 	font-weight: 400;
 	font-style: normal;
 	text-decoration: none;
+	color: rgb(108,113,196);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+.font-33 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
 	color: rgb(64,64,64);
 	line-height: 26pt;
 	letter-spacing: normal;
 }
-.cont-48 {
+.para-26 {
+	text-indent: 0;
+	padding-top: 4pt;
+	margin-top: 0pt;
+	margin-bottom: -4pt;
+	text-align: left;
+}
+.font-34 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(108,113,196);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+.font-35 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+.cont-56 {
 	overflow: hidden;
 }
-.cont-49 {
+.cont-57 {
+	display: inline-block;
+	vertical-align: top;
+	width: 100%;
+	min-width: 960px;
+	min-height: 200px;
+	position: relative;
+	z-index: 29;
+	margin-top: 35px;
+	border: 0;
+	background-color: rgb(255,255,255);
+	box-shadow: 0px 2px 5px rgb(128,128,128);
+}
+.section-6 {
+	position: relative;
+	margin-top: 15px;
+	min-width: 960px;
+	width: 960px;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+.cont-58 {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 940px;
+	width: 940px;
+	min-height: 175px;
+	position: relative;
+	z-index: 30;
+	margin-left: 10px;
+	margin-top: 0px;
+	overflow: visible;
+}
+.para-27 {
+	text-indent: 0;
+	padding-top: 6pt;
+	margin-top: 0pt;
+	margin-bottom: -6pt;
+	text-align: left;
+}
+.font-36 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 21.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 40pt;
+	letter-spacing: normal;
+}
+.para-28 {
+	text-indent: 0;
+	padding-top: 4pt;
+	margin-top: 0pt;
+	margin-bottom: -4pt;
+	text-align: left;
+}
+.font-37 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+.cont-59 {
+	overflow: hidden;
+}
+.cont-60 {
 	display: inline-block;
 	vertical-align: top;
 	width: 100%;
 	min-width: 960px;
 	min-height: 50px;
 	position: relative;
-	z-index: 26;
+	z-index: 31;
 	margin-top: 50px;
 	border: 0;
 	background-color: rgb(255,255,255);
@@ -1109,7 +1400,7 @@ a {
 	margin-right: auto;
 	display: block;
 }
-.cont-50 {
+.cont-61 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 941px;
@@ -1119,7 +1410,7 @@ a {
 	margin-left: 10px;
 	margin-top: 0px;
 }
-.colwrapper-10 {
+.colwrapper-16 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 856px;
@@ -1130,26 +1421,26 @@ a {
 	margin-top: 0px;
 	line-height: 0;
 }
-.cont-51 {
+.cont-62 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 856px;
 	width: 856px;
 	min-height: 45px;
 	position: relative;
-	z-index: 27;
+	z-index: 32;
 	margin-left: 0px;
 	margin-top: 0px;
 	overflow: visible;
 }
-.para-26 {
+.para-29 {
 	text-indent: 0;
 	padding-top: 4pt;
 	margin-top: 0pt;
 	margin-bottom: -4pt;
 	text-align: left;
 }
-.font-33 {
+.font-38 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 13.5pt;
 	font-weight: 400;
@@ -1159,10 +1450,10 @@ a {
 	line-height: 26pt;
 	letter-spacing: normal;
 }
-.cont-52 {
+.cont-63 {
 	overflow: hidden;
 }
-.colwrapper-11 {
+.colwrapper-17 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 129px;
@@ -1173,26 +1464,26 @@ a {
 	margin-top: -45px;
 	line-height: 0;
 }
-.cont-53 {
+.cont-64 {
 	display: inline-block;
 	vertical-align: top;
 	min-width: 129px;
 	width: 129px;
 	min-height: 45px;
 	position: relative;
-	z-index: 28;
+	z-index: 34;
 	margin-left: 0px;
 	margin-top: 0px;
 	overflow: visible;
 }
-.para-27 {
+.para-30 {
 	text-indent: 0;
 	padding-top: 4pt;
 	margin-top: 0pt;
 	margin-bottom: -4pt;
 	text-align: center;
 }
-.font-34 {
+.font-39 {
 	font-family: "Open Sans", sans-serif;
 	font-size: 13.5pt;
 	font-weight: 400;
@@ -1202,6 +1493,6 @@ a {
 	line-height: 26pt;
 	letter-spacing: normal;
 }
-.cont-54 {
+.cont-65 {
 	overflow: hidden;
 }
