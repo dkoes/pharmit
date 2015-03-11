@@ -32,21 +32,55 @@ def application(environ, start_response):
         os.mkdir(id)
         dir = os.path.abspath(id)
         
+        infile = ''
+        mols = ''
         #copy file into directory as input.[smi|sdf.gz]
         if file.filename.endswith('.sdf.gz'):
-            open(id+'/input.sdf.gz', 'wb').write(file.file.read())
+            infile = id+'/input.sdf.gz' 
+            mols = gzip.GzipFile(mode='r',fileobj=file.file).read()
         elif file.filename.endswith('.smi.gz'):
-            open(id+'/input.smi','w').write(gzip.GzipFile(mode='r',fileobj=file.file))
+            infile = id+'/input.smi'
+            mols = gzip.GzipFile(mode='r',fileobj=file.file).read()
         elif file.filename.endswith('.smi'): #store smis uncompressed
-            open(id + '/input.smi','w').write(file.file.read())
+            infile = id+'/input.smi'
+            mols = file.file.read()
         elif file.filename.endswith('.sdf'): #store sdfs compressed
-            gzip.open(id+'/input.sdf.gz','wb').write(file.file.read())
+            infile = id+'/input.sdf.gz'
+            mols = file.file.read()
         else:
             output = "Error\nUnsupported file format in file %s"%file.filename
-        #insert row in databases table
-        c = conn.cursor()
-        c.execute("REPLACE INTO `databases` (email, name, description, id, isprivate, status, message, directory) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                   (email, name, description, id, isprivate, "Pending", "Your submission is pending in the queue.",dir))
+        
+        if infile:
+            numconfs = 0
+            if infile.endswith('sdf.gz'):
+                numconfs = mols.count('$$$$\n')
+            else:
+                numconfs = mols.count('\n')*15 #magic number alert, estimate of average confs per mol
+            
+            if numconfs == 0:
+                output = "Error\nNo molecules found in provided file %s"%file.filename
+            else:        
+                #check counts
+                    
+                c = conn.cursor()
+                c.execute("SELECT maxprivateconfs, maxconfs FROM users WHERE email=%s",(email,))
+                row = c.fetchone()
+                
+                if isprivate and numconfs > row[0]:
+                    output = "Error\nToo many conformers (%d) for private database (max %d)" % (numconfs, row[0])
+                elif not isprivate and numconfs > row[1]:
+                    output = "Error\nToo many conformers (%d) for database (max %d)" % (numconfs, row[1])
+                else:
+                    #write out file
+                    if infile.endswith('.smi'):
+                        open(infile, 'w').write(mols)
+                    else:
+                        gzip.open(infile,'wb').write(mols)
+                    #insert row in databases table
+                    c = conn.cursor()
+                    c.execute("REPLACE INTO `databases` (email, name, description, id, isprivate, status, message, directory) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                           (email, name, description, id, isprivate, "Pending", "Your submission is pending in the queue.",dir))
+                    
     except:
         output = "Error\n"+str(sys.exc_info())
     status = '200 OK'
