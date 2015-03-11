@@ -8,11 +8,7 @@
 
 import sys, flup, MySQLdb, gzip, cgi, os,random,string
 
-def setError(conn, id, err):
-    #set the error state with a message in the database
-    c = conn.cursor()
-    c.execute("REPLACE INTO `databases` (status, message, id) VALUES('Error', %s, %s)", (err, id))
-    
+
 def application(environ, start_response):
     form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ, keep_blank_values=True)
     conn = MySQLdb.connect (host = "localhost",user = "pharmit",db="pharmit")
@@ -78,7 +74,7 @@ def application(environ, start_response):
                         gzip.open(infile,'wb').write(mols)
                     #insert row in databases table
                     c = conn.cursor()
-                    c.execute("REPLACE INTO `databases` (email, name, description, id, isprivate, status, message, directory) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                    c.execute("INSERT INTO `databases` (email, name, description, id, isprivate, status, message, directory) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
                            (email, name, description, id, isprivate, "Pending", "Your submission is pending in the queue.",dir))
                     
     except:

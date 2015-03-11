@@ -17,25 +17,14 @@ def getRMS(mol, c1,c2):
     (rms,trans) = Chem.GetAlignmentTransform(mol,mol,c1,c2)
     return rms
 
-def createconfs(uniqueid, smile, mol, dirpath, options):
+def createconfs(uniqueid, smile, mol, fname, options):
     maxconfs = options.maxconfs
     sample = int(options.sample*options.maxconfs)
     rmsdcut = options.rms
     energycut = options.energy
     cids = Chem.EmbedMultipleConfs(mol, sample,randomSeed=1301979)
     cenergy = []           
-    #setup directory
-    if options.subdirmod:
-        subdir = int(uniqueid/options.subdirmod)        
-        dirpath = '%s/%s' % (dirpath,subdir)
-        #make subdir if it doesn't exist already
-        if not os.path.exists(dirpath):
-            try:
-                os.makedirs(dirpath)
-            except OSError as e:
-                pass
-                
-    fname = '%s/%d.sdf.gz' % (dirpath,uniqueid)
+
     output = gzip.open(fname,'w') #overwrite
     sdwriter = Chem.SDWriter(output) 
     mol.SetProp("_Name",str(uniqueid)) #the id should be the name 
@@ -114,7 +103,9 @@ if __name__ == '__main__':
             help="file containing path prefixes for storing conformers", default="",metavar="FILE")
     parser.add_option("-v","--verbose", dest="verbose",action="store_true",default=False,
                   help="verbose output")
-    
+    parser.add_option("-n","--nonames", dest="nonames",action="store_true",default=False,
+                  help="do not store names of conformers")
+        
     (options, args) = parser.parse_args()
     if len(args) != 1:
         parser.error("Need input smiles")
@@ -142,7 +133,7 @@ if __name__ == '__main__':
     try:
         f = open(args[0])
     except IOError:
-        print "Could not read file",sys.argv[1]
+        sys.stderr.write("Could not read file %s" %sys.argv[1])
         sys.exit(-1)
         
     #setup multiprocessing queues
@@ -155,15 +146,20 @@ if __name__ == '__main__':
         multiprocessing.Process(target=dowork, args=(queue,)).start()
 
     if options.verbose:
-        print "Running with",numt,"threads"
+        sys.stderr.write("Running with",numt,"threads\n")
+    lineno = 0
     for line in f:
-    #read in the smiles
+        #read in the smiles
+        lineno += 1
         vals = line.split(None,1)
-        if len(vals) != 2:
-            #must have name 
-            print "Missing name of",vals[0]
+        missingname = False
+        if len(vals) == 0:
             continue
-        name = vals[1].strip()    
+        elif len(vals) == 1:
+            name = str(lineno)
+            missingname = True
+        else:
+            name = re.sub(r'\s+', '_', vals[1].strip()) #remove whitespace    
         #remove salts from compound
         cmpds = vals[0].split('.')
         smile = max(cmpds, key=len) #take largest component by smiles length
@@ -177,11 +173,11 @@ if __name__ == '__main__':
 				sys.stderr.write('%s too large\n' % name)
 				continue
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM structures WHERE smile = %s', (can,))
+            cursor.execute('SELECT sdfloc FROM structures WHERE smile = %s', (can,))
             #if smile is not in structures
             row = cursor.fetchone()
-            isnew = (row == None)
-            if isnew:
+            isnew = (row == None) or row[0] == None
+            if row == None:
                 #insert without sdfs to get unique id 
                 cursor.execute('INSERT INTO structures (smile,weight) VALUES(%s,%s) ', (can, Chem.CalcExactMolWt(mol)))
                 
@@ -190,22 +186,42 @@ if __name__ == '__main__':
             result = cursor.fetchone();
             uniqueid = result[0]
             
-            #we always update the name
-            cursor.execute('INSERT IGNORE INTO names (smile,name) VALUES(%s,%s)', (can,name))
+            #we always update the name unless otherwise specified
+            if not missingname and not options.nonames:
+                cursor.execute('INSERT IGNORE INTO names (smile,name) VALUES(%s,%s)', (can,name))
             conn.commit()
-            if options.verbose:
-                print uniqueid,can
+            
                             
             if isnew or options.replace:
+                #construct filename
+                #setup directory
+                dirpath = prefixes[whichprefix]
+                if options.subdirmod:
+                    subdir = int(uniqueid/options.subdirmod)        
+                    dirpath = '%s/%s' % (dirpath,subdir)
+                    #make subdir if it doesn't exist already
+                    if not os.path.exists(dirpath):
+                        try:
+                            os.makedirs(dirpath)
+                        except OSError as e:
+                            pass
+                            
+                fname = '%s/%d.sdf.gz' % (dirpath,uniqueid)
                 #create conformers and insert them
-                queue.put((uniqueid, can, mol, prefixes[whichprefix], options))
+                queue.put((uniqueid, can, mol, fname, options))
+                #update prefix to next dir
                 whichprefix = (whichprefix + 1) % len(prefixes)
-                
+            else: #not generating, need to get path to file
+                cursor.execute('SELECT sdfloc FROM structures WHERE id=%s',(uniqueid,))
+                fname = cursor.fetchone()[0]
+        
+            #output a "ligs" file for database generation
+            print fname,uniqueid,name
             
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
-            print e,smile,name, len(smile),"\n\n",traceback.print_exc()
+            sys.stderr.write("%s %s %s %d\n\n%s" %(e,smile,name, len(smile),traceback.print_exc()))
             
     
     #clear out queues
@@ -216,4 +232,3 @@ if __name__ == '__main__':
 
 
 
-#regardless, add name to names
