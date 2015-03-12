@@ -36,7 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using namespace std;
 
 #define SERVERTHREADS 16
-void pharmer_server(unsigned port,
+void pharmer_server(unsigned port, const vector<boost::filesystem::path>& prefixpaths,
 		boost::unordered_map<string, StripedSearchers>& databases,
 		const string& logdir, const string& minServer,unsigned minPort);
 
@@ -77,13 +77,32 @@ class WebQueryManager
 	typedef boost::unordered_map<unsigned, PharmerQuery*> QueryMap;
 	QueryMap queries;
 
+
 	typedef boost::unordered_map<string, StripedSearchers> DBMap;
-	DBMap databases;
+	DBMap databases; //standard
+	DBMap publicDatabases; //user supplied
+	DBMap privateDatabases;
+
+
+	vector<boost::filesystem::path> publicPrefixes;
+	vector<boost::filesystem::path> privatePrefixes;
+
+	Json::Value json;
+	Json::Value privatejson;
 
 	boost::mutex lock;
 public:
-	WebQueryManager(boost::unordered_map<string, StripedSearchers>& dbs): nextID(1), databases(dbs)
+	WebQueryManager(boost::unordered_map<string, StripedSearchers>& dbs,
+			const vector<boost::filesystem::path>& prefixes): nextID(1), databases(dbs)
 	{
+		//setup private and public prefixes, which should be subdirs of the
+		//standard library prefixes
+		for(unsigned i = 0, n = prefixes.size(); i < n; i++)
+		{
+			publicPrefixes.push_back(prefixes[i] / "Public");
+			privatePrefixes.push_back(prefixes[i] / "Private");
+		}
+		setupJSONInfo();
 	}
 
 	//add a query
@@ -94,6 +113,9 @@ public:
 	unsigned add(const Pharmas& pharma, Json::Value& data, const QueryParameters& qp,
 			unsigned oldqid, unsigned& totalMols, unsigned& totalConfs, string& msg);
 
+	//check public and private prefixes for new databases and load them
+	void addUserDirectories();
+
 	//return pointer to query qid (or null if not present)
 	//increments inUse on query, caller must decrement
 	WebQueryHandle get(unsigned qid);
@@ -103,7 +125,9 @@ public:
 	void getCounts(unsigned& active, unsigned& inactive, unsigned& defunct);
 	unsigned processedQueries() const { return nextID-1; }
 
-	Json::Value getJSONInfo();
+	void setupJSONInfo();
+	Json::Value getJSONInfo() { return json; }
+	Json::Value getSingleJSON(const string& id);
 };
 
 #endif /* PHARMITSERVER_PHARMERSERVER_H_ */

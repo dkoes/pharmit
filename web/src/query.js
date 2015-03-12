@@ -20,7 +20,7 @@ Pharmit.Query = (function() {
 	
 	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 	var pharmaGistRegEx = /@<TRIPOS>MOLECULE[^@]*?@<TRIPOS>ATOM\n(\s*\d+\s*(ACC|DON|CAT|ANI|HYD|AR).*)*\n@<TRIPOS>BOND\n/g;
-
+	var privatedialog = null;
 	var endsWith = function(str, suffix) {
 	    return str.indexOf(suffix, str.length - suffix.length) !== -1;
 	};
@@ -291,9 +291,10 @@ Pharmit.Query = (function() {
 		
 		
 		//create a split button from a list of vendors and prepend it to header
-		var createSearchButton = function(header,subsetinfo) {
+		var createSearchButton = function(header,dbinfo) {
+			var subsetinfo = dbinfo.standard;
 			var buttons = $('<div>').addClass('pharmit_searchdiv');
-			var run = $('<button name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
+			var run = $('<button id="pharmitsearchbutton" name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
 			var select = $('<button>Select subset to search</button>').appendTo(buttons).button({text: false, icons: {primary: "ui-icon-triangle-1-s"}});
 			select.tooltip().tooltip("disable"); //conflicts with menu
 			run.val(subsetinfo[0].subdir);
@@ -301,9 +302,10 @@ Pharmit.Query = (function() {
 			buttons.buttonset();
 			var ul = $('<ul>').appendTo($('body')).addClass('pharmit_floatmenu'); //can't be in query div because of overflow truncation
 			var lis = [];
-			for(var i = 0, n = subsetinfo.length; i < n; i++) {
-				var info = subsetinfo[i];
-				var display = info.name;
+			var i, info, display;
+			for(i = 0, n = subsetinfo.length; i < n; i++) {
+				info = subsetinfo[i];
+				display = info.name;
 				if(info.html) display = info.html; //optionally can provide html
 				lis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
 				lis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
@@ -317,6 +319,29 @@ Pharmit.Query = (function() {
 				}
 			}
 			ul.append(lis);
+			ul.append($('<li> </li>'));
+			var publicli = $('<li class="pharmit_contributed">Contributed Libraries</li>');
+			var publicul =  $('<ul>').appendTo(publicli);
+			var publiclis = [];
+			var publicinfo = dbinfo.public;
+			for(i = 0, n = publicinfo.length; i < n; i++) {
+				info = publicinfo[i];
+				display = info.name;
+				if(info.html) display = info.html; //optionally can provide html
+				publiclis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
+				publiclis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
+				publiclis[i] += '<span class="pharmit_subsettime">Created: '+info.updated+'</span>';
+				publiclis[i] += '</li>';
+			}
+			publicul.append(publiclis);
+			ul.append(publicli);
+			ul.append($('<li> </li>'));
+
+			$('<li class="pharmit_private">Access Private Library<li>').appendTo(ul).click(
+					function() {
+						privatedialog.dialog("open");
+					});
+			
 			ul.hide().menu().on('menuselect', function(event, ui) {
 				var info = subsetinfo[ui.item.val()];
 				run.button("option",'label',"Search "+info.name);
@@ -538,6 +563,38 @@ Pharmit.Query = (function() {
 		var savesession = $('<button>Save Session...</button>').appendTo(bottomloaders).button().click(saveSession);		
 		
 		viewer.setLeft(querydiv.width());
+
+		//setup private dialog
+		privatedialog = $('<div class="pharmit_private_dialog" title="Access Private Library">Enter your access code: </div>').appendTo(body);
+		$('<input type="text" id="privateid" class="pharmit_privatetext">').appendTo(privatedialog);
+		
+		privatedialog.dialog({
+			autoOpen: false,
+			height: 125,
+			width: 400,
+			modal: true,
+			buttons: {
+				"Submit": function() {
+					//get info from server
+					$.post(Pharmit.server, {cmd: "getsubsets", subset: $('#privateid').val()}, null, 'json').done(function(ret) {
+						if(ret.error) {
+							alert(ret.error);
+						}
+						else {
+							var run = $('#pharmitsearchbutton');
+							run.button("option",'label',"Search "+ret.name);
+							run.val(ret.subdir);
+						}
+					}).fail(function() {
+						alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
+					});
+					privatedialog.dialog( "close" );
+				},
+				Cancel: function() {
+					privatedialog.dialog( "close" );
+				}
+			},
+		});
 
 	}
 

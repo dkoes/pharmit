@@ -83,6 +83,15 @@ inline vector<string> glob(const std::string& pat){
 //get the keys for each database from the database json file
 void loadFromPrefixes(vector<filesystem::path>& prefixes, unordered_map<string, StripedSearchers >& databases)
 {
+	unordered_map<string, StripedSearchers > blank;
+	loadNewFromPrefixes(prefixes, databases, blank);
+}
+
+//only load databases that don't already have keys in olddatabases
+void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
+		unordered_map<string, StripedSearchers >& databases,
+		const unordered_map<string, StripedSearchers >& olddatabases)
+{
 	assert(prefixes.size() > 0);
 	filesystem::path jsons = prefixes[0] / "*" / "dbinfo.json";
 	vector<string> infos = glob(jsons.c_str());
@@ -98,31 +107,29 @@ void loadFromPrefixes(vector<filesystem::path>& prefixes, unordered_map<string, 
 		ifstream info(infos[i].c_str());
 		if(!reader.parse(info, json)) {
 			cerr << "Error reading database info " << infos[i] << "\n";
-			exit(-1);
+			continue;
 		}
 		if(!json.isMember("subdir")) {
-			cerr << "Missing key from database info " << infos[i] << "\n";
-			exit(-1);
+			cerr << "Missing subdir int database info " << infos[i] << "\n";
+			continue;
 		}
 		string specified = json["subdir"].asString();
 
 		if(specified != name.string())
 		{
-			cout << "Ignoring " << name << "\n";
+			cerr << "Ignoring " << name << "\n";
 			continue;
 		}
-		else
+		else if(olddatabases.count(specified) == 0)
 		{
-			cout << "Loading " << name << "\n";
-		}
+			vector<filesystem::path> dbpaths(prefixes.size());
+			for(unsigned p = 0, np = prefixes.size(); p < np; p++)
+			{
+				filesystem::path dir = prefixes[p] / name;
+				dbpaths[p] = dir;
+			}
 
-		vector<filesystem::path> dbpaths(prefixes.size());
-		for(unsigned p = 0, np = prefixes.size(); p < np; p++)
-		{
-			filesystem::path dir = prefixes[p] / name;
-			dbpaths[p] = dir;
+			loadDatabases(dbpaths, databases[specified]);
 		}
-
-		loadDatabases(dbpaths, databases[specified]);
 	}
 }

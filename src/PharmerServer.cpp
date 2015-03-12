@@ -57,7 +57,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/date_time.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <boost/assign/list_of.hpp>
-
+#include <csignal>
 #include "pharmerdb.h"
 #include "pharmarec.h"
 #include "queryparsers.h"
@@ -67,6 +67,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <vector>
 #include <cstdio>
 #include "PharmerServerCommands.h"
+#include "dbloader.h"
 
 using namespace std;
 using namespace cgicc;
@@ -175,8 +176,22 @@ static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Co
 }
 
 
+static WebQueryManager *queriesptr = NULL;
+void signalhandler(int sig)
+{
+  if (sig == SIGUSR1 && queriesptr != NULL)
+  {
+	  //look for new directories
+	  queriesptr->addUserDirectories();
+  }
+}
+
+
+
+
+
 //start up a server, assumes databases are segregrated by molweight
-void pharmer_server(unsigned port,
+void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 		boost::unordered_map<string, StripedSearchers >& databases,
 		const string& logdir, const string& minServer, unsigned minPort)
 {
@@ -205,7 +220,8 @@ void pharmer_server(unsigned port,
 	}
 	setlinebuf(LOG);
 
-	WebQueryManager queries(databases);
+	WebQueryManager queries(databases, prefixpaths);
+	queriesptr = &queries; //for signal handler
 
 	FCGX_Init();
 
@@ -252,6 +268,11 @@ void pharmer_server(unsigned port,
 		fflush(LOG);
 	}
 
+	//load user libraries after startup
+	queries.addUserDirectories();
+
+	signal(SIGUSR1, signalhandler);
+
 	while(true)
 	{
 		this_thread::sleep(posix_time::time_duration(0,3,0,0));
@@ -270,6 +291,25 @@ void pharmer_server(unsigned port,
 }
 
 
+void WebQueryManager::addUserDirectories()
+{
+	DBMap newpublic;
+	loadNewFromPrefixes(publicPrefixes, newpublic, publicDatabases);
+
+	DBMap newprivate;
+	loadNewFromPrefixes(privatePrefixes, newprivate, privateDatabases);
+
+	if(newpublic.size() > 0 || newprivate.size() > 0)
+	{
+		//maps aren't thread-safe so protect
+		unique_lock<mutex>(lock);
+
+		publicDatabases.insert(newpublic.begin(), newpublic.end());
+		privateDatabases.insert(newprivate.begin(), newprivate.end());
+		setupJSONInfo();
+	}
+
+}
 
 //add a query
 //first parse the text and return 0 if invalid
@@ -294,20 +334,35 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	//identify databases to search
 	vector< boost::shared_ptr<PharmerDatabaseSearcher> > dbs;
 	unsigned numslices = 1;
+	StripedSearchers *searchers = NULL;
 	if(databases.count(qp.subset))
 	{
-		dbs = databases[qp.subset].stripes;
-		numslices = dbs.size(); //how many threads we should run
-		totalMols = databases[qp.subset].totalMols;
-		totalConfs = databases[qp.subset].totalConfs;
+		searchers = &databases[qp.subset];
 	}
 	else
 	{
-		msg = "Unknown subset.";
-		return 0;
+		unique_lock<mutex> L(lock); //public/private database may change underneath us
+		if(publicDatabases.count(qp.subset))
+		{
+			searchers = &publicDatabases[qp.subset];
+		}
+		else if(privateDatabases.count(qp.subset))
+		{
+			searchers = &privateDatabases[qp.subset];
+		}
+		else
+		{
+			msg = "Unknown subset.";
+			return 0;
+		}
 	}
 
-	unique_lock<mutex>(lock);
+	dbs = searchers->stripes;
+	numslices = dbs.size(); //how many threads we should run
+	totalMols = searchers->totalMols;
+	totalConfs = searchers->totalConfs;
+
+	unique_lock<mutex> L(lock);
 
 	if (oldqid > 0 && queries.count(oldqid) > 0)
 	{
@@ -332,8 +387,8 @@ static bool jsonInfoSorter(const Json::Value& a, const Json::Value& b)
 	return a["name"] < b["name"];
 }
 
-//return json of the dbinfos, sorted
-Json::Value WebQueryManager::getJSONInfo()
+//se json info to describe databases
+void WebQueryManager::setupJSONInfo()
 {
 	vector<Json::Value> jsons;
 	BOOST_FOREACH(DBMap::value_type i, databases )
@@ -344,13 +399,64 @@ Json::Value WebQueryManager::getJSONInfo()
 	sort(jsons.begin(), jsons.end(), jsonInfoSorter);
 
 	Json::Value ret;
-	ret.resize(jsons.size());
+	ret["standard"].resize(jsons.size());
 	for(unsigned i = 0, n = jsons.size(); i < n; i++)
 	{
-		ret[i] = jsons[i];
+		ret["standard"][i] = jsons[i];
 	}
+
+	//public databases
+	jsons.clear();
+	BOOST_FOREACH(DBMap::value_type i, publicDatabases )
+	{
+		jsons.push_back(i.second.getJSON());
+	}
+
+	sort(jsons.begin(), jsons.end(), jsonInfoSorter);
+
+	ret["public"].resize(jsons.size());
+	for(unsigned i = 0, n = jsons.size(); i < n; i++)
+	{
+		ret["public"][i] = jsons[i];
+	}
+
+	json = ret;
+
+	//private should not get sent back
+	jsons.clear();
+	BOOST_FOREACH(DBMap::value_type i, privateDatabases )
+	{
+		jsons.push_back(i.second.getJSON());
+	}
+
+	sort(jsons.begin(), jsons.end(), jsonInfoSorter);
+
+	Json::Value priv;
+	priv.resize(jsons.size());
+	for(unsigned i = 0, n = jsons.size(); i < n; i++)
+	{
+		priv[i] = jsons[i];
+	}
+	privatejson = priv;
+}
+
+//return the json dbinfo for the specified db
+//this is primarily used for private databases
+Json::Value WebQueryManager::getSingleJSON(const string& id)
+{
+	if(privateDatabases.count(id))
+		return privateDatabases[id].getJSON();
+	if(databases.count(id))
+		return databases[id].getJSON();
+	if(publicDatabases.count(id))
+		return publicDatabases[id].getJSON();
+
+	//otherwise error
+	Json::Value ret;
+	ret["error"] = "Invalid access code";
 	return ret;
 }
+
 
 WebQueryHandle WebQueryManager::get(unsigned qid)
 {

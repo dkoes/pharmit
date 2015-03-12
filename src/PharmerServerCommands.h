@@ -179,7 +179,7 @@ public:
 	}
 };
 
-//return subset info
+//return subset info, if a specific subset is provided, just provide its info (even if private)
 class GetSubsets: public Command
 {
 	WebQueryManager& queries;
@@ -192,8 +192,18 @@ public:
 	{
 		IO << HTTPPlainHeader();
 		Json::FastWriter writer;
-		Json::Value info = queries.getJSONInfo();
-		IO << writer.write(info);
+
+		if(!cgiTagExists(CGI, "subset"))
+		{
+			Json::Value info = queries.getJSONInfo();
+			IO << writer.write(info);
+		}
+		else
+		{
+			string id = cgiGetString(CGI, "subset");
+			Json::Value info = queries.getSingleJSON(id);
+			IO << writer.write(info);
+		}
 	}
 };
 

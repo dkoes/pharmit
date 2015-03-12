@@ -20,4 +20,7 @@ void loadDatabases(vector<boost::filesystem::path>& dbpaths, StripedSearchers& d
 //populated databases using prefixes
 void loadFromPrefixes(vector<boost::filesystem::path>& prefixes, boost::unordered_map<string, StripedSearchers >& databases);
 
+void loadNewFromPrefixes(vector<boost::filesystem::path>& prefixes,
+		boost::unordered_map<string, StripedSearchers >& databases,
+		const boost::unordered_map<string, StripedSearchers >& olddatabases);
 #endif /* DBLOADER_H_ */

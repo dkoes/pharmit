@@ -793,6 +793,7 @@ int main(int argc, char *argv[])
 	}
 	else if (Cmd == "server")
 	{
+		vector<filesystem::path> prefixpaths;
 		unordered_map<string, StripedSearchers > databases;
 
                 //total hack time - fcgi uses select which can't
@@ -823,28 +824,29 @@ int main(int argc, char *argv[])
 		{
 			//use prefixes
 			ifstream prefixes(Prefixes.c_str());
-			vector<filesystem::path> dbpaths;
 			string line;
 			while(getline(prefixes, line))
 			{
 				if(filesystem::exists(line))
-					dbpaths.push_back(filesystem::path(line));
+				{
+					prefixpaths.push_back(filesystem::path(line));
+				}
 				else
 					cerr << line << " does not exist\n";
 			}
-			if(dbpaths.size() == 0)
+			if(prefixpaths.size() == 0)
 			{
 				cerr << "No valid prefixes\n";
 				exit(-1);
 			}
-			loadFromPrefixes(dbpaths, databases);
+			loadFromPrefixes(prefixpaths, databases);
 		}
 		//now free reserved fds
 		for(unsigned i = 0; i < MAXRESERVEDFD; i++)
 		{
 				close(reservedFD[i]);
 		}
-		pharmer_server(Port, databases, LogDir, MinServer, MinPort);
+		pharmer_server(Port, prefixpaths, databases, LogDir, MinServer, MinPort);
 	}
 	else
 	{
