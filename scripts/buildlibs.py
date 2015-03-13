@@ -4,18 +4,20 @@
 
 #Needs to be able to call createconfs.py and pharmitserver 
 
-import time, sys, os, MySQLdb, subprocess, json, psutil, signal
-from rdkit import Chem
+import time, sys, os, MySQLdb, subprocess, json, psutil, signal, gzip
+from rdkit.Chem import AllChem as Chem
 from optparse import OptionParser
 
 #set an error message for the library specified by row
 def setError(conn, which, msg):
     conn.ping(True)
-    conn.query("UPDATE `databases` SET status=%s, message=%s WHERE id = %s",("Error", msg, which))
+    c = conn.cursor()
+    c.execute("UPDATE `databases` SET status=%s, message=%s WHERE id = %s",("Error", msg, which))
 
 def setStatus(conn, which, status, msg):
     conn.ping(True)
-    conn.query("UPDATE `databases` SET status=%s, message=%s WHERE id = %s",(status, msg, which))
+    c = conn.cursor()
+    c.execute("UPDATE `databases` SET status=%s, message=%s WHERE id = %s",(status, msg, which))
 
 #send a signal to any running pharmitserver processes indicating that they should reload database info
 def reset_server():
@@ -30,6 +32,8 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
     whichprefix = -1
     lastsmi = ''
     fname = False
+    confconn = MySQLdb.connect (host = "localhost",user = "pharmit",db="conformers")
+
     try:
         ligout = open("ligs.in", 'w')        
         infile = gzip.open('input.sdf.gz')
@@ -46,7 +50,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
                         continue
                     molcnt += 1
                     #get/assign a unique id
-                    cursor = conn.cursor()
+                    cursor = confconn.cursor()
                     cursor.execute('SELECT id FROM structures WHERE smile = %s', (can,))
                     row = cursor.fetchone()
                     if row == None:
@@ -80,6 +84,9 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
                 
                         
             except: #catch rdkit issues
+                raise
+                print sys.exc_info()
+
                 continue
         
         if fname:
@@ -87,27 +94,32 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
             out.close()
         return True
     except:
+        raise
         print sys.exc_info()
         return False;
             
             
-def make_libraries(conn, dbprefixes,row):
+def make_libraries(conn, dbprefixfile,row):
       #create database info - assumes current directory has in.ligs in it
     which = row['id']
-    row['fromuser'] = True #indicate this is a contributed library
+    #make dbinfo from database row
+    dbinfo = dict()
+    for (k,v) in row.iteritems():
+        dbinfo[k] = str(v)
+    dbinfo['fromuser'] = True #indicate this is a contributed library
     if int(row['isprivate']):
-        row['subdir'] = 'Private/%s' % which
+        dbinfo['subdir'] = 'Private/%s' % which
     else:
-        row['subdir'] = 'Public/%s' % which
+        dbinfo['subdir'] = 'Public/%s' % which
     jsonfile = "dbinfo.json"
     f = open(jsonfile,'w')
-    f.write(json.dumps(row,indent=4))
+    f.write(json.dumps(dbinfo,indent=4))
     f.close()
     #build libraries
-    ret = subprocess.call("%s dbcreateserverdir -ligs %s -prefixes %s -dbinfo %s > pharmit.out" %(options.pharmit, "in.ligs", dbprefixes, jsonfile))
+    ret = subprocess.call("%s dbcreateserverdir -ligs %s -prefixes %s -dbinfo %s > pharmit.out" %(options.pharmit, "in.ligs", dbprefixfile, jsonfile))
     if ret != 0:
         setError(conn,which, "Problem generating databases")
-        continue
+        return
     
     reset_server()
     conn.ping(True)
@@ -129,16 +141,19 @@ if __name__ == '__main__':
     parser.add_option('--createconfs', dest="createconfs", action="store", 
             help="createconfs.py script for generating conformers", default="createconfs.py",metavar="FILE")
         
-    cprefixes = os.path.abspath(options.confprefixfile)
-    if not cprefixes or not os.path.isfile(cprefixes):
+    (options, args) = parser.parse_args()
+
+    cprefixfile = os.path.abspath(options.confprefixfile)
+    if not cprefixfile or not os.path.isfile(cprefixfile):
         print "Require prefix file for storing structures"
         sys.exit(-1)
+    cprefixes = open(cprefixfile).read().splitlines()
         
-    dbprefixes = os.path.abspath(options.dbprefixfile)
-    if not dbprefixes or not os.path.isfile(dbprefixes):
+    dbprefixfile = os.path.abspath(options.dbprefixfile)
+    if not dbprefixfile or not os.path.isfile(dbprefixfile):
         print "Require prefix file for storing databases"
         sys.exit(-1)        
-        
+    
     #look for pending libraries
     while True:
         try:
@@ -153,11 +168,12 @@ if __name__ == '__main__':
                 if not os.path.isdir(dir):
                     setError(conn, which, "Problem reading input directory")
                 if os.path.exists(dir+"/input.sdf.gz"): #sdf
+                    os.chdir(dir)
                     setStatus(conn, which, "GenConf","Processing conformers")
                     if not create_sdf_ligs(conn, which, cprefixes):
                         setError(conn, which, "Problem reading sdf file")
                         continue
-                    make_libraries(conn, dbprefixes, row)
+                    make_libraries(conn, dbprefixfile, row)
                 elif os.path.exists(dir+"/input.smi"):
                     os.chdir(dir)
                     setStatus(conn, which, "GenConf","Generating conformers")
@@ -166,7 +182,7 @@ if __name__ == '__main__':
                         setError(conn,which,"Problem generating conformers")
                         continue
                     
-                    make_libraries(conn, dbprefixes, row)                    
+                    make_libraries(conn, dbprefixfile, row)                    
 
                 else:
                     setError(conn, row, "Problem reading input files")
@@ -176,5 +192,6 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             raise
         except:
+            raise
             print sys.exc_info()
             time.sleep(1)
