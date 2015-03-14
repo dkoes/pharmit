@@ -100,4 +100,4 @@ if __name__ == '__main__':
     
     (options, args) = parser.parse_args()
     os.chdir(options.userdir)
-    WSGIServer(application, bindAddress=('localhost',options.port)).run()
+    WSGIServer(application, bindAddress=('',options.port)).run()
