@@ -28,7 +28,7 @@ def reset_server():
 def create_sdf_ligs(conn, libraryid, cprefixes):
     #break up molecules into individual files, assume molecules with the same name
     #are the same conformer; return true if successfull
-    #outputs an in.ligs file in the current directory
+    #outputs an ligs.in file in the current directory
     whichprefix = -1
     lastsmi = ''
     fname = False
@@ -84,9 +84,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
                 
                         
             except: #catch rdkit issues
-                raise
                 print sys.exc_info()
-
                 continue
         
         if fname:
@@ -94,14 +92,15 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
             out.close()
         return True
     except:
-        raise
         print sys.exc_info()
         return False;
             
             
 def make_libraries(conn, dbprefixfile,row):
-      #create database info - assumes current directory has in.ligs in it
+      #create database info - assumes current directory has ligs.in in it
     which = row['id']
+    setStatus(conn, which, "MakeLib","Creating search index")
+
     #make dbinfo from database row
     dbinfo = dict()
     for (k,v) in row.iteritems():
@@ -116,14 +115,21 @@ def make_libraries(conn, dbprefixfile,row):
     f.write(json.dumps(dbinfo,indent=4))
     f.close()
     #build libraries
-    ret = subprocess.call("%s dbcreateserverdir -ligs %s -prefixes %s -dbinfo %s > pharmit.out" %(options.pharmit, "in.ligs", dbprefixfile, jsonfile))
+    print os.getcwd()
+    cmd = "%s dbcreateserverdir -ligs %s -prefixes %s -dbinfo %s > pharmit.out" %(options.pharmit, "ligs.in", dbprefixfile, jsonfile)
+    print cmd
+    ret = subprocess.call(cmd,shell=True)
     if ret != 0:
         setError(conn,which, "Problem generating databases")
         return
     
     reset_server()
+    #get number of molecules
+    dbinfofile = '%s/%s/dbinfo.json' % (open(dbprefixfile).readline().strip(), dbinfo['subdir'])
+    info = json.loads(open(dbinfofile).read())
     conn.ping(True)
-    conn.query("UPDATE `databases` SET status=%s, message=%s, completed=NOW() WHERE id = %s",("Completed", "Library successfully created", which))        
+    c = conn.cursor()
+    c.execute("UPDATE `databases` SET status=%s, message=%s, completed=NOW(), nummols=%s, numconfs=%s WHERE id = %s",("Completed", "Library successfully created", info["numMols"],info["numConfs"],which))        
     
     
     
@@ -177,7 +183,10 @@ if __name__ == '__main__':
                 elif os.path.exists(dir+"/input.smi"):
                     os.chdir(dir)
                     setStatus(conn, which, "GenConf","Generating conformers")
-                    ret = subprocess.call("%s --nonames --prefixes %s input.smi > in.ligs" % (options.createconfs,cprefixes),shell=True)
+                    cmd = "%s --nonames --prefixes %s input.smi > ligs.in 2> conf.err" % (options.createconfs,cprefixfile)
+                    print os.getcwd()
+                    print cmd
+                    ret = subprocess.call(cmd,shell=True)
                     if ret != 0:
                         setError(conn,which,"Problem generating conformers")
                         continue
@@ -192,6 +201,5 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             raise
         except:
-            raise
             print sys.exc_info()
             time.sleep(1)

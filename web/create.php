@@ -1,12 +1,7 @@
 <?php
 session_start();
 
-//configuration variable
-$db_user = "pharmit";
-#$db_host = "192.168.6.4";
-$db_host = "localhost";
-$db_name = "pharmit";
-$debug = 1;
+require("lib.php");
 
 
 //this is called for errors that should not be exposed to the user
@@ -135,39 +130,16 @@ else if(isset($_REQUEST["op"])) //operation
 			//check user/pass
 			$user = $_POST['user'];
 			$pass = $_POST['pass'];
-
-			$db = new mysqli($db_host, $db_user, "", $db_name);
-			if (mysqli_connect_errno())
-				fail('MySQL connect', mysqli_connect_error());
-
-			($stmt = $db->prepare('SELECT password, maxprivatedbs, maxprivateconfs, maxdbs, maxconfs FROM users WHERE email=?')) ||
-				fail('Prepare users', $db->error);
-			$stmt->bind_param('s', $user) || fail('Bind user', $db->error);
-			$stmt->execute();
-			$stmt->store_result();
-			if($stmt->num_rows > 0) { //have valid username
-				$correctpass = "";
-				$maxprivatedbs = 0; $maxprivateconfs = 0; $maxdbs = 0; $maxconfs = 0;
-				$stmt->bind_result($correctpass, $maxprivatedbs, $maxprivateconfs, $maxdbs, $maxconfs) || fail('Bind pass', $db->error);
-				if(!$stmt->fetch() && $db->errno)
-					fail('Fetch pass', $db->error);
-
-				if($correctpass == $pass) {
-					session_regenerate_id();
-					$_SESSION['userid']  = $user;
-					$_SESSION['maxprivatedbs'] = $maxprivatedbs;
-					$_SESSION['maxprivateconfs'] = $maxprivateconfs;
-					$_SESSION['maxconfs'] = $maxconfs;
-					session_write_close();
-					header("location:create.php");
-					exit();
-
-				} else {
-					failhtml("Invalid password for $user");
-				}
-
-			} else {
-				failhtml("Invalid user");
+			
+			$err = login($user,$pass);
+			if($err) 
+			{
+				failhtml($err);
+			}
+			else 
+			{
+				header("location:create.php");
+				exit();
 			}
 			break;
 		case "guestlogin":
@@ -264,7 +236,7 @@ else if(isset($_REQUEST["op"])) //operation
 						if($isprivate) echo("<b>Private</b><br>");
 						else echo("Public<br>");
 
-						if($status == "Finished") {
+						if($status == "Completed") {
 							echo("Completed: $completed<br>");
 							echo(number_format($numconfs) . " conformers of ".number_format($nummols));
 						}

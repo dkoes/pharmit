@@ -170,7 +170,7 @@ if __name__ == '__main__':
             #to be sure, canonicalize smile (with iso)
             can = Chem.MolToSmiles(mol,isomericSmiles=True)
             if len(can) > 250: #way too big
-				sys.stderr.write('%s too large\n' % name)
+				sys.stderr.write('%s is too large. Omitted.\n' % name)
 				continue
             cursor = conn.cursor()
             cursor.execute('SELECT sdfloc FROM structures WHERE smile = %s', (can,))

@@ -34,10 +34,10 @@ def application(environ, start_response):
         if file.filename.endswith('.sdf.gz'):
             infile = id+'/input.sdf.gz' 
             mols = gzip.GzipFile(mode='r',fileobj=file.file).read()
-        elif file.filename.endswith('.smi.gz'):
+        elif file.filename.endswith('.smi.gz') or file.filename.endswith('.can.gz') or file.filename.endswith('.ism.gz'):
             infile = id+'/input.smi'
             mols = gzip.GzipFile(mode='r',fileobj=file.file).read()
-        elif file.filename.endswith('.smi'): #store smis uncompressed
+        elif file.filename.endswith('.smi') or file.filename.endswith('.can') or file.filename.endswith('.ism'): #store smis uncompressed
             infile = id+'/input.smi'
             mols = file.file.read()
         elif file.filename.endswith('.sdf'): #store sdfs compressed

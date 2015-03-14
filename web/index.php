@@ -53,6 +53,19 @@
 						<div class="cont-20">
 							<div class="cont-21"><p class="para-7"><span class="font-7">virtual screening in your browser</span></p></div>
 						</div>
+						
+						<div class="colwrapper-13">
+						
+							<div class="cont-27">
+								<div class="cont-28"><p class="para-10"><span class="font-10"><a href="search.html">enter pharmit search</a></span></p></div>
+							</div>
+							<div class="cont-32">
+								<div class="cont-33"><p class="para-12"><span class="font-10"><a href="">search by PDB</a></span></p></div>
+							</div>												
+							<div class="cont-45">
+								<div class="cont-46"><p class="para-16"><span class="font-16"><a href="examples.html">search examples</a></span></p></div>
+							</div>
+						</div>						
 					</div>
 					<div class="colwrapper-5">
 						<div class="cont-22">
@@ -60,75 +73,66 @@
 						</div>
 						<div class="cont-24">
 							<div class="cont-25"><p class="para-9"><span class="font-9">submit your own chemical libraries</span></p></div>
-						</div>
-					</div>
-				</div>
-				<div class="loginbox">
-					<form action="create.php" method="POST">
-					<input type="hidden" name="op" value="login">
-					<div class="cont-26">
-						<div class="colwrapper-6">
-							<div class="cont-27">
-								<div class="cont-28"><p class="para-10"><span class="font-10"><a href="search.html">enter pharmit search</a></span></p></div>
-							</div>
-						</div>
-						<div class="colwrapper-7">
-							<div class="cont-29">
-								<div class="cont-30"><p class="para-11"><span class="font-11">log in to manage libraries</span></p></div>
-							</div>
-						</div>
-					</div>
-					<div class="cont-31">
-						<div class="colwrapper-8">
-							<div class="cont-32">
-								<div class="cont-33"><p class="para-12"><span class="font-10"><a href="">search by PDB</a></span></p></div>
-							</div>
-						</div>
-						<div class="colwrapper-9">
-							<div class="cont-34">
-								<input type="text" autofocus="autofocus" name="user" class="input-2" autocomplete="on">
-							</div>
-						</div>
-					</div>
-					<div class="cont-35">
-						<div class="cont-36"><p class="para-13"><span class="font-13">email:</span></p></div>
-					</div>
-					<div class="cont-37">
-						<div class="colwrapper-10">
-						</div>
-						<div class="colwrapper-11">
-							<div class="cont-39">
-								<div class="cont-40"><p class="para-14"><span class="font-14">password:</span></p></div>
-							</div>
-						</div>
-						<div class="colwrapper-12">
-							<div class="cont-41">
-								<input type="password" name="pass" class="input-2">
-							</div>
-							<div class="cont-42">
-								<div class="cont-43">
-								<p class="para-15"><span class="submit"><input type="submit" value="log in" class="submit" /></span></p></div>
-							</div>
-						</div>
-					</div>
+				
+<?php 
+session_start();
+require("lib.php");
+
+if(isset($_REQUEST["logout"]))
+{
+	session_unset();
+	session_destroy();
+}
+
+$gotinvalid = ""; //set to something if there was a botched login
+if(isset($_REQUEST["login"]))
+{
+	$user = $_POST['user'];
+	$pass = $_POST['pass'];
+		
+	$gotinvalid = login($user,$pass);
+}	
+
+if (!isset($_SESSION['userid']))
+{
+?>
+			<div class="loginbox">
+					<form action="index.php" method="POST">
+					<input type="hidden" name="login" value="1">
+					<div class="cont-30"><p class="para-11"><span class="font-11">log in to manage libraries</span></p></div>
+					<div class="cont-36"><p class="para-13"><span class="font-13">email:</span></p></div>					
+					<input type="text" autofocus="autofocus" name="user" class="input-2" autocomplete="on">						
+					<div class="cont-40"><p class="para-14"><span class="font-14">password:</span></p></div>					
+					<input type="password" name="pass" class="input-2">
+					<?php  echo("<div class=loginerror>$gotinvalid</div>"); ?>
+					<p class="para-15"><span class="submit"><input type="submit" value="log in" class="submit" /></span></p></div>							
 					</form>
-				</div>
-				<div class="cont-44">
-					<div class="colwrapper-13">
-						<div class="cont-45">
-							<div class="cont-46"><p class="para-16"><span class="font-16"><a href="examples.html">search examples</a></span></p></div>
-						</div>
-					</div>
-					<div class="colwrapper-14">
-						<div class="cont-47">
-							<div class="cont-48"><p class="para-17"><span class="font-17"><a href="create.php?op=register">register new account</a></span></p></div>
-						</div>
-					</div>
-					<div class="colwrapper-15">
-						<div class="cont-49">
-							<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php?op=guestlogin">log in as guest</a></span></p></div>
-						</div>
-					</div>
+			</div>
+			<div class="cont-48"><p class="para-17"><span class="font-17"><a href="create.php?op=register">register new account</a></span></p></div>
+			<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php?op=guestlogin">log in as guest</a></span></p></div>
+								
+<?php 
+}
+else 
+{ //logged in
+	$user = $_SESSION['userid'];
+	$name = getname($user);
+	$cnts = getcnts($user);
+	$inprogress = $cnts["inprogress"];
+	$completed = $cnts["completed"];
+	echo("<div class=stuff>Welcome $name! You have $completed libraries available to search and $inprogress libraries under construction.</div>");
+?>
+
+				
+			<div class="cont-48"><p class="para-17"><span class="font-17"><a href="index.php?logout=1">log out</a></span></p></div>
+			<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php?op=status">manage</a></span></p></div>
+			<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php">create</a></span></p></div>
+			
+<?php 
+}
+?>
+		</div>		
+		</div>
 				</div>
 			</div>
 		</div>
@@ -157,7 +161,7 @@
 				<div class="cont-61">
 					<div class="colwrapper-16">
 						<div class="cont-62">
-							<div class="cont-63"><p class="para-29"><span class="font-38">&COPY; David Ryan Koes and the University of Pittsburgh, all rights reserved.</span></p></div>
+							<div class="cont-63"><p class="para-29"><span class="font-38">&COPY; David Ryan Koes, Charles Yuan and the University of Pittsburgh.</span></p></div>
 						</div>
 					</div>
 					<div class="colwrapper-17">

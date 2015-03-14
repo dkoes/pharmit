@@ -1442,7 +1442,7 @@ a {
 }
 .font-38 {
 	font-family: "Open Sans", sans-serif;
-	font-size: 13.5pt;
+	font-size: 10pt;
 	font-weight: 400;
 	font-style: normal;
 	text-decoration: none;
@@ -1495,4 +1495,17 @@ a {
 }
 .cont-65 {
 	overflow: hidden;
+}
+
+.loginerror {
+	font-size: 12px;
+	color: red;
+	line-height: 14px;
+}
+
+.stuff {
+	/* dkoes - class for stuff I want to see.. shoudl be restyled */
+	font-size: 12px;
+	line-height: 14px;
+	color: black;
 }
