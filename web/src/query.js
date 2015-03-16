@@ -328,7 +328,8 @@ Pharmit.Query = (function() {
 				info = publicinfo[i];
 				display = info.name;
 				if(info.html) display = info.html; //optionally can provide html
-				publiclis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
+				publiclis[i] = '<li value='+subsetinfo.length+' class="pharmit_subsetmenu">'+display+'<br>';
+				subsetinfo.push(info);
 				publiclis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
 				publiclis[i] += '<span class="pharmit_subsettime">Created: '+info.updated+'</span>';
 				publiclis[i] += '</li>';
@@ -337,7 +338,7 @@ Pharmit.Query = (function() {
 			ul.append(publicli);
 			ul.append($('<li> </li>'));
 
-			$('<li class="pharmit_private">Access Private Library<li>').appendTo(ul).click(
+			$('<li class="pharmit_private">Access Private Library</li>').appendTo(ul).click(
 					function() {
 						privatedialog.dialog("open");
 					});
@@ -411,6 +412,7 @@ Pharmit.Query = (function() {
 		$.post(Pharmit.server, {cmd: "getsubsets"}, null, 'json').done(function(ret) {
 			createSearchButton(header, ret);
 		}).fail(function() {
+			createSearchButton(header, {standard: [{name: "Error"}], public:[]});
 			alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
 		});
 		
