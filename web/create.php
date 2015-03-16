@@ -253,7 +253,7 @@ else if(isset($_REQUEST["op"])) //operation
 					}
 				}
 				else { //no databases
-					echo("You have not created any databases.");
+					echo('<span class="font-4">You have not created any databases.</span><br>');
 				}
 				echo('<br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>');
 				footerhtml();
