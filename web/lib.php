@@ -10,6 +10,10 @@ $debug = 1;
 
 //subroutines shared by create.php and index.php
 
+function fail($msg)
+{
+	error_log($msg);
+}
 
 //aunthenticate user, return error message, or empty string on success
 function login($user, $pass)

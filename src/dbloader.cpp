@@ -7,7 +7,7 @@
 
 #include "dbloader.h"
 #include <glob.h>
-
+#include <boost/algorithm/string/predicate.hpp>
 using namespace boost;
 using namespace std;
 
@@ -115,7 +115,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 		}
 		string specified = json["subdir"].asString();
 
-		if(specified != name.string())
+		if(!algorithm::ends_with(specified, name.string())) //ignore prefixed subdirs like Public
 		{
 			cerr << "Ignoring " << name << "\n";
 			continue;
