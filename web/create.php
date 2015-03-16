@@ -231,7 +231,7 @@ else if(isset($_REQUEST["op"])) //operation
 					$stmt->bind_result($name, $id, $isprivate, $status, $message, $submitted, $completed, $nummols, $numconfs);
 					while($stmt->fetch()) {
 						echo("<div class='librarystatus'>");
-						if ($name="") {
+						if (isset($name) || $name=" " || $name="") {
 							echo("no name");
 						}
 						else {
