@@ -255,7 +255,7 @@ else if(isset($_REQUEST["op"])) //operation
 				else { //no databases
 					echo("You have not created any databases.");
 				}
-
+				echo('<br><br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>');
 				footerhtml();
 			}
 
@@ -356,10 +356,6 @@ else //logged in, let's create some databases
     </form>
    	<br><br>
    	<div id="createstatus" class="font-4"></div>
-	<br>
-    <form action="create.php" method="POST">
-    <input type="hidden" name="op" value="logout">
-    <input type="submit" value="log out" class="submit-2">
     <br><br><br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>
 	</div>
 
