@@ -1508,14 +1508,24 @@ a {
 }
 
 .loginerror {
-	font-size: 12px;
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	margin-top: 5pt;
 	color: red;
 	line-height: 14px;
 }
 
 .stuff {
 	/* dkoes - class for stuff I want to see.. shoudl be restyled */
-	font-size: 12px;
-	line-height: 14px;
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	text-indent: 0;
+	padding-top: 0pt;
+	margin-top: 10pt;
+	margin-left: 100pt;
+	margin-bottom: 10pt;
+	text-align: right;
+	line-height: 15pt;
 	color: black;
 }
+
