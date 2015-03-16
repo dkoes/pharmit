@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 //configuration variables
 $db_user = "pharmit";
@@ -10,10 +10,10 @@ $debug = 1;
 
 //subroutines shared by create.php and index.php
 
-function fail($msg)
-{
-	error_log($msg);
-}
+//function fail($msg)
+//{
+//	error_log($msg);
+//}
 
 //aunthenticate user, return error message, or empty string on success
 function login($user, $pass)
@@ -22,7 +22,7 @@ function login($user, $pass)
 	$db = new mysqli($db_host, $db_user, "", $db_name);
 	if (mysqli_connect_errno())
 		fail('MySQL connect', mysqli_connect_error());
-	
+
 	($stmt = $db->prepare('SELECT password, maxprivatedbs, maxprivateconfs, maxdbs, maxconfs FROM users WHERE email=?')) ||
 	fail('Prepare users', $db->error);
 	$stmt->bind_param('s', $user) || fail('Bind user', $db->error);
@@ -34,7 +34,7 @@ function login($user, $pass)
 		$stmt->bind_result($correctpass, $maxprivatedbs, $maxprivateconfs, $maxdbs, $maxconfs) || fail('Bind pass', $db->error);
 		if(!$stmt->fetch() && $db->errno)
 			fail('Fetch pass', $db->error);
-	
+
 		if($correctpass == $pass) {
 			session_regenerate_id();
 			$_SESSION['userid']  = $user;
@@ -46,7 +46,7 @@ function login($user, $pass)
 		} else {
 			return "Invalid password for $user";
 		}
-	
+
 	} else {
 		return "Invalid user";
 	}
@@ -73,7 +73,7 @@ function getname($user)
 
 		return $name;
 
-	} 
+	}
 	return "$user";
 }
 
@@ -109,9 +109,9 @@ function getcnts($user)
 		$stmt->bind_result($completed) || fail('Bind cnt', $db->error);
 		if(!$stmt->fetch() && $db->errno)
 			fail('Fetch cnt', $db->error);
-	
+
 	}
-	
+
 	return ["inprogress" => $inprogress,
 			"completed" => $completed
 	];
