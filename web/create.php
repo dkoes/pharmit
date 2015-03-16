@@ -230,14 +230,14 @@ else if(isset($_REQUEST["op"])) //operation
 
 					$stmt->bind_result($name, $id, $isprivate, $status, $message, $submitted, $completed, $nummols, $numconfs);
 					while($stmt->fetch()) {
-						echo("<div class='librarystatus'>");
+						echo('<div class="librarystatus"><span class="font-4">');
 						if (isset($name) || $name=" " || $name="") {
-							echo("no name");
+							echo("guest");
 						}
 						else {
 							echo("$name");
 						}
-						echo(" : $message <br>");
+						echo(": $message <br>");
 						echo("Submitted: $submitted <br>");
 						if($isprivate) echo("<b>Private</b><br>");
 						else echo("Public<br>");
@@ -247,7 +247,7 @@ else if(isset($_REQUEST["op"])) //operation
 							echo(number_format($numconfs) . " conformers of ".number_format($nummols));
 						}
 
-						echo("</div><br>");
+						echo("</div></span><br>");
 					}
 				}
 				else { //no databases
