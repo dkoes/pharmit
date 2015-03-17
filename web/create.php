@@ -115,13 +115,13 @@ else if(isset($_REQUEST["op"])) //operation
 			//check user/pass
 			$user = $_POST['user'];
 			$pass = $_POST['pass'];
-			
+
 			$err = login($user,$pass);
-			if($err) 
+			if($err)
 			{
 				failhtml($err);
 			}
-			else 
+			else
 			{
 				header("location:create.php");
 				exit();
@@ -210,14 +210,16 @@ else if(isset($_REQUEST["op"])) //operation
 			else {
 				$stmt->store_result();
 				headerhtml();
+				echo('<span class="font-3">manage</span><br>
+					<span class="font">view the status of your submitted jobs</span><br><br>');
 
 				if($stmt->num_rows > 0) { //have already created databases
 
 					$stmt->bind_result($name, $id, $isprivate, $status, $message, $submitted, $completed, $nummols, $numconfs);
 					while($stmt->fetch()) {
-						echo("<div class='librarystatus'>");
-						echo("$name : $message <br>");
-						echo("Submitted: $submitted <br>");
+						echo('<div class="librarystatus"><span class="font-4">');
+						echo("<b>$name</b>");
+						echo(": $message <br>");
 						if($isprivate) {
 							echo("<b>Private</b><br>");
 							echo("Access code: $id<br>");
@@ -225,19 +227,20 @@ else if(isset($_REQUEST["op"])) //operation
 						else {
 							echo("Public<br>");
 						}
+						echo("Submitted: $submitted <br>");
 
 						if($status == "Completed") {
 							echo("Completed: $completed<br>");
-							echo(number_format($numconfs) . " conformers of ".number_format($nummols));
+							echo(number_format($numconfs) . " conformers of ".number_format($nummols)." compounds");
 						}
 
-						echo("</div>");
+						echo("</div></span><br>");
 					}
 				}
 				else { //no databases
-					echo("You have not created any databases.");
+					echo('<span class="font-4">You have not created any databases.</span><br>');
 				}
-
+				echo('<br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>');
 				footerhtml();
 			}
 
@@ -303,14 +306,14 @@ else //logged in, let's create some databases
   	if(!$stmt->fetch() && $db->errno)
   		fail('Fetch cnt', $db->error);
   }
-    
+
 
   	echo('<span class="font-2">access:</span><br>');
   	if($numprivate > 0) echo("You have $numprivate private databases already built or pending.<br>");
-  	 
+
  	echo('<select name="access">');
   	echo('   <option value="public">public - anyone will be able to view and search</option>');
-  	 
+
  	$disabled = "";
 	if($numprivate >= $_SESSION["maxprivatedbs"]) $disabled = " disabled ";
   	echo("<option $disabled value='private'>private - a passcode will be required to view and search</option>");
@@ -323,7 +326,7 @@ else //logged in, let's create some databases
     present in the SDF file will be used.  Conformers of the same molecule are assumed to have the same name.  If the SMILES molecules
     do not have a name, they will be assigned an ID corresponding to the line number.</span><br>
     <br> <!-- want these messages to depend on the select above -->
-<?php 
+<?php
   echo('<span class="font-4">');
   echo("You may create a maximum of ". number_format($_SESSION["maxprivatedbs"])." private databases each with at most ". number_format($_SESSION["maxprivateconfs"]) . " conformers.<br>");
   echo("Public databases may have as many as ".number_format($_SESSION["maxconfs"]) . " conformers. ");
@@ -338,11 +341,7 @@ else //logged in, let's create some databases
     </form>
    	<br><br>
    	<div id="createstatus" class="font-4"></div>
-	<br>
-    <form action="create.php" method="POST">
-    <input type="hidden" name="op" value="logout">
-    <input type="submit" value="log out" class="submit-2">
-    <br><br><br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>
+    <br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>
 	</div>
 
 
@@ -350,7 +349,7 @@ else //logged in, let's create some databases
 	<script>
 	var form = $('#createform').submit(function(event) {
 		$('#createstatus').text("");
-		
+
 		if(!$('#dbname').val()) {
 			console.log($('dbname').val());
 			$('#createstatus').text("Missing database name.");
@@ -360,7 +359,7 @@ else //logged in, let's create some databases
 			$('#createstatus').text("Missing database description.");
 			return false;
 		}
-		
+
 		$('#createstatus').text("Uploading...");
 		$('#submitbutton').prop('disabled',true);
 		var fd = new FormData($('#createform').get(0));
@@ -374,7 +373,7 @@ else //logged in, let's create some databases
 			type: 'POST'
 		}).done(function(ret) {
 			$('#submitbutton').prop('disabled',false);
-			
+
 			//this returns the unique id for referencing this library
 			if(ret.lastIndexOf("Error",0) === 0) {
 				$('#createstatus').html(ret);
