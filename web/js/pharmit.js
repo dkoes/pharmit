@@ -2046,7 +2046,7 @@ Pharmit.Query = (function() {
 			buttons: {
 				"Submit": function() {
 					//get info from server
-					$.post(Pharmit.server, {cmd: "getsubsets", subset: $('#privateid').val()}, null, 'json').done(function(ret) {
+					$.post(Pharmit.server, {cmd: "getsubsets", subset: "Private/"+$('#privateid').val()}, null, 'json').done(function(ret) {
 						if(ret.error) {
 							alert(ret.error);
 						}
