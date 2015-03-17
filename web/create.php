@@ -287,7 +287,7 @@ else //logged in, let's create some databases
   if (mysqli_connect_errno())
   	fail('MySQL connect', mysqli_connect_error());
   
-  ($stmt = $db->prepare('SELECT COUNT(*) FROM `databases` WHERE email=? AND status != \'Error\'')) ||
+  ($stmt = $db->prepare('SELECT COUNT(*) FROM `databases` WHERE email=? AND status != \'Error\' AND isprivate != 0')) ||
   	fail('Prepare databases', $db->error);
   $stmt->bind_param('s', $_SESSION["userid"]);
   $stmt->execute();
