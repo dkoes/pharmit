@@ -3,21 +3,6 @@ session_start();
 
 require("lib.php");
 
-
-//this is called for errors that should not be exposed to the user
-function fail($pub, $pvt = '')
-{
-	global $debug;
-	$msg = $pub;
-	if ($debug && $pvt !== '')
-		$msg .= ": $pvt";
-
-	//dkoes - try to only fail before generating html header..
-	header('Content-Type: text/plain');
-
-	exit("An error occurred ($msg).\n");
-}
-
 //produce html with error message
 function failhtml($msg)
 {
