@@ -158,7 +158,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
     margin-left: 0.5em;
 }
 
-
+.pharmit_privatetext {
+	width: 20em;
+}
 .pharmit_searchdiv {
 	text-align: center;
 	padding: 0.5em;
