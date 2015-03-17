@@ -125,11 +125,16 @@ def make_libraries(conn, dbprefixfile,row):
     
     reset_server()
     #get number of molecules
-    dbinfofile = '%s/%s/dbinfo.json' % (open(dbprefixfile).readline().strip(), dbinfo['subdir'])
-    info = json.loads(open(dbinfofile).read())
+    numConfs = 0
+    numMols = 0
+    for line in open(dbprefixfile):        
+        dbinfofile = '%s/%s/dbinfo.json' % (line.strip(), dbinfo['subdir'])
+        info = json.loads(open(dbinfofile).read())
+        numConfs += info["numConfs"]
+        numMols += info["numMols"]
     conn.ping(True)
     c = conn.cursor()
-    c.execute("UPDATE `databases` SET status=%s, message=%s, completed=NOW(), nummols=%s, numconfs=%s WHERE id = %s",("Completed", "Library successfully created", info["numMols"],info["numConfs"],which))        
+    c.execute("UPDATE `databases` SET status=%s, message=%s, completed=NOW(), nummols=%s, numconfs=%s WHERE id = %s",("Completed", "Library successfully created", numMols, numConfs ,which))        
     
     
     

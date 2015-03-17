@@ -63,7 +63,7 @@ function headerhtml()
 <meta http-equiv="content-script-type" content="text/javascript">
 <meta http-equiv="content-style-type" content="text/css">
 <link rel="stylesheet" type="text/css" href="create.css" />
-<script src="js/jquery-2.1.3.js" ></script>
+<script src="js/jquery-2.1.3.js" defer ></script>
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 
 <title>pharmit library creation</title>
@@ -218,8 +218,13 @@ else if(isset($_REQUEST["op"])) //operation
 						echo("<div class='librarystatus'>");
 						echo("$name : $message <br>");
 						echo("Submitted: $submitted <br>");
-						if($isprivate) echo("<b>Private</b><br>");
-						else echo("Public<br>");
+						if($isprivate) {
+							echo("<b>Private</b><br>");
+							echo("Access code: $id<br>");
+						}
+						else {
+							echo("Public<br>");
+						}
 
 						if($status == "Completed") {
 							echo("Completed: $completed<br>");
