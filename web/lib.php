@@ -13,6 +13,7 @@ $debug = 1;
 function fail($msg)
 {
 	error_log($msg);
+	exit(1);
 }
 
 //aunthenticate user, return error message, or empty string on success
