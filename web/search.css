@@ -84,6 +84,10 @@ body {
 	position: absolute;
 }
 
+.pharmit_contributed ul {
+	width: 22em;
+}
+
 .pharmit_subsetmenu, .pharmit_subsetmenu.ui-state-focus {
 	font-size: 110%;
 	font-weight: bold;
