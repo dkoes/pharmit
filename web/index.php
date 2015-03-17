@@ -6,6 +6,9 @@
 		<title>pharmit: interactive exploration of chemical space</title>
 		<link rel="stylesheet" type="text/css" href="index.css">
 		<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+		<script src="js/jquery-2.1.3.js" defer ></script>
+		<script src="js/numeral.js" async></script>
+		<script type="text/javascript" src="js/index.js" defer></script>
 	</head>
 	<body id="body">
 		<div class="cont">
@@ -139,16 +142,28 @@ else
 		<div class="cont-51">
 			<div class="section-4">
 				<div class="cont-52">
-					<div class="cont-53"><p class="para-19"><span class="font-21">pharmit currently has</span></p><p class="para-20"><span class="font-22">N built-in libraries</span><span class="font-23"> containing</span></p><p class="para-21"><span class="font-24">xxxxxxxxxx conformations</span><span class="font-25"> of </span><span class="font-26">xxxxxxxxxx distinct compounds</span><span class="font-27"> and</span></p><p class="para-22"><span class="font-28">M publicly accessible user-contributed libraries.</span></p></div>
+					<div class="cont-53"><p class="para-19">
+					<span class="font-21">pharmit currently has</span></p><p class="para-20">
+					<span class="font-22"><span id="numberstandard"></span> built-in libraries </span>
+					<span class="font-23"> containing </span>
+					<span class="font-24"><span id="numconfsstandard"></span> conformations</span><span class="font-25"> of </span>
+					<span class="font-26"><span id="nummolsstandard"></span> compounds</span><span class="font-27"> and</span></p>
+					<p class="para-22"><span class="font-28"><span id="numberpublic"></span> publicly accessible user-contributed libraries </span>
+					<span class="font-23"> containing</span></p><p class="para-21">
+					<span class="font-24"><span id="numconfspublic"></span> conformations</span><span class="font-25"> of </span>
+					<span class="font-26"><span id="nummolspublic"></span> compounds</span><span class="font-27">.</span></p>
+					</p></div>
 				</div>
 			</div>
 		</div>
+<!--  TODO: implement dynamic updates
 		<div class="cont-54"></div>
 		<div class="section-5">
 			<div class="cont-55">
 				<div class="cont-56"><p class="para-23"><span class="font-29">updates</span></p><p class="para-24"><span class="font-30">Month Day, Year</span><span class="font-31"> PubChem rebuilt with xxxxxx total compounds</span></p><p class="para-25"><span class="font-32">Month Day, Year</span><span class="font-33"> Kinase Inhibitors created by Some Guy</span></p><p class="para-26"><span class="font-34">Month Day, Year</span><span class="font-35"> MolPort updated</span></p></div>
 			</div>
 		</div>
+-->
 		<div class="cont-57">
 			<div class="section-6">
 				<div class="cont-58">
@@ -172,7 +187,5 @@ else
 				</div>
 			</div>
 		</div>
-		<script type="text/javascript" src="js/jquery-2.1.3.js"></script>
-		<script type="text/javascript" src="js/index.js"></script>
 	</body>
 </html>
