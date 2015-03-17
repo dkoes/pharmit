@@ -38,6 +38,8 @@ body {
 .pharmit_query {
 	float: left;
 	border-right: 1px solid #dddddd;
+    display:-webkit-flex;   
+    -webkit-flex-direction: column;
   	display:flex;
   	flex-direction: column;
 }
@@ -114,6 +116,7 @@ body {
 }
 
 .pharmit_query .pharmit_querybody {
+	-webkit-flex: 1;
 	flex:1;
     overflow-y: auto;
     width: 100%;
@@ -500,6 +503,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 	}
 
 .pharmit_rescontainer {
+	display: -webkit-flex;
+	-webkit-flex-direction: column;
   	display:flex;
   	flex-direction: column;
   	width: 100%;
@@ -514,6 +519,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 }
 
 .pharmit_resbody {
+	-webkit-flex:1;
 	flex:1;
     overflow-y: auto;
     overflow-x: hidden;
