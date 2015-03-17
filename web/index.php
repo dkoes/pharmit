@@ -56,19 +56,19 @@
 						<div class="cont-20">
 							<div class="cont-21"><p class="para-7"><span class="font-7">virtual screening in your browser</span></p></div>
 						</div>
-						
+
 						<div class="colwrapper-13">
-						
+
 							<div class="cont-27">
 								<div class="cont-28"><p class="para-10"><span class="font-10"><a href="search.html">enter pharmit search</a></span></p></div>
 							</div>
 							<div class="cont-32">
 								<div class="cont-33"><p class="para-12"><span class="font-10"><a href="">search by PDB</a></span></p></div>
-							</div>												
+							</div>
 							<div class="cont-45">
 								<div class="cont-46"><p class="para-16"><span class="font-16"><a href="examples.html">search examples</a></span></p></div>
 							</div>
-						</div>						
+						</div>
 					</div>
 					<div class="colwrapper-5">
 						<div class="cont-22">
@@ -76,8 +76,8 @@
 						</div>
 						<div class="cont-24">
 							<div class="cont-25"><p class="para-9"><span class="font-9">submit your own chemical libraries</span></p></div>
-				
-<?php 
+
+<?php
 session_start();
 require("lib.php");
 
@@ -92,9 +92,9 @@ if(isset($_REQUEST["login"]))
 {
 	$user = $_POST['user'];
 	$pass = $_POST['pass'];
-		
+
 	$gotinvalid = login($user,$pass);
-}	
+}
 
 if (!isset($_SESSION['userid']))
 {
@@ -103,20 +103,20 @@ if (!isset($_SESSION['userid']))
 					<form action="index.php" method="POST">
 					<input type="hidden" name="login" value="1">
 					<div class="cont-30"><p class="para-11"><span class="font-11">log in to manage libraries</span></p></div>
-					<div class="cont-36"><p class="para-13"><span class="font-13">email:</span></p></div>					
-					<input type="text" autofocus="autofocus" name="user" class="input-2" autocomplete="on">						
-					<div class="cont-40"><p class="para-14"><span class="font-14">password:</span></p></div>					
+					<div class="cont-36"><p class="para-13"><span class="font-13">email:</span></p></div>
+					<input type="text" autofocus="autofocus" name="user" class="input-2" autocomplete="on">
+					<div class="cont-40"><p class="para-14"><span class="font-14">password:</span></p></div>
 					<input type="password" name="pass" class="input-2">
 					<?php  echo("<div class=loginerror>$gotinvalid</div>"); ?>
-					<p class="para-15"><span class="submit"><input type="submit" value="log in" class="submit" /></span></p></div>							
+					<p class="para-15"><span class="submit"><input type="submit" value="log in" class="submit" /></span></p></div>
 					</form>
 			</div>
 			<div class="cont-48"><p class="para-17"><span class="font-17"><a href="create.php?op=register">register new account</a></span></p></div>
 			<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php?op=guestlogin">log in as guest</a></span></p></div>
-								
-<?php 
+
+<?php
 }
-else 
+else
 { //logged in
 	$user = $_SESSION['userid'];
 	$name = getname($user);
@@ -126,15 +126,15 @@ else
 	echo("<div class=stuff>Welcome $name! You have $completed libraries available to search and $inprogress libraries under construction.</div>");
 ?>
 
-				
+
 			<div class="cont-48"><p class="para-17"><span class="font-17"><a href="index.php?logout=1">log out</a></span></p></div>
 			<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php?op=status">manage</a></span></p></div>
 			<div class="cont-50"><p class="para-18"><span class="font-19"><a href="create.php">create</a></span></p></div>
-			
-<?php 
+
+<?php
 }
 ?>
-		</div>		
+		</div>
 		</div>
 				</div>
 			</div>
