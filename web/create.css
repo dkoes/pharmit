@@ -94,6 +94,7 @@ a:visited {
     letter-spacing: normal;
     position: absolute;
     left: 0px;
+    cursor: pointer;
 }
 .submit-2 {
     background: none;

@@ -51,7 +51,7 @@ def application(environ, start_response):
             if infile.endswith('sdf.gz'):
                 numconfs = mols.count('$$$$\n')
             else:
-                numconfs = mols.count('\n')*15 #magic number alert, estimate of average confs per mol
+                numconfs = mols.count('\n')*10 #magic number alert, estimate of average confs per mol
             
             if numconfs == 0:
                 output = "Error\nNo molecules found in provided file %s"%file.filename

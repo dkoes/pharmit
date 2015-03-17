@@ -3,7 +3,7 @@
 //configuration variables
 $db_user = "pharmit";
 $db_host = "192.168.6.4";
-#$db_host = "localhost";
+$db_host = "localhost";
 $db_name = "pharmit";
 $debug = 1;
 
