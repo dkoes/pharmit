@@ -716,3 +716,14 @@ text-align: center;
 .pharmit_rescontainer table.dataTable tbody tr.selected {
 	background-color: #BDA0CB;
 }
+
+.pharmit_rescontainer table.dataTable tbody td {
+	position: relative;
+}
+.pharmit_iterate_button {
+	position: absolute;
+	right: 0;
+	margin-right: 5px;
+    height: 14px;
+    width: 16px;
+}

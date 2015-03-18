@@ -32,6 +32,7 @@ Pharmit.PhResults = (function() {
 		var save = null;
 		var timeout = null;
 		var results = r;
+		var receptor = null;
 		
 		//format that provided data (mangle the names appropriately)		
 		var processData = function(data) {
@@ -61,7 +62,7 @@ Pharmit.PhResults = (function() {
 					total -= $('thead', table).height();
 					total -= $('.dataTables_info', body).height();
 					total -= $('.dataTables_paginate', body).height();
-					total -= 20; //padding
+					total -= 24; //padding
 					var single = $('tr.odd',table).first().height()+1; //include border
 					var num = Math.floor(total/single);
 					if(num != lastnum) { //really only do draw calls when needed
@@ -79,6 +80,7 @@ Pharmit.PhResults = (function() {
 		this.query = function(qobj) {
 			query = $.extend({}, qobj);
 			//don't need receptor or ligand structures and they are big
+			receptor = query.receptor; //save for iteration
 			delete query.receptor;
 			delete query.ligand;
 			//start provided query
@@ -93,7 +95,7 @@ Pharmit.PhResults = (function() {
 					
 					//setup table
 					qid = ret.qid;
-					var numrows = Math.floor((body.height()-85)/28); //magic numbers!
+					var numrows = Math.floor((body.height()-120)/28); //magic numbers!
 					table.dataTable({
 						searching: false,
 						pageLength: numrows,
@@ -199,7 +201,9 @@ Pharmit.PhResults = (function() {
 			phdiv.hide();
 			var cnt = table.DataTable().ajax.json().recordsTotal;
 			
-			minresults.minimize(qid, query, cnt, function() {
+			var qobj = $.extend({}, query);
+			qobj.receptor = receptor;
+			minresults.minimize(qid, qobj, cnt, function() {
 				phdiv.show();				
 			});
 		};
@@ -262,6 +266,7 @@ Pharmit.PhResults = (function() {
 		$('tbody',table).on( 'click', 'tr', function () {
 			var r = this;
 			var mid = table.DataTable().row(r).data()[4];
+			$(".pharmit_iterate_button").remove();
 	        if ( $(r).hasClass('selected') ) {
 	            $(r).removeClass('selected');
 	            viewer.setResult(); //clear
@@ -275,8 +280,18 @@ Pharmit.PhResults = (function() {
 	            		 qid: qid,
 	            		 loc: mid
 	            		}).done(function(ret) {
-	            			if( $(r).hasClass('selected')) //still selected
+	            			if( $(r).hasClass('selected')) { //still selected
 	            				viewer.setResult(ret);
+	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
+	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+	            				ibutton.click(function(event) {
+	            					event.stopPropagation();
+	            					//create new window around this molecule
+	            					var win = window.open("search.html");
+	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
+	            					var msg = new Message(JSON.stringify(data), win, '*');
+	            				});
+	            			}
 	            		});
 	        }
 	    });

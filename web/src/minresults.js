@@ -34,7 +34,8 @@ Pharmit.MinResults = (function() {
 		var singleConfs = null;
 		var startTotal = 0;
 		var timeout = null;
-
+		var query = null;
+		
 		var processData = function(data) {
 			
 			if(data.status === 0)
@@ -94,6 +95,7 @@ Pharmit.MinResults = (function() {
 			startTotal = nummols;
 			onclose = closer;
 			qid = q;
+			query = qobj;
 			var postData = {cmd: 'startsmina',
 					qid: qid,
 					receptorid: qobj.receptorid,
@@ -243,6 +245,8 @@ Pharmit.MinResults = (function() {
 		$('tbody',table).on( 'click', 'tr', function () {
 			var mid = table.DataTable().row(this).data()[0];
 			var r = this;
+			$(".pharmit_iterate_button").remove();
+
 	        if ( $(this).hasClass('selected') ) {
 	            $(this).removeClass('selected');
 	            viewer.setResult(); //clear
@@ -257,6 +261,15 @@ Pharmit.MinResults = (function() {
             		}).done(function(ret) {
 	            			if( $(r).hasClass('selected')) //still selected
 	            				viewer.setResult(ret);
+	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
+	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+	            				ibutton.click(function(event) {
+	            					event.stopPropagation();
+	            					//create new window around this molecule
+	            					var win = window.open("search.html");
+	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: query.receptor, recname: query.recname};
+	            					var msg = new Message(JSON.stringify(data), win, '*');
+	            				});	            			
 	            		});
 	        }
 	    });

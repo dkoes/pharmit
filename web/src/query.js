@@ -146,6 +146,7 @@ Pharmit.Query = (function() {
 			
 		};
 		
+		
 		//set receptor variables, show receptor in viewer,
 		//and register receptor with server
 		var loadReceptor = function(data, fname) {
@@ -170,7 +171,15 @@ Pharmit.Query = (function() {
 				}); //key setting isn't critical, so skip the the fail handler
 		};
 		
-
+		//given ligand and (optional) receptor data, load the structures and compute interaction features
+		//this creates a new query
+		this.setLigandAndReceptor = function(ligand, ligandName, receptor, receptorName) {
+			if(receptor) {
+				loadReceptor(receptor, receptorName); 
+			}
+			loadFeatures(ligand, ligandName);			
+		};
+		
 		//order features so enabled are on top and within the enabled/disabled
 		//categories features are sorted by type
 		var sortFeatures = function() {

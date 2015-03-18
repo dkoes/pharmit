@@ -800,6 +800,9 @@ Pharmit.hex_md5 = hex_md5;
 var Pharmit = Pharmit ||  {};
 $(document).ready(function() {
 	
+	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
+	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	
 	//global variable checking - we should add nothing but Pharmit
 	var globalsBefore = {};
     for (var key in window)
@@ -826,11 +829,8 @@ $(document).ready(function() {
 	    return null;
 	  else
 	    return results[1];
-	};
-	
-	
-	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
-	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	};	
+
 	
 	var element = $('#pharmit').addClass('pharmit_main');
 	var viewer = new Pharmit.Viewer(element);
@@ -851,7 +851,31 @@ $(document).ready(function() {
 	$("button, input[type='button'], input[type='submit']").button()
     .bind('mouseup', function() {
         $(this).blur();     // prevent jquery ui button from remaining in the active state
-    });	
+    });
+	
+	//message passing, can send a ligand and/or receptor to pharmit
+	//to have it loaded, but 
+	
+	var receiveMessage = function(event) {
+		console.log("receivemsg "+event.data);
+		if(event.data == "ack") { //acks let us verify that we are listening
+			event.source.postMessage("ack2","*");
+		}
+		else if(event.data == "ack2") {
+			//ignore, message should handle these
+		}
+		else {
+			try {
+				var obj = $.parseJSON(event.data);
+				query.setLigandAndReceptor(obj.ligand, obj.ligandFormat, obj.receptor, obj.recname);
+			}
+			catch(e) {
+				alert("Communication error: "+e);
+			}
+		}
+	};
+	window.addEventListener("message", receiveMessage);
+
 });
 /*
  * Pharmit Web Client
@@ -889,7 +913,8 @@ Pharmit.MinResults = (function() {
 		var singleConfs = null;
 		var startTotal = 0;
 		var timeout = null;
-
+		var query = null;
+		
 		var processData = function(data) {
 			
 			if(data.status === 0)
@@ -949,6 +974,7 @@ Pharmit.MinResults = (function() {
 			startTotal = nummols;
 			onclose = closer;
 			qid = q;
+			query = qobj;
 			var postData = {cmd: 'startsmina',
 					qid: qid,
 					receptorid: qobj.receptorid,
@@ -1098,6 +1124,8 @@ Pharmit.MinResults = (function() {
 		$('tbody',table).on( 'click', 'tr', function () {
 			var mid = table.DataTable().row(this).data()[0];
 			var r = this;
+			$(".pharmit_iterate_button").remove();
+
 	        if ( $(this).hasClass('selected') ) {
 	            $(this).removeClass('selected');
 	            viewer.setResult(); //clear
@@ -1112,6 +1140,15 @@ Pharmit.MinResults = (function() {
             		}).done(function(ret) {
 	            			if( $(r).hasClass('selected')) //still selected
 	            				viewer.setResult(ret);
+	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
+	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+	            				ibutton.click(function(event) {
+	            					event.stopPropagation();
+	            					//create new window around this molecule
+	            					var win = window.open("search.html");
+	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: query.receptor, recname: query.recname};
+	            					var msg = new Message(JSON.stringify(data), win, '*');
+	            				});	            			
 	            		});
 	        }
 	    });
@@ -1168,6 +1205,41 @@ Pharmit.MinResults = (function() {
 
 	return MinResults;
 })();
+//object for sending messages to a window, but only after we receive an ack
+function Message(data, w, dest) {
+	var curWindow = w;
+	var curDest = dest;
+	var curMsg = data;
+	var isAcked = 0;
+	
+	function receiveMessage(event)
+	{
+		if(event.data == "ack2")
+		{
+			isAcked = 1;
+		}
+	}
+	
+	function check() {
+		if(isAcked) {
+			curWindow.postMessage(curMsg,curDest);
+			curDest ="";
+			curMsg = "";
+			curWindow = null;
+			isAcked = 0;
+		}
+		else if(curWindow) {
+			curWindow.postMessage("ack", curDest);
+			setTimeout(check, 250);
+		}
+	}
+	
+	window.addEventListener("message", receiveMessage);
+	w.postMessage("ack",dest);		
+	setTimeout(check, 250);
+}
+
+
 /*
  * Pharmit Web Client
  * Copyright 2015 David R Koes and University of Pittsburgh
@@ -1202,6 +1274,7 @@ Pharmit.PhResults = (function() {
 		var save = null;
 		var timeout = null;
 		var results = r;
+		var receptor = null;
 		
 		//format that provided data (mangle the names appropriately)		
 		var processData = function(data) {
@@ -1231,7 +1304,7 @@ Pharmit.PhResults = (function() {
 					total -= $('thead', table).height();
 					total -= $('.dataTables_info', body).height();
 					total -= $('.dataTables_paginate', body).height();
-					total -= 20; //padding
+					total -= 24; //padding
 					var single = $('tr.odd',table).first().height()+1; //include border
 					var num = Math.floor(total/single);
 					if(num != lastnum) { //really only do draw calls when needed
@@ -1249,6 +1322,7 @@ Pharmit.PhResults = (function() {
 		this.query = function(qobj) {
 			query = $.extend({}, qobj);
 			//don't need receptor or ligand structures and they are big
+			receptor = query.receptor; //save for iteration
 			delete query.receptor;
 			delete query.ligand;
 			//start provided query
@@ -1263,7 +1337,7 @@ Pharmit.PhResults = (function() {
 					
 					//setup table
 					qid = ret.qid;
-					var numrows = Math.floor((body.height()-85)/28); //magic numbers!
+					var numrows = Math.floor((body.height()-120)/28); //magic numbers!
 					table.dataTable({
 						searching: false,
 						pageLength: numrows,
@@ -1369,7 +1443,9 @@ Pharmit.PhResults = (function() {
 			phdiv.hide();
 			var cnt = table.DataTable().ajax.json().recordsTotal;
 			
-			minresults.minimize(qid, query, cnt, function() {
+			var qobj = $.extend({}, query);
+			qobj.receptor = receptor;
+			minresults.minimize(qid, qobj, cnt, function() {
 				phdiv.show();				
 			});
 		};
@@ -1432,6 +1508,7 @@ Pharmit.PhResults = (function() {
 		$('tbody',table).on( 'click', 'tr', function () {
 			var r = this;
 			var mid = table.DataTable().row(r).data()[4];
+			$(".pharmit_iterate_button").remove();
 	        if ( $(r).hasClass('selected') ) {
 	            $(r).removeClass('selected');
 	            viewer.setResult(); //clear
@@ -1445,8 +1522,18 @@ Pharmit.PhResults = (function() {
 	            		 qid: qid,
 	            		 loc: mid
 	            		}).done(function(ret) {
-	            			if( $(r).hasClass('selected')) //still selected
+	            			if( $(r).hasClass('selected')) { //still selected
 	            				viewer.setResult(ret);
+	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
+	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+	            				ibutton.click(function(event) {
+	            					event.stopPropagation();
+	            					//create new window around this molecule
+	            					var win = window.open("search.html");
+	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
+	            					var msg = new Message(JSON.stringify(data), win, '*');
+	            				});
+	            			}
 	            		});
 	        }
 	    });
@@ -1614,6 +1701,7 @@ Pharmit.Query = (function() {
 			
 		};
 		
+		
 		//set receptor variables, show receptor in viewer,
 		//and register receptor with server
 		var loadReceptor = function(data, fname) {
@@ -1638,7 +1726,15 @@ Pharmit.Query = (function() {
 				}); //key setting isn't critical, so skip the the fail handler
 		};
 		
-
+		//given ligand and (optional) receptor data, load the structures and compute interaction features
+		//this creates a new query
+		this.setLigandAndReceptor = function(ligand, ligandName, receptor, receptorName) {
+			if(receptor) {
+				loadReceptor(receptor, receptorName); 
+			}
+			loadFeatures(ligand, ligandName);			
+		};
+		
 		//order features so enabled are on top and within the enabled/disabled
 		//categories features are sorted by type
 		var sortFeatures = function() {
