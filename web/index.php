@@ -85,7 +85,7 @@
 								</div>
 							</div>
 							<div class="cont-45">
-								<div class="cont-46"><p class="para-16"><span class="font-16"><a href="examples.html">search examples</a></span></p></div>
+								<div class="cont-46"><p class="para-16"><span class="font-16"><a href="examples.html">examples</a></span></p></div>
 							</div>
 						</div>
 					</div>
