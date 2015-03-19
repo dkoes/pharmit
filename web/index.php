@@ -9,6 +9,7 @@
 		<script src="js/jquery-2.1.3.js" defer ></script>
 		<script src="js/numeral.js" async></script>
 		<script type="text/javascript" src="js/index.js" defer></script>
+		<script type="text/javascript" src="js/msg.js" defer></script>
 	</head>
 	<body id="body">
 		<div class="cont">
@@ -63,7 +64,25 @@
 								<div class="cont-28"><p class="para-10"><span class="font-10"><a href="search.html">enter pharmit search</a></span></p></div>
 							</div>
 							<div class="cont-32">
-								<div class="cont-33"><p class="para-12"><span class="font-10"><a href="">search by PDB</a></span></p></div>
+								<div class="cont-33">
+								<div class="pdbsearch">
+								<form action='#' id="pdbform">
+								Start from PDB:
+								<input type="text" id="pdbtext">
+								<select disabled id="pdbligand">
+								<option disabled="disabled" selected="true">Ligand</option>
+								</select>
+								<br>
+								Binding site waters: 
+								<select id="pdbwater" >
+								<option selected value="ignore">Ignore</option>
+								<option value="rec">Treat as receptor</option>
+								<option value="lig">Treat as ligand</option>
+								</select>
+								<input type="submit" id="pdbsubmit" value="Submit" disabled>
+								</form>
+							</div>
+								</div>
 							</div>
 							<div class="cont-45">
 								<div class="cont-46"><p class="para-16"><span class="font-16"><a href="examples.html">search examples</a></span></p></div>

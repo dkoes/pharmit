@@ -1529,3 +1529,26 @@ a {
 	color: black;
 }
 
+.pdbsearch {
+	   font-family: "Open Sans", sans-serif;
+    font-size: 13.5pt;
+    padding: 0.75em;
+    margin: 0.5em 0;
+    border-radius: 15px;
+    text-align: left;
+    line-height: 22pt;
+    color: black;
+    width: 18em;
+    border: 1px solid black;
+}
+
+.pdbsearch input:disabled, .pdbsearch select:disabled {
+	color: #B6ABA0;
+}
+
+#pdbligand {
+	width: 4.5em;
+}
+#pdbtext {
+	width: 4em;
+}
