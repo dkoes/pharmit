@@ -1120,6 +1120,9 @@ Pharmit.MinResults = (function() {
 			}					 
 		});	
 		
+		table.on('draw.dt', function() {
+			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var mid = table.DataTable().row(this).data()[0];
@@ -1140,8 +1143,9 @@ Pharmit.MinResults = (function() {
             		}).done(function(ret) {
 	            			if( $(r).hasClass('selected')) //still selected
 	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
+	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
 	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+								ibutton.tooltip({show: {delay: 500}});
 	            				ibutton.click(function(event) {
 	            					event.stopPropagation();
 	            					//create new window around this molecule
@@ -1205,6 +1209,7 @@ Pharmit.MinResults = (function() {
 
 	return MinResults;
 })();
+
 //object for sending messages to a window, but only after we receive an ack
 function Message(data, w, dest) {
 	var curWindow = w;
@@ -1488,6 +1493,7 @@ Pharmit.PhResults = (function() {
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
 				}
+				
 			} 
 			else if(json.status === 0) {
 				//alert(json.msg);
@@ -1504,6 +1510,9 @@ Pharmit.PhResults = (function() {
 			}					 
 		});	
 		
+		table.on('draw.dt', function() {
+			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var r = this;
@@ -1524,8 +1533,9 @@ Pharmit.PhResults = (function() {
 	            		}).done(function(ret) {
 	            			if( $(r).hasClass('selected')) { //still selected
 	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
-	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
+	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
+						ibutton.tooltip({show: {delay: 500}});
 	            				ibutton.click(function(event) {
 	            					event.stopPropagation();
 	            					//create new window around this molecule
@@ -1553,6 +1563,7 @@ Pharmit.PhResults = (function() {
 
 	return PhResults;
 })();
+
 /*
  * Pharmit Web Client
  * Copyright 2015 David R Koes and University of Pittsburgh

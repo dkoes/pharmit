@@ -42,7 +42,7 @@ r();
 	//setup handlers for pdb search
 	$('#pdbtext').keyup(function(event) {
 		var val = event.target.value;
-		if(val.length == 4 || (val.length > 4 && val[4] == ':')) {
+		if(val.length == 4 || (val.length <= 6 && val[4] === ':')) {
 			//get ligand info
 			val = val.substring(0,4);
 			var sel = $('#pdbligand').empty();
@@ -88,7 +88,7 @@ r();
 		
 		var requestedChain = null;
 		if(pdb.length > 4) { //presumably has chain
-			requestedChain = pdb.substring(5);
+			requestedChain = pdb[5];
 			pdb = pdb.substring(0,4);
 		}
 
