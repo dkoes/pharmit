@@ -16,6 +16,9 @@
 var Pharmit = Pharmit ||  {};
 $(document).ready(function() {
 	
+	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
+	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	
 	//global variable checking - we should add nothing but Pharmit
 	var globalsBefore = {};
     for (var key in window)
@@ -42,11 +45,8 @@ $(document).ready(function() {
 	    return null;
 	  else
 	    return results[1];
-	};
-	
-	
-	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
-	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	};	
+
 	
 	var element = $('#pharmit').addClass('pharmit_main');
 	var viewer = new Pharmit.Viewer(element);
@@ -67,5 +67,29 @@ $(document).ready(function() {
 	$("button, input[type='button'], input[type='submit']").button()
     .bind('mouseup', function() {
         $(this).blur();     // prevent jquery ui button from remaining in the active state
-    });	
+    });
+	
+	//message passing, can send a ligand and/or receptor to pharmit
+	//to have it loaded, but 
+	
+	var receiveMessage = function(event) {
+		console.log("receivemsg "+event.data);
+		if(event.data == "ack") { //acks let us verify that we are listening
+			event.source.postMessage("ack2","*");
+		}
+		else if(event.data == "ack2") {
+			//ignore, message should handle these
+		}
+		else {
+			try {
+				var obj = $.parseJSON(event.data);
+				query.setLigandAndReceptor(obj.ligand, obj.ligandFormat, obj.receptor, obj.recname);
+			}
+			catch(e) {
+				alert("Communication error: "+e);
+			}
+		}
+	};
+	window.addEventListener("message", receiveMessage);
+
 });

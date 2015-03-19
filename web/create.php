@@ -63,7 +63,7 @@ function headerhtml()
 <meta http-equiv="content-script-type" content="text/javascript">
 <meta http-equiv="content-style-type" content="text/css">
 <link rel="stylesheet" type="text/css" href="create.css" />
-<script src="js/jquery-2.1.3.js" defer ></script>
+<script src="js/jquery-2.1.3.js"></script>
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 
 <title>pharmit library creation</title>

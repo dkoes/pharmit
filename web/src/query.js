@@ -146,6 +146,7 @@ Pharmit.Query = (function() {
 			
 		};
 		
+		
 		//set receptor variables, show receptor in viewer,
 		//and register receptor with server
 		var loadReceptor = function(data, fname) {
@@ -170,7 +171,15 @@ Pharmit.Query = (function() {
 				}); //key setting isn't critical, so skip the the fail handler
 		};
 		
-
+		//given ligand and (optional) receptor data, load the structures and compute interaction features
+		//this creates a new query
+		this.setLigandAndReceptor = function(ligand, ligandName, receptor, receptorName) {
+			if(receptor) {
+				loadReceptor(receptor, receptorName); 
+			}
+			loadFeatures(ligand, ligandName);			
+		};
+		
 		//order features so enabled are on top and within the enabled/disabled
 		//categories features are sorted by type
 		var sortFeatures = function() {
@@ -288,7 +297,9 @@ Pharmit.Query = (function() {
 			$(form).remove();			
 
 		};
-		
+	
+		//escape special characters to avoid injections
+		var escHTML = function(str) { return $('<div/>').text(str).html(); };	
 		
 		//create a split button from a list of vendors and prepend it to header
 		var createSearchButton = function(header,dbinfo) {
@@ -305,8 +316,8 @@ Pharmit.Query = (function() {
 			var i, info, display;
 			for(i = 0, n = subsetinfo.length; i < n; i++) {
 				info = subsetinfo[i];
-				display = info.name;
-				if(info.html) display = info.html; //optionally can provide html
+				display = escHTML(info.name);
+				if(info.html) display = info.html; //optionally can provide html, but not from users
 				lis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
 				lis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
 				lis[i] += '<span class="pharmit_subsettime">Updated: '+info.updated+'</span>';
@@ -326,9 +337,9 @@ Pharmit.Query = (function() {
 			var publicinfo = dbinfo.public;
 			for(i = 0, n = publicinfo.length; i < n; i++) {
 				info = publicinfo[i];
-				display = info.name;
-				if(info.html) display = info.html; //optionally can provide html
-				publiclis[i] = '<li value='+subsetinfo.length+' class="pharmit_subsetmenu">'+display+'<br>';
+				display = escHTML(info.name);
+				if(info.description) titlestr = " title='"+escHTML(info.description)+"' ";
+				publiclis[i] = '<li value='+subsetinfo.length+titlestr+' class="pharmit_subsetmenu">'+display+'<br>';
 				subsetinfo.push(info);
 				publiclis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
 				publiclis[i] += '<span class="pharmit_subsettime">Created: '+info.updated+'</span>';
