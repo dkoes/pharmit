@@ -1044,7 +1044,7 @@ a {
 	min-height: 200px;
 	position: relative;
 	z-index: 25;
-	margin-top: 25px;
+	margin-top: 0px; // set back to 25 if update section is restored
 	border: 0;
 	background-color: rgb(255,255,255);
 	box-shadow: 0px 2px 5px rgb(128,128,128);
