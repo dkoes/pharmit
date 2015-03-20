@@ -860,10 +860,24 @@ a {
 	line-height: 29pt;
 	letter-spacing: normal;
 }
+.pdbsubmit {
+        background: none;
+        border: none;
+        text-decoration: underline;
+        font-family: "Open Sans", sans-serif;
+        font-size: 18pt;
+        font-weight: 400;
+        font-style: normal;
+        text-decoration: underline;
+        color: rgb(108,113,196);
+        line-height: 29pt;
+        letter-spacing: normal;
+        margin-left: -5pt;
+}
 .submit {
 	background: none;
-    border: none;
-    text-decoration: underline;
+        border: none;
+        text-decoration: underline;
 	font-family: "Open Sans", sans-serif;
 	font-size: 21.0pt;
 	font-weight: 400;
@@ -1516,7 +1530,6 @@ a {
 }
 
 .stuff {
-	/* dkoes - class for stuff I want to see.. shoudl be restyled */
 	font-family: "Open Sans", sans-serif;
 	font-size: 13.5pt;
 	text-indent: 0;
@@ -1530,20 +1543,20 @@ a {
 }
 
 .pdbsearch {
-	   font-family: "Open Sans", sans-serif;
+    font-family: "Open Sans", sans-serif;
     font-size: 13.5pt;
     padding: 0.75em;
     margin: 0.5em 0;
-    border-radius: 15px;
+    border-radius: 0px;
     text-align: left;
-    line-height: 22pt;
+    line-height: 25pt;
     color: black;
-    width: 18em;
+    width: 20em;
     border: 1px solid black;
+    border-color: rgb(108,113,196);
 }
-
 .pdbsearch input:disabled, .pdbsearch select:disabled {
-	color: #B6ABA0;
+	color: #A0A0A0;
 }
 
 #pdbligand {

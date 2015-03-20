@@ -67,19 +67,20 @@
 								<div class="cont-33">
 								<div class="pdbsearch">
 								<form action='#' id="pdbform">
-								Start from PDB:
+								start from PDB:
 								<input type="text" id="pdbtext">
 								<select disabled id="pdbligand">
-								<option disabled="disabled" selected="true">Ligand</option>
+								<option disabled="disabled" selected="true">ligand</option>
 								</select>
 								<br>
-								Binding site waters: 
+								binding site waters: 
 								<select id="pdbwater" >
-								<option selected value="ignore">Ignore</option>
-								<option value="rec">Treat as receptor</option>
-								<option value="lig">Treat as ligand</option>
+								<option selected value="ignore">ignore</option>
+								<option value="rec">treat as receptor</option>
+								<option value="lig">treat as ligand</option>
 								</select>
-								<input type="submit" id="pdbsubmit" value="Submit" disabled>
+								<br>
+								<input type="submit" class="pdbsubmit" id="pdbsubmit" value="submit" disabled>
 								</form>
 							</div>
 								</div>
