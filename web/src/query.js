@@ -303,6 +303,7 @@ Pharmit.Query = (function() {
 		
 		//create a split button from a list of vendors and prepend it to header
 		var createSearchButton = function(header,dbinfo) {
+console.log("creating search button");
 			var subsetinfo = dbinfo.standard;
 			var buttons = $('<div>').addClass('pharmit_searchdiv');
 			var run = $('<button id="pharmitsearchbutton" name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
