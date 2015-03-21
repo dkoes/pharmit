@@ -85,7 +85,8 @@ r();
 		var ligname = $('#pdbligand').val();
 		var water = $('#pdbwater').val();
 		var win = window.open("search.html");
-		
+  	  	event.preventDefault();
+	
 		var requestedChain = null;
 		if(pdb.length > 4) { //presumably has chain
 			requestedChain = pdb[5];

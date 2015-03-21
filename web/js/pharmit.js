@@ -857,7 +857,7 @@ $(document).ready(function() {
 	//to have it loaded, but 
 	
 	var receiveMessage = function(event) {
-		console.log("receivemsg "+event.data);
+		//console.log("receivemsg "+event.data);
 		if(event.data == "ack") { //acks let us verify that we are listening
 			event.source.postMessage("ack2","*");
 		}
@@ -877,6 +877,7 @@ $(document).ready(function() {
 	window.addEventListener("message", receiveMessage);
 
 });
+
 /*
  * Pharmit Web Client
  * Copyright 2015 David R Koes and University of Pittsburgh
@@ -1232,6 +1233,7 @@ function Message(data, w, dest) {
 			curMsg = "";
 			curWindow = null;
 			isAcked = 0;
+			window.removeEventListener("message", receiveMessage);
 		}
 		else if(curWindow) {
 			curWindow.postMessage("ack", curDest);
