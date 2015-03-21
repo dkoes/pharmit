@@ -91,10 +91,5 @@ $(document).ready(function() {
 		}
 	};
 	window.addEventListener("message", receiveMessage);
-	if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
-	//this is a total hack to get around the fact that apple believes the 
-	//viewport size should include the area under the address bar..
-		$('html').css('height','calc(100vh - 20px)');
-	}
 
 });
