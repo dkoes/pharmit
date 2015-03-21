@@ -875,9 +875,6 @@ $(document).ready(function() {
 		}
 	};
 	window.addEventListener("message", receiveMessage);
-	if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
-		$('html').css('height','calc(100vh - 20px)');
-	}
 
 });
 
