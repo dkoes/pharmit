@@ -1565,3 +1565,16 @@ a {
 #pdbtext {
 	width: 4em;
 }
+
+.examples {
+	font-family: "Open Sans", sans-serif;
+	font-size: 16pt;
+	text-indent: 0;
+	padding-top: 0pt;
+	margin-top: 10pt;
+	margin-left: 10pt;
+	margin-bottom: 10pt;
+	text-align: center;
+	line-height: 24pt;
+	color: black;
+}
