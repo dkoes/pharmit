@@ -1852,7 +1852,8 @@ Pharmit.Query = (function() {
 		};
 		
 		var saveSession = function() {
-			
+			Pharmit.inFormSubmit = true;			
+
 			//IE doesn't support arbitrary data url's so much echo through a server
 			//to download a file that is already on the client's machine
 			// echo data back as a file to save
@@ -4837,6 +4838,7 @@ Pharmit.Viewer = (function() {
 						surfaceStyle.opacity = ui.value;
 						if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
 						viewer.render();
+						$('#surfaceopacity').value(ui.value);
 						}
 				});
 				

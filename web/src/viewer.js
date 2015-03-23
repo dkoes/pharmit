@@ -228,6 +228,7 @@ Pharmit.Viewer = (function() {
 						surfaceStyle.opacity = ui.value;
 						if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
 						viewer.render();
+						$('#surfaceopacity').value(ui.value);
 						}
 				});
 				
