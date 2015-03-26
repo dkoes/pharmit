@@ -85,6 +85,8 @@ if (!isset($_REQUEST["op"]) && !isset($_SESSION['userid']))
 {
 	headerhtml();
 ?>
+<div class="cont">
+<div class="cont-2">
 <div class="loginpage">
 <span class="font-3">log in</span><br>
 <span class="font">log in to build or manage public or private libraries</span><br><br>
@@ -103,7 +105,7 @@ if (!isset($_REQUEST["op"]) && !isset($_SESSION['userid']))
 or <a href="create.php?op=guestlogin">log in as a guest</a>.</span>
 <br><br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>
 
-</div>
+</div></div></div>
 <?php
 	footerhtml();
 }
@@ -139,6 +141,8 @@ else if(isset($_REQUEST["op"])) //operation
 
 			headerhtml();
 			?>
+			<div class="cont">
+			<div class="cont-2">
 			<div class="loginpage">
 			<span class="font-3">register</span><br>
 			<span class="font">provide your information and we will email you a password</span><br><br>
@@ -157,7 +161,7 @@ else if(isset($_REQUEST["op"])) //operation
 			<br><br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>
 
 
-			</div>
+			</div></div></div>
 			<?php
 				footerhtml();
 			break;
@@ -210,7 +214,7 @@ else if(isset($_REQUEST["op"])) //operation
 			else {
 				$stmt->store_result();
 				headerhtml();
-				echo('<span class="font-3">manage</span><br>
+				echo('<div class="cont"><div class="cont-2"><span class="font-3">manage</span><br>
 					<span class="font">view the status of your submitted jobs</span><br><br>');
 
 				if($stmt->num_rows > 0) { //have already created databases
@@ -240,7 +244,7 @@ else if(isset($_REQUEST["op"])) //operation
 				else { //no databases
 					echo('<span class="font-4">You have not created any databases.</span><br>');
 				}
-				echo('<br><span class="font-2"><a href="index.php">return to pharmit</a></span><br>');
+				echo('<br><span class="font-2"><a href="index.php">return to pharmit</a></span><br></div></div>');
 				footerhtml();
 			}
 
@@ -275,6 +279,8 @@ else //logged in, let's create some databases
 	?>
 
 	<div class="createpage">
+	<div class="cont">
+	<div class="cont-2">
 	<span class="font-3">create</span><br>
 	<div class="loginbox">
 	<form id="createform" action="#" >
@@ -345,7 +351,7 @@ else //logged in, let's create some databases
 	</div>
 
 
-	</div>
+	</div></div></div>
 	<script>
 	var form = $('#createform').submit(function(event) {
 		$('#createstatus').text("");
