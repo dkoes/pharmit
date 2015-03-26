@@ -1,4 +1,6 @@
 /*! normalize.css v3.0.0 | MIT License | git.io/normalize */html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background:0 0}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}h1{font-size:2em;margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}img{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{-moz-box-sizing:content-box;box-sizing:content-box;height:0}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}button,input,optgroup,select,textarea{color:inherit;font:inherit;margin:0}button{overflow:visible}button,select{text-transform:none}button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}input{line-height:normal}input[type=checkbox],input[type=radio]{box-sizing:border-box;padding:0}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{height:auto}input[type=search]{-webkit-appearance:textfield;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box}input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none}fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}legend{border:0;padding:0}textarea{overflow:auto}optgroup{font-weight:700}table{border-collapse:collapse;border-spacing:0}td,th{padding:0}
+html {
+}
 body {
 	font-size: 12px;
 }
@@ -25,13 +27,11 @@ a {
 	background-color: rgb(39,0,72);
 }
 .cont {
-	#display: inline-block;
 	vertical-align: top;
 	margin-left: auto;
 	margin-right: auto;
-	#width: 100%;
-	min-width: 1024px;
-	max-width: 1024px;
+	min-width: 960px;
+	max-width: 960px;
 	min-height: 150px;
 	position: relative;
 	z-index: 1;
@@ -49,7 +49,6 @@ a {
 	display: block;
 }
 .cont-2 {
-	#display: inline-block;
 	vertical-align: top;
 	min-width: 541px;
 	width: 541px;
@@ -57,6 +56,7 @@ a {
 	position: relative;
 	margin-left: 435px;
 	margin-right: auto;
+	right: 30px;
 	margin-top: 0px;
 }
 .colwrapper {
@@ -197,11 +197,11 @@ a {
 	overflow: visible;
 }
 .section-2 {
-	position: relative;
 	margin-top: -150px;
 	min-width: 960px;
 	width: 960px;
 	margin-left: auto;
+	left: 0px;
 	margin-right: auto;
 	display: block;
 }
@@ -211,8 +211,8 @@ a {
 	min-width: 714px;
 	width: 714px;
 	min-height: 164px;
-	position: relative;
-	margin-left: 4px;
+	padding-left: 20px;
+	left: 0px;
 	margin-top: 0px;
 }
 .colwrapper-3 {
@@ -223,6 +223,7 @@ a {
 	min-height: 164px;
 	position: relative;
 	margin-left: 0px;
+	padding-left: 0px;
 	margin-top: 0px;
 	line-height: 0;
 }
@@ -305,11 +306,9 @@ a {
 	background-color: rgb(39,0,72);
 }
 .cont-16 {
-	#display: inline-block;
 	vertical-align: top;
-	#width: 100%;
-	min-width: 1024px;
-	max-width: 1024px;
+	min-width: 960px;
+	max-width: 960px;
 	min-height: 350px;
 	position: relative;
 	z-index: 2;
@@ -323,8 +322,8 @@ a {
 .section-3 {
 	position: relative;
 	margin-top: 15px;
-	min-width: 960px;
-	width: 960px;
+	min-width: 940px;
+	width: 940px;
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
@@ -337,6 +336,7 @@ a {
 	min-height: 95px;
 	position: relative;
 	margin-left: 10px;
+	margin-right: 0px;
 	margin-top: 0px;
 }
 .colwrapper-4 {
@@ -346,7 +346,7 @@ a {
 	width: 436px;
 	min-height: 95px;
 	position: relative;
-	margin-left: 0px;
+	margin-left: 5px;
 	margin-top: 0px;
 	line-height: 0;
 }
@@ -421,9 +421,10 @@ a {
 	width: 435px;
 	min-height: 95px;
 	position: relative;
-	margin-left: 69px;
+	margin-left: 55px;
 	margin-top: 0px;
 	line-height: 0;
+	right: 5px;
 }
 .cont-22 {
 	display: inline-block;
@@ -1057,11 +1058,9 @@ a {
 	overflow: visible;
 }
 .cont-51 {
-	#display: inline-block;
 	vertical-align: top;
-	#width: 100%;
-	min-width: 1024px;
-	max-width: 1024px;
+	min-width: 960px;
+	max-width: 960px;
 	min-height: 200px;
 	position: relative;
 	z-index: 25;
@@ -1084,11 +1083,12 @@ a {
 .cont-52 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 940px;
-	width: 940px;
+	min-width: 920px;
+	width: 920px;
 	min-height: 175px;
 	position: relative;
 	z-index: 26;
+	left: 15px;
 	margin-left: 8px;
 	margin-top: 0px;
 	overflow: visible;
@@ -1230,8 +1230,8 @@ a {
 .cont-55 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 940px;
-	width: 940px;
+	min-width: 960px;
+	width: 960px;
 	min-height: 200px;
 	position: relative;
 	z-index: 28;
@@ -1341,16 +1341,14 @@ a {
 	overflow: hidden;
 }
 .cont-57 {
-#display: inline-block;
-        vertical-align: top;
-        #width: 100%;
-        min-width: 1024px;
-        max-width: 1024px;
-        min-height: 200px;
-        position: relative;
-        margin-top: 40px;
-        margin-left: auto;
-        margin-right: auto;
+    vertical-align: top;
+    min-width: 960px;
+    max-width: 960px;
+    min-height: 200px;
+    position: relative;
+    margin-top: 40px;
+    margin-left: auto;
+    margin-right: auto;
 	z-index: 29;
 	border: 0;
 	background-color: rgb(255,255,255);
@@ -1368,9 +1366,10 @@ a {
 .cont-58 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 940px;
-	width: 940px;
+	min-width: 920px;
+	width: 920px;
 	min-height: 175px;
+	left: 10px;
 	position: relative;
 	z-index: 30;
 	margin-left: 10px;
@@ -1415,15 +1414,13 @@ a {
 	overflow: hidden;
 }
 .cont-60 {
-	#display: inline-block;
-        vertical-align: top;
-        #width: 100%;
-        min-width: 1024px;
-        max-width: 1024px;
-        position: relative;
-        margin-top: 40px;
-        margin-left: auto;
-        margin-right: auto;
+    vertical-align: top;
+    min-width: 960px;
+    max-width: 960px;
+    position: relative;
+    margin-top: 40px;
+    margin-left: auto;
+    margin-right: auto;
 	min-height: 50px;
 	z-index: 31;
 	border: 0;
@@ -1442,12 +1439,13 @@ a {
 .cont-61 {
 	display: inline-block;
 	vertical-align: top;
-	min-width: 941px;
-	width: 941px;
+	min-width: 920px;
+	width: 920px;
 	min-height: 45px;
 	position: relative;
-	margin-left: 10px;
+	margin-left: 5px;
 	margin-top: 0px;
+	left: 15px;
 }
 .colwrapper-16 {
 	display: inline-block;
@@ -1499,7 +1497,7 @@ a {
 	width: 129px;
 	min-height: 45px;
 	position: relative;
-	margin-left: 812px;
+	margin-left: 800px;
 	margin-top: -45px;
 	line-height: 0;
 }
@@ -1575,7 +1573,7 @@ a {
 }
 
 #pdbligand {
-	width: 4.5em;
+	width: 6em;
 }
 #pdbtext {
 	width: 4em;
