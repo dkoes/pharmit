@@ -25,10 +25,13 @@ a {
 	background-color: rgb(39,0,72);
 }
 .cont {
-	display: inline-block;
+	#display: inline-block;
 	vertical-align: top;
-	width: 100%;
-	min-width: 960px;
+	margin-left: auto;
+	margin-right: auto;
+	#width: 100%;
+	min-width: 1024px;
+	max-width: 1024px;
 	min-height: 150px;
 	position: relative;
 	z-index: 1;
@@ -41,19 +44,19 @@ a {
 	position: relative;
 	margin-top: 0px;
 	min-width: 960px;
-	width: 960px;
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
 }
 .cont-2 {
-	display: inline-block;
+	#display: inline-block;
 	vertical-align: top;
 	min-width: 541px;
 	width: 541px;
 	min-height: 150px;
 	position: relative;
-	margin-left: 410px;
+	margin-left: 435px;
+	margin-right: auto;
 	margin-top: 0px;
 }
 .colwrapper {
@@ -302,14 +305,17 @@ a {
 	background-color: rgb(39,0,72);
 }
 .cont-16 {
-	display: inline-block;
+	#display: inline-block;
 	vertical-align: top;
-	width: 100%;
-	min-width: 960px;
+	#width: 100%;
+	min-width: 1024px;
+	max-width: 1024px;
 	min-height: 350px;
 	position: relative;
 	z-index: 2;
-	margin-top: -375px;
+	margin-top: -400px;
+	margin-left: auto;
+	margin-right: auto;
 	border: 0;
 	background-color: rgb(255,255,255);
 	box-shadow: 0px 2px 5px rgb(128,128,128);
@@ -1051,14 +1057,17 @@ a {
 	overflow: visible;
 }
 .cont-51 {
-	display: inline-block;
+	#display: inline-block;
 	vertical-align: top;
-	width: 100%;
-	min-width: 960px;
+	#width: 100%;
+	min-width: 1024px;
+	max-width: 1024px;
 	min-height: 200px;
 	position: relative;
 	z-index: 25;
-	margin-top: 0px; /* set back to 25 if update section is restored*/
+	margin-top: 40px;
+	margin-left: auto;
+	margin-right: auto;
 	border: 0;
 	background-color: rgb(255,255,255);
 	box-shadow: 0px 2px 5px rgb(128,128,128);
@@ -1332,14 +1341,17 @@ a {
 	overflow: hidden;
 }
 .cont-57 {
-	display: inline-block;
-	vertical-align: top;
-	width: 100%;
-	min-width: 960px;
-	min-height: 200px;
-	position: relative;
+#display: inline-block;
+        vertical-align: top;
+        #width: 100%;
+        min-width: 1024px;
+        max-width: 1024px;
+        min-height: 200px;
+        position: relative;
+        margin-top: 40px;
+        margin-left: auto;
+        margin-right: auto;
 	z-index: 29;
-	margin-top: 35px;
 	border: 0;
 	background-color: rgb(255,255,255);
 	box-shadow: 0px 2px 5px rgb(128,128,128);
@@ -1403,14 +1415,17 @@ a {
 	overflow: hidden;
 }
 .cont-60 {
-	display: inline-block;
-	vertical-align: top;
-	width: 100%;
-	min-width: 960px;
+	#display: inline-block;
+        vertical-align: top;
+        #width: 100%;
+        min-width: 1024px;
+        max-width: 1024px;
+        position: relative;
+        margin-top: 40px;
+        margin-left: auto;
+        margin-right: auto;
 	min-height: 50px;
-	position: relative;
 	z-index: 31;
-	margin-top: 50px;
 	border: 0;
 	background-color: rgb(255,255,255);
 	box-shadow: 0px 2px 5px rgb(128,128,128);
