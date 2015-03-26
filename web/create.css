@@ -5,6 +5,9 @@ body {
 a {
     color: rgb(108,113,196);
 }
+textarea {
+    resize: horizontal;
+}
 a:visited {
     color: rgb(108,113,196);
 }
