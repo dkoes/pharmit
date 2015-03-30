@@ -2,11 +2,11 @@
 
 //configuration variables
 $db_user = "pharmit";
-$db_host = "192.168.6.4";
 $db_host = "localhost";
 $db_name = "pharmit";
-$debug = 1;
+$debug = 0;
 
+include("local.php"); //set any machine specific settings in this file
 
 //subroutines shared by create.php and index.php
 

@@ -259,12 +259,13 @@ Pharmit.Query = (function() {
 			//everything with a name is something we want to save
 			
 			$.each($('[name]',querydiv), function(index, elem) {
-				if(elem.name) {
+				var name = elem.name;
+				if(name) {
 					var val = elem.value;
 					if($.isNumeric(elem.value)) {
 						val = Number(elem.value);
 					}
-					ret[elem.name] = val;
+					ret[name] = val;
 				}
 			});
 			
@@ -284,7 +285,8 @@ Pharmit.Query = (function() {
 		};
 		
 		var saveSession = function() {
-			
+			Pharmit.inFormSubmit = true;			
+
 			//IE doesn't support arbitrary data url's so much echo through a server
 			//to download a file that is already on the client's machine
 			// echo data back as a file to save

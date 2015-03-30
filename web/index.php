@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<meta name="viewport" content="width=960">
+		<!--<meta name="viewport" content="width=960">!-->
 		<title>pharmit: interactive exploration of chemical space</title>
 		<link rel="stylesheet" type="text/css" href="index.css">
 		<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
@@ -73,7 +73,7 @@
 								<option disabled="disabled" selected="true">ligand</option>
 								</select>
 								<br>
-								binding site waters: 
+								binding site waters:
 								<select id="pdbwater" >
 								<option selected value="ignore">ignore</option>
 								<option value="rec">treat as receptor</option>

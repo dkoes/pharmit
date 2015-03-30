@@ -54,8 +54,10 @@ r();
 					var lname = $(v).attr('chemicalID');
 					$('<option value="'+lname+'">'+lname+"</option>").appendTo(sel);
 				});
-				$('#pdbligand').prop('disabled',false);
-				$('#pdbsubmit').prop('disabled',false);
+				if(ligands.length > 0) {
+					$('#pdbligand').prop('disabled',false);
+					$('#pdbsubmit').prop('disabled',false);
+				}
 			});
 		} else {
 			//assume anything else invalid

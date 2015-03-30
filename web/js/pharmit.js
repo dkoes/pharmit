@@ -1827,12 +1827,13 @@ Pharmit.Query = (function() {
 			//everything with a name is something we want to save
 			
 			$.each($('[name]',querydiv), function(index, elem) {
-				if(elem.name) {
+				var name = elem.name;
+				if(name) {
 					var val = elem.value;
 					if($.isNumeric(elem.value)) {
 						val = Number(elem.value);
 					}
-					ret[elem.name] = val;
+					ret[name] = val;
 				}
 			});
 			
@@ -1852,7 +1853,8 @@ Pharmit.Query = (function() {
 		};
 		
 		var saveSession = function() {
-			
+			Pharmit.inFormSubmit = true;			
+
 			//IE doesn't support arbitrary data url's so much echo through a server
 			//to download a file that is already on the client's machine
 			// echo data back as a file to save
@@ -4831,16 +4833,22 @@ Pharmit.Viewer = (function() {
 			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
 			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
 			var sliderdiv = $('<div>').addClass('pharmit_surfacetransparencyslider').appendTo(stdiv);
-			$('<div id="surfaceopacity" name="surfaceopacity">').appendTo(sliderdiv)
-				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8,
+			var surfaceinput = $('<input type="hidden" name="surfaceopacity">').appendTo(stdiv); //use named inputs for getting/setting values
+			var defaultopacity = 0.8;
+			surfaceinput.val(defaultopacity);
+			var surfslider = $('<div id="surfaceopacity">').appendTo(sliderdiv)
+				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':defaultopacity,
 					change: function(event, ui) { 
-						surfaceStyle.opacity = ui.value;
-						if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
-						viewer.render();
+						surfaceinput.val(ui.value).change();
 						}
 				});
-				
-			
+			surfaceinput.change(function() {
+				var val = surfaceinput.val();
+                                surfaceStyle.opacity = val;
+                                if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
+                                if(surfslider.slider("value") != val) surfslider.slider("value",val);
+                                viewer.render();
+			});	
 			//background color
 			var bcdiv = $('<div>').addClass('pharmit_backgroundcolordiv').appendTo(vizgroup);
 			$('<label for="backgroundcolor">Background Color:</label>').appendTo(bcdiv);
