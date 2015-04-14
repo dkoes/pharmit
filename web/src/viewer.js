@@ -325,6 +325,7 @@ Pharmit.Viewer = (function() {
 		
 		this.setView = function(view) {
 			if(view) viewer.setView(view);
+			else viewer.zoomTo(); //at least center on objects
 		};
 		
 		this.getView = function() {
