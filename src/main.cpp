@@ -437,6 +437,13 @@ public:
 	}
 
 };
+
+static void signalhandler(int sig)
+{
+  //ignore
+}
+
+
 //create a database directory within the server framework
 //in this framework we provide a file of prefixes where each line is
 //a location (on a different hard drive) for creating a strip of the overall database
@@ -447,6 +454,8 @@ public:
 //the json object is indexed by database key; the keys define the subdirectory name to use in prefixes
 static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 {
+	signal(SIGUSR1, signalhandler); //don't let ourselves get interrupted by build signals
+
 	ifstream prefixes(Prefixes.c_str());
 	if (Prefixes.size() == 0 || !prefixes)
 	{
