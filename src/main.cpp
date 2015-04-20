@@ -565,12 +565,25 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				if( (i%nd) == d )
 				{ //part of our slice
 					const LigandInfo info = liginfos[i];
-					ifstream in(info.file.c_str());
+					string name = info.file.string();
+					//openbabel's builtin zlib reader seems to use increasing amounts
+					//of memory over time, so use boost's
+					ifstream *uncompressed_inmol = new std::ifstream(name.c_str());
+					iostreams::filtering_stream<iostreams::input> *inmol = new iostreams::filtering_stream<iostreams::input>();
+
+					std::string::size_type pos = name.rfind(".gz");
+					if (pos != std::string::npos)
+					{
+						inmol->push(iostreams::gzip_decompressor());
+					}
+					inmol->push(*uncompressed_inmol);
+
+
 					OBFormat *format = conv.FormatFromExt(info.file.c_str());
 
 					if(format != NULL)
 					{
-						ReadMCMol reader(in, format, 1, 0, ReduceConfs);
+						ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs);
 						OBMol mol;
 
 						while (reader.read(mol))
@@ -578,6 +591,9 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 							db.addMolToDatabase(mol, info.id, info.name);
 						}
 					}
+
+					delete uncompressed_inmol;
+					delete inmol;
 				}
 			}
 
