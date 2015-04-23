@@ -96,7 +96,7 @@ r();
 		}
 
 		//download pdb
-		$.get('http://www.pdb.org/pdb/files/'+pdb+".pdb").done(function(mol) {
+		$.get('http://www.rcsb.org/pdb/files/'+pdb+".pdb").done(function(mol) {
 			var lines = mol.split('\n');
 			var reclines = []; //anthing that starts with ATOM
 			var waterlines = []; //HOH or WAT resname
