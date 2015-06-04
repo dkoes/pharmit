@@ -246,11 +246,6 @@ bool PharmaPoint::read(const Pharmas& pharmas, istream &in)
 	if (pharma == NULL)
 		return false;
 
-	int anum = 0;
-	str >> anum;
-	if (anum != pharma->atomic_number_label)
-		return false;
-
 	str >> x;
 	str >> y;
 	str >> z;
@@ -286,7 +281,6 @@ bool PharmaPoint::read(const Pharmas& pharmas, istream &in)
 ostream &operator<<(ostream &stream, const PharmaPoint& obj)
 {
 	stream << obj.pharma->name << " ";
-	stream << obj.pharma->atomic_number_label << " ";
 	stream << obj.x << ' ' << obj.y << ' ' << obj.z;
 
 	for (unsigned i = 0, n = obj.vecs.size(); i < n; i++)
