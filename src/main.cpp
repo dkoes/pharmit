@@ -359,6 +359,12 @@ static void handle_phogrify_cmd(const Pharmas& pharmas)
 		}
 
 		in.close();
+		if(out.str().length() == 0)
+		{
+			//make sure we don't overwrite original file if we didn't generate output for some reason
+			cerr << "Error generating output for: " << fname << "\n";
+			continue;
+		}
 
 		string outname = outputFiles[i];
 		string oext = filesystem::extension(outname);
@@ -370,6 +376,7 @@ static void handle_phogrify_cmd(const Pharmas& pharmas)
 			cerr << "Could not open output file: " << outname << "\n";
 			exit(-1);
 		}
+
 
 		if(oext == ".gz") //assumed to be compressed sdf
 		{
