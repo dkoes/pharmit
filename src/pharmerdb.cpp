@@ -487,13 +487,25 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 	props.calculate(mol, uniqueid);
 
 	//now add back conformer coordinates, create new memory for mol
-	vector<double*> cdata(confs.size());
+	vector<double*> cdata; cdata.reserve(confs.size());
 	unsigned ncoords = mol.NumAtoms() * 3;
 	for (unsigned i = 0, n = confs.size(); i < n; i++)
 	{
-		assert(confs[i].NumAtoms()*3 == ncoords);
-		cdata[i] = new double[ncoords];
-		memcpy(cdata[i], confs[i].GetConformer(0), ncoords*sizeof(double));
+		if(confs[i].NumAtoms()*3 != ncoords)
+		{
+		  cerr << "ERROR with " << mol.GetTitle() << ": wrong number of atoms/coordinates (" << confs[i].NumAtoms() << " vs " << mol.NumAtoms() << ")\n";
+		}
+		else
+		{
+		  cdata.push_back(new double[ncoords]);
+		  memcpy(cdata.back(), confs[i].GetConformer(0), ncoords*sizeof(double));
+		}
+	}
+
+	if(cdata.size() == 0)
+	{
+	  cerr << "ERROR with " << mol.GetTitle() << ": no properly sized conformers\n";
+	  return;
 	}
 
 	mol.SetConformers(cdata);
