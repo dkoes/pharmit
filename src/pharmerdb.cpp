@@ -107,7 +107,35 @@ void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 {
 	//identify pharma
 	vector<vector<PharmaPoint> > mcpoints;
-	getPharmaPointsMC(pharmas, mol, mcpoints);
+
+	if(false && mol.HasData("pharmacophores")) //eh, doesn't make things faster, let's be safe and always to the reanalysis
+	{
+		//use precalculated pharmacophore data
+		//this doesn't actually save any time.. need to avoid all the openbabel analysis
+		OBVecData *data = dynamic_cast<OBVecData*>(mol.GetData("pharmacophores"));
+		if(data)
+		{
+			const vector<string>& pharmtext = data->GetGenericValue();
+			if(mol.NumConformers() == (int)pharmtext.size())
+			{
+				mcpoints.resize(pharmtext.size());
+				for(unsigned i = 0, n = pharmtext.size(); i < n; i++)
+				{
+					stringstream phstrm(pharmtext[i]);
+					PharmaPoint pt;
+					while(pt.read(pharmas, phstrm))
+					{
+						mcpoints[i].push_back(pt);
+					}
+				}
+			}
+		}
+	}
+
+	if(mcpoints.size() == 0) //nothing precalculated, or something off with precalculated
+	{
+		getPharmaPointsMC(pharmas, mol, mcpoints);
+	}
 
 	if(mcpoints.size() > 0) props.setHB(mcpoints[0]); //hb feature cnts are not conformer specific
 

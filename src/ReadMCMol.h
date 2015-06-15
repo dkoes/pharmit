@@ -29,6 +29,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <openbabel/mol.h>
 
 
+typedef OpenBabel::OBPairTemplate< vector<string> > OBVecData;
+
 //openbabel currently doesn't have native support of multiple conformer input
 //this just assumes sequential mols with the same name are conformers
 //the read-ahead mol is cached
@@ -40,12 +42,14 @@ class ReadMCMol
 	unsigned reduceConfs;
 	OpenBabel::OBConversion conv;
 	unsigned molcnt;
+	vector<string> pharmacophores; //accumulate pharmacophore data if available
 
 	struct MInfo
 	{
 		string title;
 		OpenBabel::OBMol mol;
 		string data;
+		string pharmacophore;
 		bool valid;
 
 		MInfo(): valid(false) {}
@@ -87,6 +91,11 @@ class ReadMCMol
 				if(!conv.Read(&mol))
 					return false;
 				title = mol.GetTitle();
+				pharmacophore.clear();
+				if(mol.HasData("pharmacophore"))
+				{
+					pharmacophore = mol.GetData("pharmacophore")->GetValue();
+				}
 			}
 			valid = true;
 			return true;
@@ -100,6 +109,12 @@ class ReadMCMol
 				strconv.SetInFormat("sdf");
 				strconv.ReadString(&mol, data);
 				data.clear();
+				pharmacophore.clear();
+
+				if(mol.HasData("pharmacophore"))
+				{
+					pharmacophore = mol.GetData("pharmacophore")->GetValue();
+				}
 			}
 
 			return mol;
@@ -115,16 +130,14 @@ class ReadMCMol
 	MInfo next;
 
 public:
+
 	ReadMCMol(istream& in, OpenBabel::OBFormat* f, unsigned st, unsigned o, unsigned reduce) :
 		infile(in), stride(st), offset(o), reduceConfs(reduce > 0 ? reduce : UINT_MAX), molcnt(0)
 	{
 		conv.SetInFormat(f);
 		conv.SetOutFormat("sdf");
-		//must do a read to setup conv
-		conv.Read(&next.mol, &infile);
-
-		next.title = next.mol.GetTitle();
-		next.valid = true;
+		conv.SetInStream(&infile);
+		next.load(conv);
 	}
 
 	//put multi-conformer molecule in mol
@@ -145,6 +158,10 @@ public:
 				unsigned N = mol.NumAtoms();
 				string curtitle = next.title;
 
+				pharmacophores.clear();
+				if(next.pharmacophore.size())
+					pharmacophores.push_back(next.pharmacophore);
+
 				while (next.load(conv))
 				{
 					if (next.title == curtitle)
@@ -162,6 +179,11 @@ public:
 							memcpy(confdata, next.getMol().GetConformer(0),
 									sizeof(double) * N * 3);
 							mol.AddConformer(confdata); //mol is now managing the memory
+
+							if(pharmacophores.size() > 0)
+							{
+								pharmacophores.push_back(next.pharmacophore);
+							}
 						}
 						confcnt++;
 					}
@@ -169,6 +191,14 @@ public:
 					{
 						break;
 					}
+				}
+
+				if(pharmacophores.size() > 0)
+				{
+					OBVecData* sddata = new OBVecData();
+					sddata->SetAttribute("pharmacophores"); //note the s
+					sddata->SetValue(pharmacophores);
+					mol.SetData(sddata);
 				}
 				return true;
 			}
