@@ -646,7 +646,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c1943', end
 }
 
 th.pharmit_rmsdcol {
-	text-align: left;
+	text-align: left;	
 }
 .pharmit_rmsdcol {
     text-align: center;
@@ -699,6 +699,13 @@ th.pharmit_minrmsd {
 .pharmit_rescontainer table.dataTable.compact thead th,
 table.dataTable.compact thead td {
   padding: 7px 6px 3px 6px;
+}
+
+.pharmit_rescontainer table.dataTable.compact thead th.sorting_asc,th.sorting,th.sorting_desc,
+.pharmit_rescontainer table.dataTable.compact thead th.sorting,th.sorting_desc,
+.pharmit_rescontainer table.dataTable.compact thead th.sorting_desc
+ {
+  padding-right: 12px;
 }
 
 

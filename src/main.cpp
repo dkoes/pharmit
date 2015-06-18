@@ -702,8 +702,7 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 			}
 
 			myturn.wait(d); // does not return until previous processes have created index
-			db.writeStats();
-			db.createSpatialIndex();
+			db.createSpatialIndex(); //will write stats
 
 			if(d != nd-1)
 				exit(0);
