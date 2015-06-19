@@ -177,7 +177,7 @@ static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Co
 
 
 static WebQueryManager *queriesptr = NULL;
-void signalhandler(int sig)
+static void signalhandler(int sig)
 {
   if (sig == SIGUSR1 && queriesptr != NULL)
   {

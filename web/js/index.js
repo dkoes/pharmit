@@ -42,7 +42,7 @@ r();
 	//setup handlers for pdb search
 	$('#pdbtext').keyup(function(event) {
 		var val = event.target.value;
-		if(val.length == 4 || (val.length > 4 && val[4] == ':')) {
+		if(val.length == 4 || (val.length <= 6 && val[4] === ':')) {
 			//get ligand info
 			val = val.substring(0,4);
 			var sel = $('#pdbligand').empty();
@@ -54,8 +54,10 @@ r();
 					var lname = $(v).attr('chemicalID');
 					$('<option value="'+lname+'">'+lname+"</option>").appendTo(sel);
 				});
-				$('#pdbligand').prop('disabled',false);
-				$('#pdbsubmit').prop('disabled',false);
+				if(ligands.length > 0) {
+					$('#pdbligand').prop('disabled',false);
+					$('#pdbsubmit').prop('disabled',false);
+				}
 			});
 		} else {
 			//assume anything else invalid
@@ -85,15 +87,16 @@ r();
 		var ligname = $('#pdbligand').val();
 		var water = $('#pdbwater').val();
 		var win = window.open("search.html");
-		
+  	  	event.preventDefault();
+	
 		var requestedChain = null;
 		if(pdb.length > 4) { //presumably has chain
-			requestedChain = pdb.substring(5);
+			requestedChain = pdb[5];
 			pdb = pdb.substring(0,4);
 		}
 
 		//download pdb
-		$.get('http://www.pdb.org/pdb/files/'+pdb+".pdb").done(function(mol) {
+		$.get('http://www.rcsb.org/pdb/files/'+pdb+".pdb").done(function(mol) {
 			var lines = mol.split('\n');
 			var reclines = []; //anthing that starts with ATOM
 			var waterlines = []; //HOH or WAT resname

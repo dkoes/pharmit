@@ -857,7 +857,7 @@ $(document).ready(function() {
 	//to have it loaded, but 
 	
 	var receiveMessage = function(event) {
-		console.log("receivemsg "+event.data);
+		//console.log("receivemsg "+event.data);
 		if(event.data == "ack") { //acks let us verify that we are listening
 			event.source.postMessage("ack2","*");
 		}
@@ -877,6 +877,7 @@ $(document).ready(function() {
 	window.addEventListener("message", receiveMessage);
 
 });
+
 /*
  * Pharmit Web Client
  * Copyright 2015 David R Koes and University of Pittsburgh
@@ -988,7 +989,7 @@ Pharmit.MinResults = (function() {
 					table.show();
 					//setup table
 					sminaid = ret.sminaid;
-					var numrows = Math.floor((body.height()-95)/28); //magic numbers!
+					var numrows = Math.floor((body.height()-120)/28); //magic numbers!
 					
 					table.dataTable({
 						searching: false,
@@ -1120,6 +1121,9 @@ Pharmit.MinResults = (function() {
 			}					 
 		});	
 		
+		table.on('draw.dt', function() {
+			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var mid = table.DataTable().row(this).data()[0];
@@ -1140,8 +1144,9 @@ Pharmit.MinResults = (function() {
             		}).done(function(ret) {
 	            			if( $(r).hasClass('selected')) //still selected
 	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
+	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
 	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+								ibutton.tooltip({show: {delay: 500}});
 	            				ibutton.click(function(event) {
 	            					event.stopPropagation();
 	            					//create new window around this molecule
@@ -1205,6 +1210,7 @@ Pharmit.MinResults = (function() {
 
 	return MinResults;
 })();
+
 //object for sending messages to a window, but only after we receive an ack
 function Message(data, w, dest) {
 	var curWindow = w;
@@ -1227,6 +1233,7 @@ function Message(data, w, dest) {
 			curMsg = "";
 			curWindow = null;
 			isAcked = 0;
+			window.removeEventListener("message", receiveMessage);
 		}
 		else if(curWindow) {
 			curWindow.postMessage("ack", curDest);
@@ -1488,6 +1495,7 @@ Pharmit.PhResults = (function() {
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
 				}
+				
 			} 
 			else if(json.status === 0) {
 				//alert(json.msg);
@@ -1504,6 +1512,9 @@ Pharmit.PhResults = (function() {
 			}					 
 		});	
 		
+		table.on('draw.dt', function() {
+			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var r = this;
@@ -1524,8 +1535,9 @@ Pharmit.PhResults = (function() {
 	            		}).done(function(ret) {
 	            			if( $(r).hasClass('selected')) { //still selected
 	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
-	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
+	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
+						ibutton.tooltip({show: {delay: 500}});
 	            				ibutton.click(function(event) {
 	            					event.stopPropagation();
 	            					//create new window around this molecule
@@ -1553,6 +1565,7 @@ Pharmit.PhResults = (function() {
 
 	return PhResults;
 })();
+
 /*
  * Pharmit Web Client
  * Copyright 2015 David R Koes and University of Pittsburgh
@@ -1814,12 +1827,13 @@ Pharmit.Query = (function() {
 			//everything with a name is something we want to save
 			
 			$.each($('[name]',querydiv), function(index, elem) {
-				if(elem.name) {
+				var name = elem.name;
+				if(name) {
 					var val = elem.value;
 					if($.isNumeric(elem.value)) {
 						val = Number(elem.value);
 					}
-					ret[elem.name] = val;
+					ret[name] = val;
 				}
 			});
 			
@@ -1839,7 +1853,8 @@ Pharmit.Query = (function() {
 		};
 		
 		var saveSession = function() {
-			
+			Pharmit.inFormSubmit = true;			
+
 			//IE doesn't support arbitrary data url's so much echo through a server
 			//to download a file that is already on the client's machine
 			// echo data back as a file to save
@@ -1858,6 +1873,7 @@ Pharmit.Query = (function() {
 		
 		//create a split button from a list of vendors and prepend it to header
 		var createSearchButton = function(header,dbinfo) {
+console.log("creating search button");
 			var subsetinfo = dbinfo.standard;
 			var buttons = $('<div>').addClass('pharmit_searchdiv');
 			var run = $('<button id="pharmitsearchbutton" name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
@@ -4817,16 +4833,22 @@ Pharmit.Viewer = (function() {
 			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
 			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
 			var sliderdiv = $('<div>').addClass('pharmit_surfacetransparencyslider').appendTo(stdiv);
-			$('<div id="surfaceopacity" name="surfaceopacity">').appendTo(sliderdiv)
-				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8,
+			var surfaceinput = $('<input type="hidden" name="surfaceopacity">').appendTo(stdiv); //use named inputs for getting/setting values
+			var defaultopacity = 0.8;
+			surfaceinput.val(defaultopacity);
+			var surfslider = $('<div id="surfaceopacity">').appendTo(sliderdiv)
+				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':defaultopacity,
 					change: function(event, ui) { 
-						surfaceStyle.opacity = ui.value;
-						if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
-						viewer.render();
+						surfaceinput.val(ui.value).change();
 						}
 				});
-				
-			
+			surfaceinput.change(function() {
+				var val = surfaceinput.val();
+                                surfaceStyle.opacity = val;
+                                if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
+                                if(surfslider.slider("value") != val) surfslider.slider("value",val);
+                                viewer.render();
+			});	
 			//background color
 			var bcdiv = $('<div>').addClass('pharmit_backgroundcolordiv').appendTo(vizgroup);
 			$('<label for="backgroundcolor">Background Color:</label>').appendTo(bcdiv);
@@ -4914,6 +4936,7 @@ Pharmit.Viewer = (function() {
 		
 		this.setView = function(view) {
 			if(view) viewer.setView(view);
+			else viewer.zoomTo(); //at least center on objects
 		};
 		
 		this.getView = function() {

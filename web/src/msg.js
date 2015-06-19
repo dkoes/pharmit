@@ -20,6 +20,7 @@ function Message(data, w, dest) {
 			curMsg = "";
 			curWindow = null;
 			isAcked = 0;
+			window.removeEventListener("message", receiveMessage);
 		}
 		else if(curWindow) {
 			curWindow.postMessage("ack", curDest);

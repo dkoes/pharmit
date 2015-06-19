@@ -241,6 +241,9 @@ Pharmit.MinResults = (function() {
 			}					 
 		});	
 		
+		table.on('draw.dt', function() {
+			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var mid = table.DataTable().row(this).data()[0];
@@ -261,8 +264,9 @@ Pharmit.MinResults = (function() {
             		}).done(function(ret) {
 	            			if( $(r).hasClass('selected')) //still selected
 	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button">').appendTo($('td',r).last());
+	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
 	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});
+								ibutton.tooltip({show: {delay: 500}});
 	            				ibutton.click(function(event) {
 	            					event.stopPropagation();
 	            					//create new window around this molecule

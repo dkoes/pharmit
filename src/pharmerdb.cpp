@@ -107,7 +107,35 @@ void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 {
 	//identify pharma
 	vector<vector<PharmaPoint> > mcpoints;
-	getPharmaPointsMC(pharmas, mol, mcpoints);
+
+	if(false && mol.HasData("pharmacophores")) //eh, doesn't make things faster, let's be safe and always to the reanalysis
+	{
+		//use precalculated pharmacophore data
+		//this doesn't actually save any time.. need to avoid all the openbabel analysis
+		OBVecData *data = dynamic_cast<OBVecData*>(mol.GetData("pharmacophores"));
+		if(data)
+		{
+			const vector<string>& pharmtext = data->GetGenericValue();
+			if(mol.NumConformers() == (int)pharmtext.size())
+			{
+				mcpoints.resize(pharmtext.size());
+				for(unsigned i = 0, n = pharmtext.size(); i < n; i++)
+				{
+					stringstream phstrm(pharmtext[i]);
+					PharmaPoint pt;
+					while(pt.read(pharmas, phstrm))
+					{
+						mcpoints[i].push_back(pt);
+					}
+				}
+			}
+		}
+	}
+
+	if(mcpoints.size() == 0) //nothing precalculated, or something off with precalculated
+	{
+		getPharmaPointsMC(pharmas, mol, mcpoints);
+	}
 
 	if(mcpoints.size() > 0) props.setHB(mcpoints[0]); //hb feature cnts are not conformer specific
 
@@ -459,13 +487,25 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 	props.calculate(mol, uniqueid);
 
 	//now add back conformer coordinates, create new memory for mol
-	vector<double*> cdata(confs.size());
+	vector<double*> cdata; cdata.reserve(confs.size());
 	unsigned ncoords = mol.NumAtoms() * 3;
 	for (unsigned i = 0, n = confs.size(); i < n; i++)
 	{
-		assert(confs[i].NumAtoms()*3 == ncoords);
-		cdata[i] = new double[ncoords];
-		memcpy(cdata[i], confs[i].GetConformer(0), ncoords*sizeof(double));
+		if(confs[i].NumAtoms()*3 != ncoords)
+		{
+		  cerr << "ERROR with " << mol.GetTitle() << ": wrong number of atoms/coordinates (" << confs[i].NumAtoms() << " vs " << mol.NumAtoms() << ")\n";
+		}
+		else
+		{
+		  cdata.push_back(new double[ncoords]);
+		  memcpy(cdata.back(), confs[i].GetConformer(0), ncoords*sizeof(double));
+		}
+	}
+
+	if(cdata.size() == 0)
+	{
+	  cerr << "ERROR with " << mol.GetTitle() << ": no properly sized conformers\n";
+	  return;
 	}
 
 	mol.SetConformers(cdata);

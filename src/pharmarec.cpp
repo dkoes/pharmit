@@ -246,11 +246,6 @@ bool PharmaPoint::read(const Pharmas& pharmas, istream &in)
 	if (pharma == NULL)
 		return false;
 
-	int anum = 0;
-	str >> anum;
-	if (anum != pharma->atomic_number_label)
-		return false;
-
 	str >> x;
 	str >> y;
 	str >> z;
@@ -286,7 +281,6 @@ bool PharmaPoint::read(const Pharmas& pharmas, istream &in)
 ostream &operator<<(ostream &stream, const PharmaPoint& obj)
 {
 	stream << obj.pharma->name << " ";
-	stream << obj.pharma->atomic_number_label << " ";
 	stream << obj.x << ' ' << obj.y << ' ' << obj.z;
 
 	for (unsigned i = 0, n = obj.vecs.size(); i < n; i++)
@@ -756,14 +750,34 @@ bool convertPharmaJson(Json::Value& root, const vector<PharmaPoint>& points)
 		pt["z"] = points[i].z;
 		pt["size"] = points[i].size;
 
+		vector3 sum;
+		unsigned cnt = 0;
 		for (unsigned j = 0, nv = points[i].vecs.size(); j < nv; j++)
 		{
 			if(isfinite(points[i].vecs[j].length())) //really do not want Nan - results in bad json
 			{
-				pt["vector"][j]["x"] = points[i].vecs[j].x();
-				pt["vector"][j]["y"] = points[i].vecs[j].y();
-				pt["vector"][j]["z"] = points[i].vecs[j].z();
+				vector3 v = points[i].vecs[j];
+				pt["vector"][j]["x"] = v.x();
+				pt["vector"][j]["y"] = v.y();
+				pt["vector"][j]["z"] = v.z();
+				sum += v.normalize();
+				cnt++;
 			}
+		}
+
+		if(sum.length_2() > 0.005) //didn't just cancel out (e.g. aromatics)
+		{
+			//take average
+			sum /= cnt;
+			pt["svector"]["x"] = sum.x();
+			pt["svector"]["y"] = sum.y();
+			pt["svector"]["z"] = sum.z();
+		}
+		else if(cnt > 0) //take first
+		{
+			pt["svector"]["x"] = points[i].vecs[0].x();
+			pt["svector"]["y"] = points[i].vecs[0].y();
+			pt["svector"]["z"] = points[i].vecs[0].z();
 		}
 
 		pt["radius"] = points[i].radius;
@@ -1040,6 +1054,54 @@ void getProteinPharmaPoints(const Pharmas& pharmas, OBMol& mol,
 	}
 }
 
+//prune atoms from rec that are more than dist from ligand
+//this is approximate since I'm just using the bounding box
+static OBMol getPrunedReceptor(OBMol& rec, OBMol& ligand, double dist)
+{
+	if(ligand.NumAtoms() == 0) return rec;
+
+	double min[3] = {HUGE_VAL, HUGE_VAL, HUGE_VAL};
+	double max[3] = {-HUGE_VAL, -HUGE_VAL, -HUGE_VAL};
+
+	//get bounding box of ligand
+	FOR_ATOMS_OF_MOL(a, ligand)
+	{
+		vector3 pt = a->GetVector();
+		for(unsigned i = 0; i < 3; i++) {
+			if(pt[i] > max[i]) max[i] = pt[i];
+			if(pt[i] < min[i]) min[i] = pt[i];
+		}
+	}
+
+	//now expand by dist
+	for(unsigned i = 0; i < 3; i++)
+	{
+		max[i] += dist;
+		min[i] -= dist;
+	}
+
+	//identify receptor atoms outside of box
+	vector<OBAtom*> toremove;
+	OBMol ret = rec;
+	FOR_ATOMS_OF_MOL(a, ret)
+	{
+		vector3 pt = a->GetVector();
+		if(pt[0] > max[0] || pt[1] > max[1] || pt[2] > max[2] ||
+				pt[0] < min[0] || pt[1] < min[1] || pt[2] < min[2])
+		{
+			toremove.push_back(&(*a));
+		}
+	}
+
+	ret.BeginModify();
+	for(unsigned i = 0, n = toremove.size(); i < n; i++)
+	{
+		ret.DeleteAtom(toremove[i],true);
+	}
+	ret.EndModify();
+	return ret;
+}
+
 //compute pharmacophore of the interaction
 //calculate both ligand and receptor points and then
 //enable only those ligand points that are close to complimentary receptor points
@@ -1054,7 +1116,8 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor,
 	vector<PharmaPoint> receptorpoints;
 
 	getPharmaPoints(pharmas, ligand, ligandpoints);
-	getProteinPharmaPoints(pharmas, receptor, receptorpoints); //could potentially prune a very large molecule..
+	OBMol prunedrec = getPrunedReceptor(receptor, ligand, 10); //prune receptor
+	getProteinPharmaPoints(pharmas, prunedrec, receptorpoints); //could potentially prune a very large molecule..
 
 	//remove anything without interacting info
 	vector<PharmaPoint> interactpoints;
@@ -1109,13 +1172,23 @@ void getInteractionPoints(const Pharmas& pharmas, OBMol& receptor,
 					vector3 rv(rp.x, rp.y, rp.z);
 					vector3 lv(l.x, l.y, l.z);
 					lp.vecs.clear();
-					lp.vecs.push_back((rv - lv).normalize());
+					lp.vecs.push_back(rv - lv);
 					//assume identical points with different vectors are right next to each other
 					//and only do one
 					if (points.size() == 0 || points.back().pharma != l.pharma
 							|| points.back().x != l.x || points.back().y != l.y
 							|| points.back().z != l.z)
 						points.push_back(lp);
+					else if(points.size() > 0 && points.back().vecs.size() > 0)//identical points, add vector
+					{
+						//alternatively, we could store all vectors..
+						double len = lp.vecs[0].length_2();
+						double oldlen = points.back().vecs[0].length_2();
+						if(len < oldlen)
+						{
+							points.back().vecs[0] = lp.vecs[0];
+						}
+					}
 				}
 				else
 				{

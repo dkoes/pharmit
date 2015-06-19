@@ -288,6 +288,110 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 	}
 }
 
+
+//take a file as input and write out the same structurs only with
+//embedded pharmacophore data; input and output can be the same files
+//temporary result is kept in memory, so file should not be large
+static void handle_phogrify_cmd(const Pharmas& pharmas)
+{
+
+	if (outputFiles.size() > 0 && outputFiles.size() != inputFiles.size())
+	{
+		cerr << "Number of outputs must equal number of inputs.\n";
+		exit(-1);
+	}
+
+	for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
+	{
+		string fname = inputFiles[i];
+		ifstream in(fname.c_str());
+		if (!in)
+		{
+			cerr << "Error reading file " << fname << "\n";
+			exit(-1);
+		}
+
+		stringstream out;
+		OBConversion conv;
+		OBFormat *format = conv.FormatFromExt(fname.c_str());
+		if (format == NULL)
+		{
+			cerr << "Invalid input file format " << fname << "\n";
+			exit(-1);
+		}
+		conv.SetInFormat(format);
+		conv.SetOutFormat(format);
+
+		OBMol mol;
+		vector<PharmaPoint> points;
+
+
+		OBAromaticTyper aromatics;
+		OBAtomTyper atyper;
+		conv.SetInStream(&in);
+		conv.SetOutStream(&out);
+		while (conv.Read(&mol))
+		{
+			OBMol origmol = mol;
+
+			//perform exactly the same analyses as dbcreate
+			mol.AddHydrogens();
+
+			mol.FindRingAtomsAndBonds();
+			mol.FindChiralCenters();
+			mol.PerceiveBondOrders();
+			aromatics.AssignAromaticFlags(mol);
+			mol.FindSSSR();
+			atyper.AssignTypes(mol);
+			atyper.AssignHyb(mol);
+
+			getPharmaPoints(pharmas, mol, points);
+			stringstream phdata;
+			for (unsigned i = 0, n = points.size(); i < n; i++)
+				phdata << points[i] << "\n";
+
+			OBPairData* sddata = new OBPairData();
+			sddata->SetAttribute("pharmacophore");
+			sddata->SetValue(phdata.str());
+			origmol.DeleteData("pharmacophore"); //replace
+			origmol.SetData(sddata);
+			conv.Write(&origmol);
+		}
+
+		in.close();
+		if(out.str().length() == 0)
+		{
+			//make sure we don't overwrite original file if we didn't generate output for some reason
+			cerr << "Error generating output for: " << fname << "\n";
+			continue;
+		}
+
+		string outname = outputFiles[i];
+		string oext = filesystem::extension(outname);
+		ofstream outf;
+
+		outf.open(outname.c_str());
+		if (!outf)
+		{
+			cerr << "Could not open output file: " << outname << "\n";
+			exit(-1);
+		}
+
+
+		if(oext == ".gz") //assumed to be compressed sdf
+		{
+			boost::iostreams::filtering_ostream gzout;
+			gzout.push(boost::iostreams::gzip_compressor());
+			gzout.push(outf);
+			gzout.write(out.str().c_str(), out.str().size());
+		}
+		else
+		{
+			outf.write(out.str().c_str(), out.str().size());
+		}
+	}
+}
+
 //create a database
 static void handle_dbcreate_cmd(const Pharmas& pharmas)
 {
@@ -437,6 +541,13 @@ public:
 	}
 
 };
+
+static void signalhandler(int sig)
+{
+  //ignore
+}
+
+
 //create a database directory within the server framework
 //in this framework we provide a file of prefixes where each line is
 //a location (on a different hard drive) for creating a strip of the overall database
@@ -447,6 +558,8 @@ public:
 //the json object is indexed by database key; the keys define the subdirectory name to use in prefixes
 static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 {
+	signal(SIGUSR1, signalhandler); //don't let ourselves get interrupted by build signals
+
 	ifstream prefixes(Prefixes.c_str());
 	if (Prefixes.size() == 0 || !prefixes)
 	{
@@ -556,12 +669,25 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				if( (i%nd) == d )
 				{ //part of our slice
 					const LigandInfo info = liginfos[i];
-					ifstream in(info.file.c_str());
+					string name = info.file.string();
+					//openbabel's builtin zlib reader seems to use increasing amounts
+					//of memory over time, so use boost's
+					ifstream *uncompressed_inmol = new std::ifstream(name.c_str());
+					iostreams::filtering_stream<iostreams::input> *inmol = new iostreams::filtering_stream<iostreams::input>();
+
+					std::string::size_type pos = name.rfind(".gz");
+					if (pos != std::string::npos)
+					{
+						inmol->push(iostreams::gzip_decompressor());
+					}
+					inmol->push(*uncompressed_inmol);
+
+
 					OBFormat *format = conv.FormatFromExt(info.file.c_str());
 
 					if(format != NULL)
 					{
-						ReadMCMol reader(in, format, 1, 0, ReduceConfs);
+						ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs);
 						OBMol mol;
 
 						while (reader.read(mol))
@@ -569,12 +695,14 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 							db.addMolToDatabase(mol, info.id, info.name);
 						}
 					}
+
+					delete uncompressed_inmol;
+					delete inmol;
 				}
 			}
 
 			myturn.wait(d); // does not return until previous processes have created index
-			db.createSpatialIndex();
-			db.writeStats();
+			db.createSpatialIndex(); //will write stats
 
 			if(d != nd-1)
 				exit(0);
@@ -774,6 +902,10 @@ int main(int argc, char *argv[])
 	if (Cmd == "pharma")
 	{
 		handle_pharma_cmd(pharmas);
+	}
+	else if (Cmd == "phogrify")
+	{
+		handle_phogrify_cmd(pharmas);
 	}
 	else if(Cmd == "showpharma")
 	{

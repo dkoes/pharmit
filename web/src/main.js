@@ -73,7 +73,7 @@ $(document).ready(function() {
 	//to have it loaded, but 
 	
 	var receiveMessage = function(event) {
-		console.log("receivemsg "+event.data);
+		//console.log("receivemsg "+event.data);
 		if(event.data == "ack") { //acks let us verify that we are listening
 			event.source.postMessage("ack2","*");
 		}

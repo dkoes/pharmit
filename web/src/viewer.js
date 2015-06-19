@@ -222,16 +222,22 @@ Pharmit.Viewer = (function() {
 			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
 			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
 			var sliderdiv = $('<div>').addClass('pharmit_surfacetransparencyslider').appendTo(stdiv);
-			$('<div id="surfaceopacity" name="surfaceopacity">').appendTo(sliderdiv)
-				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':0.8,
+			var surfaceinput = $('<input type="hidden" name="surfaceopacity">').appendTo(stdiv); //use named inputs for getting/setting values
+			var defaultopacity = 0.8;
+			surfaceinput.val(defaultopacity);
+			var surfslider = $('<div id="surfaceopacity">').appendTo(sliderdiv)
+				.slider({animate:'fast',step:0.05,'min':0,'max':1,'value':defaultopacity,
 					change: function(event, ui) { 
-						surfaceStyle.opacity = ui.value;
-						if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
-						viewer.render();
+						surfaceinput.val(ui.value).change();
 						}
 				});
-				
-			
+			surfaceinput.change(function() {
+				var val = surfaceinput.val();
+                                surfaceStyle.opacity = val;
+                                if(surface !== null) viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
+                                if(surfslider.slider("value") != val) surfslider.slider("value",val);
+                                viewer.render();
+			});	
 			//background color
 			var bcdiv = $('<div>').addClass('pharmit_backgroundcolordiv').appendTo(vizgroup);
 			$('<label for="backgroundcolor">Background Color:</label>').appendTo(bcdiv);
@@ -319,6 +325,7 @@ Pharmit.Viewer = (function() {
 		
 		this.setView = function(view) {
 			if(view) viewer.setView(view);
+			else viewer.zoomTo(); //at least center on objects
 		};
 		
 		this.getView = function() {
