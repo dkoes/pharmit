@@ -36,8 +36,6 @@ using namespace OpenBabel;
 //copy data needed to write out pmol from obmol
 void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 {
-	static OBIsotopeTable isotable;
-
 	name = mol.GetTitle();
 	//first construct atoms
 	int typeindex[256]; //position in atoms vector of an atom type, indexed by atomic number
@@ -92,7 +90,7 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 		unsigned isoi = atom->GetIsotope();
 		if(isoi != 0)
 		{
-			int dmass = round(isotable.GetExactMass(isoi)-isotable.GetExactMass(0));
+			int dmass = round(isotab.GetExactMass(isoi)-isotab.GetExactMass(0));
 			if(dmass != 0)
 			{
 				iso.push_back(Property(ai, dmass));

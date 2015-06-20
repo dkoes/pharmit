@@ -887,6 +887,8 @@ int main(int argc, char *argv[])
 {
 	cl::ParseCommandLineOptions(argc, argv);
 	obErrorLog.StopLogging(); //just slows us down, possibly buggy?
+	isotab.Init(); //avoid race condition
+
 	//if a pharma specification file was given, load that into the global Pharmas
 	Pharmas pharmas(defaultPharmaVec);
 	if (pharmaSpec.size() > 0)
