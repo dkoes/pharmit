@@ -113,6 +113,7 @@ cl::opt<string> Prefixes("prefixes",
 cl::opt<string> DBInfo("dbinfo",
 		cl::desc("[dbcreateserverdir] JSON file describing database subset"));
 cl::opt<string> Ligands("ligs", cl::desc("[dbcreateserverdir] Text file listing locations of molecules"));
+cl::opt<bool> NoIndex("noindex",cl::desc("[dbcreateserverdir] Do not create indices"), cl::init(false));
 
 typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&, Excluder& excluder);
 
@@ -701,8 +702,13 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				}
 			}
 
-			myturn.wait(d); // does not return until previous processes have created index
-			db.createSpatialIndex(); //will write stats
+			liginfos.clear(); //free up memory before building indices
+
+			if(!NoIndex)
+			{
+			  myturn.wait(d); // does not return until previous processes have created index
+			  db.createSpatialIndex(); //will write stats
+			}
 
 			if(d != nd-1)
 				exit(0);
