@@ -143,6 +143,19 @@ unsigned ThreePointData::vecValue(const PharmaPoint *pt, const PharmaPoint *I, c
 	return ret;
 }
 
+
+//empty constructor
+ThreePointData::ThreePointData(): molPos(0), i1(0), i2(0), i3(0), l1(0), l2(0), l3(0), x(0), y(0), z(0), theta2(0), phi2(0), theta3(0), phi3(0), extra1(0), extra2(0), extra3(0), weight(0), nrot(0)
+{
+
+}
+
+//initialize x,y,z - used for creating min/max object with external sorting
+ThreePointData::ThreePointData(signed val): molPos(0), i1(0), i2(0), i3(0), l1(val), l2(val), l3(val), x(0), y(0), z(0), theta2(0), phi2(0), theta3(0), phi3(0), extra1(0), extra2(0), extra3(0), weight(0), nrot(0)
+{
+
+}
+
 //create the canonical three point from the points and indexes i,j,k
 //return simple finger class
 ThreePointData::ThreePointData(unsigned offset, double w, unsigned nr, const vector<PharmaPoint>& points, unsigned i, unsigned j, unsigned k)

@@ -84,6 +84,8 @@ struct ThreePointData
 	TripletFingerprint fingerprint;
 //512 bits - 64 bytes per triplet
 	ThreePointData(unsigned offset, double w, unsigned numrot, const vector<PharmaPoint>& points, unsigned i, unsigned j, unsigned k);
+	ThreePointData();
+  ThreePointData(signed val);
 
 	static unsigned reduceAngle(double d);
 	static double unreduceAngle(int val);

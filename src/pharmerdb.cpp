@@ -398,6 +398,13 @@ void PharmerDatabaseCreator::initializeDatabases()
 	//property files
 	MolProperties::createFiles(dbpath, propFiles);
 
+	//initialize tempory files (used for out-of-memory partitioning)
+	for(unsigned i = 0; i < NUMTMPFILES; i++)
+	{
+	  filesystem::path tmppath = dbpath / (lexical_cast<string> (i) + string(".tmp"));
+	  tmpFiles[i] = fopen(tmppath.c_str(), "w+");
+	  unlink(tmppath.c_str()); //basically anonymous disk-backed storage
+	}
 }
 
 
@@ -617,28 +624,6 @@ static void chooseSplit(const BoundingBox& box, SplitInfo& info,
 	}
 }
 
-class PivotCompareRnd
-{
-	short pivot;
-	const SplitInfo& info;
-public:
-	PivotCompareRnd(short p, const SplitInfo& i) :
-		pivot(p), info(i)
-	{
-	}
-
-	//flip a coint as to which way equal vals go
-	bool operator()(const ThreePointData& x)
-	{
-		int diff = info.splitVal(x) - pivot;
-		if (diff < 0)
-			return true;
-		if (diff > 0)
-			return false;
-		return ::random() % 2;
-	}
-};
-
 //find the median value in one sequential scan using counts
 static unsigned short findMedianValue(ThreePointData *start, ThreePointData *end,
 		const SplitInfo& info, unsigned short min, unsigned short max)
@@ -659,11 +644,105 @@ static unsigned short findMedianValue(ThreePointData *start, ThreePointData *end
 	for (int i = left; i <= right; i++)
 	{
 		cnt += counts[i - left];
-		if (cnt >= mid)
+		if (cnt > mid)
 			return i;
 	}
 	abort();
 }
+
+class PivotCompareRnd
+{
+  short pivot;
+  const SplitInfo& info;
+public:
+  PivotCompareRnd(short p, const SplitInfo& i) :
+    pivot(p), info(i)
+  {
+  }
+
+  //flip a coint as to which way equal vals go
+  bool operator()(const ThreePointData& x)
+  {
+    int diff = info.splitVal(x) - pivot;
+    if (diff < 0)
+      return true;
+    if (diff > 0)
+      return false;
+    return ::random() % 2;
+  }
+};
+
+// in or out of memory partitioning
+// divides up input (start to end) into three groups - less than, equal to, and greater than median
+//then outputs them in order and returns a middle position
+ThreePointData* PharmerDatabaseCreator::partitionData(ThreePointData *start, ThreePointData *end, SplitInfo& info, unsigned short median)
+{
+  unsigned long num = end-start;
+
+  if (num < pdatasFitInMemory)
+  {
+    PivotCompareRnd rcmp(median, info);
+    ThreePointData *ret = partition(start, end, rcmp);
+    if (ret == end || ret == start) //we got unlucky and did not partition well
+    {
+      sort(start, end, info.func);
+      ret = start + (end - start) / 2;
+    }
+    return ret;
+  }
+  else
+  {
+    assert(tmpFiles[0]); //less
+    assert(tmpFiles[1]); //equal
+    assert(tmpFiles[2]); //more
+
+    FILE *less = tmpFiles[0];
+    FILE *equal = tmpFiles[1];
+    FILE *more = tmpFiles[2];
+
+    rewind(less);
+    rewind(equal);
+    rewind(more);
+
+    unsigned long nLess = 0, nEqual = 0, nMore = 0;
+
+    for (ThreePointData *itr = start; itr != end; itr++)
+    {
+      unsigned short val = info.splitVal(*itr);
+      if (val < median)
+      {
+        nLess++;
+        fwrite(itr, sizeof(ThreePointData), 1, less);
+      }
+      else if (val == median)
+      {
+        nEqual++;
+        fwrite(itr, sizeof(ThreePointData), 1, equal);
+      }
+      else
+      {
+        nMore++;
+        fwrite(itr, sizeof(ThreePointData), 1, more);
+      }
+    }
+
+    //copy back in order
+    rewind(less);
+    size_t num = fread(start, sizeof(ThreePointData), nLess, less);
+    assert(num == nLess);
+
+    rewind(equal);
+    num = fread(start + nLess, sizeof(ThreePointData), nEqual, equal);
+    assert(num == nEqual);
+
+    rewind(more);
+    num = fread(start + nLess + nEqual, sizeof(ThreePointData), nMore, more);
+    assert(num == nMore);
+
+    return start + (end - start) / 2;
+  }
+}
+
 
 //create an internal kd tree
 //each node splits points data in two along the axis with the largest spread
@@ -703,14 +782,7 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 		//choose a median value, points with this value can be on either side
 		unsigned short medianVal = findMedianValue(start, end, info, info.getMin(box),
 				info.getMax(box));
-		PivotCompareRnd rcmp(medianVal, info);
-		ThreePointData *median = partition(start, end, rcmp);
-
-		if (median == end || median == start) //we got unlikely and did not partition well
-		{
-			sort(start, end, info.func);
-			median = start + (end - start) / 2;
-		}
+		ThreePointData *median = partitionData(start, end, info, medianVal);
 
 		page.nodes[pos].splitVal = medianVal;
 		page.nodes[pos].splitData = median - begin;

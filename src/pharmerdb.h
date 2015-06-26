@@ -338,7 +338,7 @@ typedef vector<vector<PharmaPoint> > MCPoints;
 #define MOLQ_CHUNK_SIZE (32)
 #define LENGTH_BINS (32)
 #define LENGTHDIV (500)
-
+#define NUMTMPFILES (3)
 
 //interface to an anchor oriented database
 class PharmerDatabaseCreator
@@ -354,6 +354,8 @@ private:
 
 	FILE *sminaIndex; //map from mol location to location in sminadata
 	FILE *sminaData; //smina formated molecule
+
+	FILE *tmpFiles[NUMTMPFILES]; //for partitioning
 
 	MolProperties::PropFiles propFiles;
 
@@ -378,6 +380,8 @@ private:
 
 	void generateAtomData();
 
+	ThreePointData* partitionData(ThreePointData *start, ThreePointData *end, SplitInfo& info, unsigned short median);
+
 	void writeMIDs();
 
 	unsigned long stats[LastStat];
@@ -386,7 +390,7 @@ private:
 	TripleIndexer tindex;
 
 	boost::shared_mutex fileAccessLock;
-	long pdatasFitInMemory;
+	unsigned long pdatasFitInMemory;
 
 	MTQueue< vector<MolDataCreator*> > molDataWorkQ;
 
@@ -404,6 +408,7 @@ public:
 
 		boost::array<boost::array<boost::array<unsigned, LENGTH_BINS>, LENGTH_BINS>, LENGTH_BINS> zero;
 		memset(zero.c_array(), 0, LENGTH_BINS*LENGTH_BINS*LENGTH_BINS*sizeof(unsigned));
+		memset(tmpFiles, 0, sizeof(tmpFiles));
 		binnedCnts.resize(tindex.size(), zero);
 		//create databases
 
@@ -448,6 +453,17 @@ public:
 		{
 			if(propFiles[i]) fclose(propFiles[i]);
 		}
+
+		for(unsigned i = 0; i < NUMTMPFILES; i++)
+		{
+		  if(tmpFiles[i]) fclose(tmpFiles[i]);
+		}
+	}
+
+	//set a bound on the amount of memory available for sorting
+	void setInMemorySize(unsigned long maxmem)
+	{
+	  pdatasFitInMemory = maxmem/sizeof(ThreePointData);
 	}
 
 	//add a molecule to the database

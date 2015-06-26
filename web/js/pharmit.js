@@ -989,7 +989,7 @@ Pharmit.MinResults = (function() {
 					table.show();
 					//setup table
 					sminaid = ret.sminaid;
-					var numrows = Math.floor((body.height()-120)/28); //magic numbers!
+					var numrows = Math.floor((body.height()-100)/29); //magic numbers!
 					
 					table.dataTable({
 						searching: false,

@@ -635,6 +635,10 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	string fname;
 	while(getline(prefixes,fname))
 	{
+	  if(fname.length() > 0 && fname[0] == '#') //comment
+	  {
+	    continue;
+	  }
 		if(filesystem::exists(fname))
 		{
 			filesystem::path dbpath(fname);
@@ -652,6 +656,11 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		}
 	}
 
+	//portion memory between processes
+  unsigned long memsz = sysconf (_SC_PHYS_PAGES) * sysconf (_SC_PAGESIZE);
+  memsz /= directories.size();
+  memsz /= 2; //only take half of available memory
+
 	//multi-thread (fork actually, due to openbabel) across all prefixes
 	TurnTaker myturn(directories);
 	//create databases
@@ -662,6 +671,7 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		if (d == (nd-1) || fork() == 0)
 		{
 			PharmerDatabaseCreator db(pharmas, directories[d], root);
+			db.setInMemorySize(memsz);
 			OBConversion conv;
 
 			//now read files
