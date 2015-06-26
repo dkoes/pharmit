@@ -50,4 +50,6 @@ for smile in smiles:
         cursor.execute("SELECT name FROM names WHERE smile = %s", (smile,))
         names = cursor.fetchall()
         names = list(itertools.chain.from_iterable(names)) 
-        print sdfloc,i,' '.join(sortNames(prefix,names))
+        bigname =' '.join(sortNames(prefix,names))
+        bigname = bigname.replace('\n','')
+        print sdfloc,i,bigname
