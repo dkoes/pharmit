@@ -503,46 +503,6 @@ struct LigandInfo
 	LigandInfo(): id(0) {}
 };
 
-//createspatialindex requires a lot of memory; if we end up swapping
-//doing things in parallel takes longer than in serial, so just take turns
-//this class is used to sleep until it is our turn, based on file outputs
-//TODO: take number of ligs an estimate number of viable simultaneous index builds
-class TurnTaker
-{
-	vector<filesystem::path> infofiles; //dbinfo.json gets written when done
-public:
-	TurnTaker(const vector<filesystem::path>& directories)
-	{
-		BOOST_FOREACH(filesystem::path p, directories)
-		{
-			infofiles.push_back(p / "dbinfo.json");
-		}
-	}
-
-	//doesn't return until the i'th process can go
-	void wait(unsigned me) const
-	{
-		assert(me < infofiles.size());
-		while(true)
-		{
-			bool needtowait = false;
-			for(unsigned i = 0; i < me; i++)
-			{
-				if(!filesystem::exists(infofiles[i]))
-				{
-					needtowait = true;
-					break;
-				}
-			}
-			if(needtowait)
-				sleep(1);
-			else
-				return;
-		}
-	}
-
-};
-
 static void signalhandler(int sig)
 {
   //ignore
@@ -662,7 +622,6 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
   memsz /= 2; //only take half of available memory
 
 	//multi-thread (fork actually, due to openbabel) across all prefixes
-	TurnTaker myturn(directories);
 	//create databases
 	//openbabel can't handled multithreaded reading, so we actually have to fork off a process
 	//for each database
@@ -712,11 +671,10 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				}
 			}
 
-			liginfos.clear(); //free up memory before building indices
+			liginfos = vector<LigandInfo>(); //free up memory before building indices
 
 			if(!NoIndex)
 			{
-			  myturn.wait(d); // does not return until previous processes have created index
 			  db.createSpatialIndex(); //will write stats
 			}
 
