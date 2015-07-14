@@ -182,6 +182,22 @@ Pharmit.MinResults = (function() {
 			Pharmit.inFormSubmit = true;			
 			//have to use stupid form trick - mostly because of IE and safari
 			var cmd = Pharmit.server+'?cmd=savesmina&qid='+qid;
+			
+            //add filters if present
+            if(maxRMSD.val() !== '') {
+            	cmd += "&maxRMSD=" + maxRMSD.val();
+            }
+            if(maxscore.val() !== '') {
+            	cmd += "&maxScore=" + maxscore.val();
+            }
+            if(singleConfs.prop('checked')) {
+            	cmd += "&unique=1";
+            }
+            
+            var order = table.DataTable().order();
+            cmd += "&order[0][column]="+order[0][0];
+            cmd += "&order[0][dir]="+order[0][1];    		
+			
 			var form = $('<form>', { 'action': cmd, 'method': 'post'});
 			form.appendTo(document.body);
 			form.submit();
