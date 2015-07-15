@@ -290,6 +290,50 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 }
 
 
+//there was a bug with generating sminaData due to a bug in openbabel's handling
+//of multi-conformer OBMols.  This regenerates the sminaData/Index.
+//Takes the path to sminaData/molData/sminaIndex
+static void handle_fixsmina_cmd()
+{
+  for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
+  {
+    filesystem::path p(inputFiles[i]);
+    p = p.parent_path();
+    filesystem::path sd = p / "sminaData";
+    filesystem::path si = p / "sminaIndex";
+    filesystem::path md = p / "molData";
+
+    if(!filesystem::exists(sd)) {
+      cerr << sd <<" does not exist!\n";
+      continue;
+    }
+    if(!filesystem::exists(si)) {
+      cerr << sd <<" does not exist!\n";
+      continue;
+    }
+    if(!filesystem::exists(md)) {
+      cerr << sd <<" does not exist!\n";
+      continue;
+    }
+
+
+    //read sminaIndex into memory
+
+    //memmap molData
+
+    //open sminaData for writing
+
+    //for each mol
+
+      //read from molData
+      //write out updated sminaData
+      //update sminaIndex
+
+    //write out updated sminaIndex
+
+  }
+}
+
 //take a file as input and write out the same structurs only with
 //embedded pharmacophore data; input and output can be the same files
 //temporary result is kept in memory, so file should not be large
@@ -898,6 +942,10 @@ int main(int argc, char *argv[])
 	else if (Cmd == "dbsearch")
 	{
 		handle_dbsearch_cmd();
+	}
+	else if(Cmd == "fixsmina")
+	{
+	  handle_fixsmina_cmd();
 	}
 	else if (Cmd == "server")
 	{
