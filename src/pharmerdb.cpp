@@ -479,11 +479,7 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 		confs[c].AddHydrogens();
 	}
 	mol.AddHydrogens();
-	//all the implicitly called perception routines are absolutely not
-	//thread safe, so do all perception here (hopefully haven't missed anything)
-	mol.FindRingAtomsAndBonds();
-	mol.FindChiralCenters();
-	mol.PerceiveBondOrders();
+
 	aromatics.AssignAromaticFlags(mol);
 	mol.FindSSSR();
 	atyper.AssignTypes(mol);

@@ -50,6 +50,7 @@
 #include "ReadMCMol.h"
 #include "Excluder.h"
 #include "dbloader.h"
+#include "SminaConverter.h"
 
 using namespace boost;
 using namespace OpenBabel;
@@ -318,19 +319,58 @@ static void handle_fixsmina_cmd()
 
 
     //read sminaIndex into memory
+    vector<  pair<unsigned long, unsigned long> > sminaIndex;
+    sminaIndex.resize(filesystem::file_size(si)/sizeof( pair<unsigned long, unsigned long>));
+    FILE *sif = fopen(si.c_str(), "r");
+    size_t ret = fread(&sminaIndex[0], sizeof(pair<unsigned long, unsigned long>), sminaIndex.size(), sif);
+    if(ret == 0) cerr << "Could not read " << si << "\n";
+    fclose(sif);
 
     //memmap molData
+    MMappedRegion<unsigned char> molData;
+    molData.map(md.string(), true, true);
 
-    //open sminaData for writing
+    //open sminaData for writing (blows away current file)
+    FILE *sminaData = fopen(sd.c_str(), "w");
+
+    //setup variables for loop
+    PMolReaderSingleAlloc pread;
+    OBConversion obconv;
+    obconv.SetInAndOutFormats("SDF","SDF");
+    OBMol mol;
 
     //for each mol
-
+    for(unsigned i = 0, n = sminaIndex.size(); i < n; i++)
+    {
       //read from molData
+      unsigned long molpos = sminaIndex[i].first;
+      MolData mdata;
+      mdata.read(molData.begin(), molpos, pread);
+      stringstream str;
+      mdata.mol->writeSDF(str);
+
+      obconv.ReadString(&mol, str.str());
+
+      mol.AddHydrogens();
+      mol.SetAutomaticFormalCharge(false);
+      DeleteHydrogens(mol); //leaves just polars
+
       //write out updated sminaData
+      stringstream data;
+      SminaConverter::MCMolConverter mconv(mol);
+      mconv.convertConformer(0, data);
+      unsigned long smpos = ftell(sminaData); //location in smina dta
+      unsigned sz = data.str().size();
+
+      //output actual data
+      fwrite(&sz, sizeof(sz),1, sminaData);
+      fwrite(data.str().c_str(), sizeof(char), sz, sminaData);
       //update sminaIndex
-
+      sminaIndex[i].second = smpos; //store location
+    }
     //write out updated sminaIndex
-
+    sif = fopen(si.c_str(), "w");
+    fwrite(&sminaIndex[0], sizeof(pair<unsigned long, unsigned long>), sminaIndex.size(), sif);
   }
 }
 
