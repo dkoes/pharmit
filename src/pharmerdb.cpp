@@ -465,19 +465,16 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 		return;
 
 	mol.Center();
-	//ARG!!! these routines cruelly remove conformer data so we need
-	//a separate OBMol for each conformer so we can add hydrogens
-	// I wish this were more efficient and less fragile..
-	unsigned nc = mol.NumConformers();
-	if (ReduceConfs > 0 && ReduceConfs < nc)
-		nc = ReduceConfs;
-	vector<OBMol> confs(nc);
-	for (unsigned c = 0; c < nc; c++)
+
+	if(ReduceConfs > 0)
 	{
-		confs[c] = mol;
-		confs[c].SetConformer(c);
-		confs[c].AddHydrogens();
+	  while(mol.NumConformers() > ReduceConfs)
+	  {
+	    mol.DeleteConformer(mol.NumConformers()-1);
+	  }
 	}
+	unsigned nc = mol.NumConformers();
+
 	mol.AddHydrogens();
 
 	aromatics.AssignAromaticFlags(mol);
@@ -489,29 +486,12 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 	MolProperties props;
 	props.calculate(mol, uniqueid);
 
-	//now add back conformer coordinates, create new memory for mol
-	vector<double*> cdata; cdata.reserve(confs.size());
-	unsigned ncoords = mol.NumAtoms() * 3;
-	for (unsigned i = 0, n = confs.size(); i < n; i++)
-	{
-		if(confs[i].NumAtoms()*3 != ncoords)
-		{
-		  cerr << "ERROR with " << mol.GetTitle() << ": wrong number of atoms/coordinates (" << confs[i].NumAtoms() << " vs " << mol.NumAtoms() << ")\n";
-		}
-		else
-		{
-		  cdata.push_back(new double[ncoords]);
-		  memcpy(cdata.back(), confs[i].GetConformer(0), ncoords*sizeof(double));
-		}
-	}
+  if(mol.NumConformers() != nc) {
+    //there was a bug in openbabel that blew away conformers when adding hydrogens,
+    //make sure we're using afixed version
+    abort();
+  }
 
-	if(cdata.size() == 0)
-	{
-	  cerr << "ERROR with " << mol.GetTitle() << ": no properly sized conformers\n";
-	  return;
-	}
-
-	mol.SetConformers(cdata);
 	mol.SetTitle(name.c_str());
 	//generate moldata
 	MolDataCreator mdc(pharmas, tindex, mol, props, stats[NumMols]);

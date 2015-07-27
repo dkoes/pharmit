@@ -21,8 +21,8 @@ using namespace boost;
 
 class ResultMolecules: public Results
 {
-	PMolReaderMalloc reader;
-	vector<PMol*> mols;
+	shapepmol::PMolReaderMalloc reader;
+	vector<shapepmol::PMol*> mols;
 	vector<double> scores;
 
 	bool uniqueify; //true if should only grab one conformer
@@ -50,7 +50,7 @@ public:
 	//support a single sddata entry for the goodness of the result
 	void add(const char *data, double score)
 	{
-		PMol *mol = (PMol*)reader.readPMol(data);
+		shapepmol::PMol *mol = (shapepmol::PMol*)reader.readPMol(data);
 
 		if(uniqueify)
 		{
@@ -99,8 +99,8 @@ public:
 	void writeSDF(ostream& out, unsigned i) const
 	{
 		assert(i < mols.size());
-		vector<ASDDataItem> data;
-		data.push_back(ASDDataItem("score",boost::lexical_cast<string>(scores[i])));
+		vector<shapepmol::ASDDataItem> data;
+		data.push_back(shapepmol::ASDDataItem("score",boost::lexical_cast<string>(scores[i])));
 		mols[i]->writeSDF(out, data);
 	}
 

@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *  per each molecule since this makes lookup faster.
  */
 
-#ifndef PMOL_H_
-#define PMOL_H_
+#ifndef SHPMOL_H_
+#define SHPMOL_H_
 
 
 #include <boost/unordered_map.hpp>
@@ -42,6 +42,8 @@ using namespace std;
 
 #define MAX_BONDS 3
 
+namespace shapepmol
+{
 /* This is just a sub for now - eventually we'll need it and pull it out into it's own file */
 class RMSDResult
 {
@@ -287,5 +289,5 @@ public:
 	}
 
 };
-
+}
 #endif /* PMOL_H_ */

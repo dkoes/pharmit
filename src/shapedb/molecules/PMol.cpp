@@ -38,6 +38,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using namespace RDKit;
 
+namespace shapepmol {
+
 //copy data needed to write out pmol from obmol
 void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 {
@@ -575,4 +577,4 @@ void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 	out << "$$$$" << endl;
 }
 
-
+}

@@ -245,10 +245,6 @@ void OBAMolecule::computeInteractionGridPoints(OBAMolecule& receptor,
 			{
 				grid.markXYZSphere(xave,yave,zave,interactionPointRadius);
 			}
-			if(Verbose)
-			{
-				cout << "pseudoatom InteractionPoints, pos=(" << xave << "," << yave << "," << zave << ")\n";
-			}
 		}
 	}
 }

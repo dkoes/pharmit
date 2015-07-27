@@ -145,7 +145,7 @@ public:
 	void write(ostream& out) const
 	{
 		OBMol m(mol);
-		PMolCreator pmol(m, true);
+		shapepmol::PMolCreator pmol(m, true);
 		pmol.writeBinary(out);
 	}
 
