@@ -350,7 +350,6 @@ static void handle_fixsmina_cmd()
       mdata.mol->writeSDF(str);
 
       obconv.ReadString(&mol, str.str());
-
       mol.AddHydrogens();
       mol.SetAutomaticFormalCharge(false);
       DeleteHydrogens(mol); //leaves just polars

@@ -5,6 +5,7 @@
 #with pubchem rest, it is faster to scan all of pubchem
 
 import ftplib,sys,tempfile,gzip,re
+import nscavail
 
 ftp = ftplib.FTP('ftp.ncbi.nih.gov')
 ftp.login()
@@ -43,7 +44,8 @@ for f in files:
                     break
         elif line.startswith('$$$$'):
             if cid != None and name != None:
-                print cid,name
+                if nscavail.nscavail(name):
+                    print cid,name
             name = None
             cid = None
         line = data.readline()

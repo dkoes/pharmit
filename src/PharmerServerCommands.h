@@ -824,6 +824,13 @@ public:
 			conv.SetOptions("r", OBConversion::OUTOPTIONS);  //rigid
 			OBMol rec;
 			conv.ReadString(&rec, receptor);
+
+			rec.AddHydrogens(true);
+			FOR_ATOMS_OF_MOL(a, rec)
+			{
+			  a->GetPartialCharge();
+			}
+
 			string pdbqtrec = conv.WriteString(&rec);
 
 			//connect to server
