@@ -1255,6 +1255,6 @@ void PharmerDatabaseSearcher::getSminaData(unsigned long molloc, ostream& out)
 	unsigned long sminaloc = pos->second;
 	unsigned sz = 0;
 	memcpy(&sz, sminaData.begin()+sminaloc, sizeof(unsigned)); //size of smina data
-	out.write(sminaData.begin()+sminaloc+sizeof(unsigned), sz);
+	out.write(sminaData.begin()+sminaloc+sizeof(unsigned), sz);    
 }
 

@@ -20,7 +20,7 @@ def nscavail(id):  #id should be a string
     browser['orderForm:nsc'] = id
     browser['orderForm:amt'] = '1'
     browser.submit('orderForm:j_idt32')
-    soup = bs(browser.response().read())
+    soup = bs(browser.response().read(),"html5lib")
     
     msgs = soup.find_all(class_='ui-messages-info-summary') + soup.find_all(class_='ui-messages-error-summary')
     return len(msgs) == 0
