@@ -281,6 +281,7 @@ Feature.prototype.updateViewer = function() {
 	
 	if(this.shape !== null) {
 		this.viewer.removeFeature(this.shape);
+		this.shape = null;
 	}
 	if(this.obj.enabled) {
 		var F = this;

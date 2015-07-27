@@ -850,7 +850,7 @@ void PharmerQuery::thread_sendSmina(PharmerQuery *query, stream_ptr out,
 		}
 	} catch (...) //don't let exceptions mess up usecnt or crash server
 	{
-        cerr << "Exception in sendsmina\n";
+	  std::cerr << "Exception in sendsmina\n";
 	}
 	query->decrementUseCnt();
 }

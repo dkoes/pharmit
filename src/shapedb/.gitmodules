@@ -1,0 +1,3 @@
+[submodule "CommandLine2"]
+	path = CommandLine2
+	url = https://github.com/dkoes/CommandLine2.git
