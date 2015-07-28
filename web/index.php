@@ -38,7 +38,7 @@
 			<div class="cont-10">
 				<div class="colwrapper-3">
 					<div class="cont-11">
-						<div class="cont-12"><p class="para-4"><span class="font-4">pharmit</span></p></div>
+						<div class="cont-12"><p class="para-4"><span class="font-4">pharmit<span class="beta">beta</span></span></p></div>
 					</div>
 					<div class="cont-13">
 						<div class="cont-14"><p class="para-5"><span class="font-5">interactive exploration of chemical space</span></p></div>

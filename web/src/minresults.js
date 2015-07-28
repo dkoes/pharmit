@@ -103,10 +103,10 @@ Pharmit.MinResults = (function() {
 			};
 			
 			table.hide(); //don't show it until it is setup
+			table.DataTable().clear();
 			//start provided query
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
-					table.show();
 					//setup table
 					sminaid = ret.sminaid;
 					var numrows = Math.floor((body.height()-100)/29); //magic numbers!
@@ -159,7 +159,7 @@ Pharmit.MinResults = (function() {
 						 }
 
 					});
-
+					table.show();
 
 				} else {
 					cancel();

@@ -705,7 +705,7 @@ table.dataTable.compact thead td {
 .pharmit_rescontainer table.dataTable.compact thead th.sorting,th.sorting_desc,
 .pharmit_rescontainer table.dataTable.compact thead th.sorting_desc
  {
-  padding-right: 12px;
+  padding-right: 18px;
 }
 
 
@@ -735,4 +735,19 @@ text-align: center;
 	margin-right: 5px;
     height: 14px;
     width: 16px;
+}
+
+@keyframes pulsing {
+    0% {color: #666}
+    25% {color: #555}
+    80% {color: #111}
+    100% {color: #000}
+}
+
+.pharmit_pulse {
+	animation-name: pulsing;
+	animation-duration: 0.5s;
+	animation-direction: alternate;
+    animation-iteration-count: infinite;
+}
 }

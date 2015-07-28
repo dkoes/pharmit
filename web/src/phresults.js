@@ -135,7 +135,7 @@ Pharmit.PhResults = (function() {
 							 	" molecules and "+numeral(ret.numConfs).format('0,0')+" conformers...",
 							 	infoFiltered: '',
 							 	infoEmpty: "",
-							 	info: "Searching..."
+							 	info: "<span class='pharmit_pulse'>Searching...</span>"
 						 },
 						 serverSide: true,
 						 processing: false,
