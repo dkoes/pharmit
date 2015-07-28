@@ -66,7 +66,6 @@ using namespace std;
 #include "WorkFile.h"
 #include "Timer.h"
 
-
 //class for creating levels, follows the CM-tree bulk loading algorithm,
 //but can be overridden to implement any arbitrary algorithm
 class GSSLevelCreator
@@ -86,11 +85,26 @@ protected:
 	vector<file_index> *nodeIndices;
 	vector<file_index> *treeIndices;
 	virtual void createNextLevelR(TopDownPartitioner *P);
+
 public:
+
+	GSSLevelCreator() :
+			partitioner(NULL), packer(NULL), nodePack(0), leafPack(0)
+	{
+	}
 	GSSLevelCreator(const TopDownPartitioner * part, const Packer *pack,
 			unsigned np, unsigned lp) :
 			partitioner(part), packer(pack), nodePack(np), leafPack(lp)
 	{
+	}
+
+	void initialize(const TopDownPartitioner * part, const Packer *pack,
+			unsigned np = 32768, unsigned lp = 32768)
+	{
+		partitioner = part;
+		packer = pack;
+		nodePack = np;
+		leafPack = lp;
 	}
 
 	virtual ~GSSLevelCreator()
@@ -110,6 +124,9 @@ public:
 class GSSTreeCreator
 {
 	WorkFile objects;
+	WorkFile currenttrees;
+	vector<file_index> treeindices;
+	vector<file_index> objindices;
 
 	vector<WorkFile> nodes;
 
@@ -134,35 +151,55 @@ class GSSTreeCreator
 			vector<GSSInternalNode*>& newroots, unsigned curlevel,
 			unsigned stoplevel);
 
-	bool createIndex(vector<file_index>& objindices, vector<file_index>& treeindices, WorkFile& currenttrees);
-
 public:
-	GSSTreeCreator(GSSLevelCreator *l, unsigned sdepth=3) :
-			leveler(l), dimension(0), resolution(0), superNodeDepth(sdepth)
+	GSSTreeCreator(GSSLevelCreator *l, unsigned sdepth = 3) :
+			leveler(l), dimension(0), resolution(0), superNodeDepth(sdepth), numNodes(
+					0), numLeaves(0)
 	{
 	}
+
+	GSSTreeCreator() :
+			leveler(NULL), dimension(0), resolution(0), superNodeDepth(3), numNodes(
+					0), numLeaves(0)
+	{
+
+	}
+
 	~GSSTreeCreator()
 	{
 		//workfiles must be explicitly cleared
 		objects.clear();
-		for(unsigned i = 0, n = nodes.size(); i < n; i++)
+		for (unsigned i = 0, n = nodes.size(); i < n; i++)
 		{
 			nodes[i].clear();
 		}
 	}
 
-	bool create(boost::filesystem::path dir, boost::filesystem::path treedir, float dim,
+	float getDimension() const
+	{
+		return dimension;
+	}
+
+	float getResolution() const
+	{
+		return resolution;
+	}
+
+	bool create(boost::filesystem::path dir, boost::filesystem::path treedir,
+			float dim,
 			float res);
 
-	//return true if successful
-	template <class Object, class ObjectIterator>
-	bool create(boost::filesystem::path dir, ObjectIterator& itr,
-			float dim, float res)
+	//setup directories
+	bool initialize(boost::filesystem::path dir, float dim, float res,
+			GSSLevelCreator* l = NULL)
 	{
 		using namespace boost;
 		dimension = dim;
 		resolution = res;
-		WorkFile currenttrees;
+
+		if (l)
+			leveler = l;
+
 		//create directory
 		if (filesystem::exists(dir))
 		{
@@ -179,37 +216,55 @@ public:
 		filesystem::path objfile = dbpath / "objs";
 		string curtreesfile = filesystem::path(dbpath / "trees").string();
 
-		Timer t;
 		//write out objects and trees
 		objects.set(objfile.string().c_str());
 		currenttrees.set(curtreesfile.c_str());
-		vector<file_index> treeindices;
-		vector<file_index> objindices;
-		unsigned cnt = 0;
+		treeindices.clear();
+		objindices.clear();
+
+		return true;
+	}
+
+	template<class Object> void addObject(const Object& obj)
+	{
+		objindices.push_back((file_index) objects.file->tellp());
+		obj.write(*objects.file);
+
+		//leaf object
+		treeindices.push_back((file_index) currenttrees.file->tellp());
+		MappableOctTree *tree = MappableOctTree::create(dimension, resolution,
+				obj);
+		tree->write(*currenttrees.file);
+		delete tree;
+	}
+
+	bool createIndex();
+
+	//return true if successful
+	template<class Object, class ObjectIterator>
+	bool create(boost::filesystem::path dir, ObjectIterator& itr,
+			float dim, float res)
+	{
+		using namespace boost;
+		initialize(dir, dim, res);
+		Timer t;
 		for (; itr; ++itr)
 		{
 			const Object& obj = *itr;
-			objindices.push_back((file_index) objects.file->tellp());
-			obj.write(*objects.file);
-
-			//leaf object
-			treeindices.push_back((file_index) currenttrees.file->tellp());
-			MappableOctTree *tree = MappableOctTree::create(dim, res, obj);
-			tree->write(*currenttrees.file);
-			delete tree;
-			cnt++;
+			addObject(obj);
 		}
 
 		cout << "Create/write trees\t" << t.elapsed() << "\n";
 		t.restart();
 
-		return createIndex(objindices, treeindices, currenttrees);
+		return createIndex();
 	}
 
 	//write out the object trees to the specified directory, with the object file
 	//and also indices for reading back in later to save having to regenerate trees
-	template <class Object, class ObjectIterator>
-	bool createTreesOnly(boost::filesystem::path dir, ObjectIterator& itr, float dim,
+	template<class Object, class ObjectIterator>
+	bool createTreesOnly(boost::filesystem::path dir, ObjectIterator& itr,
+			float dim,
 			float res)
 	{
 		using namespace boost;
@@ -242,7 +297,7 @@ public:
 		ofstream treeindices(tipath.c_str());
 		ofstream objindices(oipath.c_str());
 
-		if(!treeindices || !objindices)
+		if (!treeindices || !objindices)
 			return false;
 
 		unsigned cnt = 0;
@@ -250,12 +305,12 @@ public:
 		{
 			const Object& obj = *itr;
 			file_index objindex = (file_index) objects.file->tellp();
-			objindices.write((char*)&objindex,sizeof(file_index));
+			objindices.write((char*) &objindex, sizeof(file_index));
 			obj.write(*objects.file);
 
 			//leaf object
 			file_index treeindex = (file_index) currenttrees.file->tellp();
-			treeindices.write((char*)&treeindex, sizeof(file_index));
+			treeindices.write((char*) &treeindex, sizeof(file_index));
 			MappableOctTree *tree = MappableOctTree::create(dim, res, obj);
 			tree->write(*currenttrees.file);
 			delete tree;
@@ -268,6 +323,5 @@ public:
 
 	void printStats(ostream& out) const;
 };
-
 
 #endif /* GSSTREECREATOR_H_ */
