@@ -14,8 +14,8 @@
 #include "Packer.h"
 #include "boost/multi_array.hpp"
 
-#include "Eigen/Core"
-#include "Eigen/Eigenvalues"
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Eigenvalues"
 
 using namespace boost;
 using namespace Eigen;
