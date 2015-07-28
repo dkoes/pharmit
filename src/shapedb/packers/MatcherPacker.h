@@ -24,7 +24,7 @@ class MatcherPacker: public Packer
 
 
 public:
-	MatcherPacker(unsigned ps, unsigned k = 0, unsigned s = 0,
+	MatcherPacker(unsigned ps=16, unsigned k = 8, unsigned s = 32,
 			ClusterDistance metric = AverageLink) :
 			Packer(ps, metric, k, s)
 	{

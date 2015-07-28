@@ -1,21 +1,21 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
-Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+ Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /*
  * PMol.h
@@ -31,13 +31,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #ifndef PHARMITSERVER_PMOL_H_
 #define PHARMITSERVER_PMOL_H_
 
-
 #include <boost/unordered_map.hpp>
 #include <openbabel/mol.h>
 #include "FloatCoord.h"
 #include "RMSD.h"
 #include "BumpAllocator.h"
-
 
 #define MAX_BONDS 3
 
@@ -59,7 +57,7 @@ class PMolCreator
 		vector<FloatCoord> coords;
 
 		AtomGroup(unsigned anum) :
-			startIndex(0), atomic_number(anum)
+				startIndex(0), atomic_number(anum)
 		{
 		}
 	};
@@ -78,7 +76,7 @@ class PMolCreator
 		char value;
 
 		Property(unsigned ai, char v) :
-			atom(ai), value(v)
+				atom(ai), value(v)
 		{
 		}
 	};
@@ -92,12 +90,12 @@ class PMolCreator
 	unsigned nSrcs;
 	unsigned bndSize[MAX_BONDS];
 	unsigned nDsts;
-public:
+	public:
 	PMolCreator()
 	{
 	}
-	PMolCreator(OpenBabel::OBMol& mol, bool deleteH=false) :
-		numAtoms(0), nSrcs(0), nDsts(0)
+	PMolCreator(OpenBabel::OBMol& mol, bool deleteH = false) :
+			numAtoms(0), nSrcs(0), nDsts(0)
 	{
 		memset(bndSize, 0, sizeof(bndSize));
 		copyFrom(mol, deleteH);
@@ -106,10 +104,13 @@ public:
 	{
 	}
 
-	void copyFrom(OpenBabel::OBMol& mol, bool deleteH=false);
+	void copyFrom(OpenBabel::OBMol& mol, bool deleteH = false);
+	#ifdef __RD_ROMOL_H__
+	void copyFrom(RDKit::ROMol& mol, bool deleteH = false);
+#endif
 
 	//write custom binary data
-	bool writeBinary(ostream& out);
+	bool writeBinary(ostream& out) const;
 
 };
 
@@ -144,7 +145,7 @@ struct ASDDataItem
 	string value;
 
 	ASDDataItem(const string& t, const string& v) :
-		tag(t), value(v)
+			tag(t), value(v)
 	{
 	}
 };
@@ -162,7 +163,7 @@ class PMol
 	char buffer[];
 
 	PMol() :
-		atomtypes(NULL), iso(NULL), chg(NULL)
+			atomtypes(NULL), iso(NULL), chg(NULL)
 	{
 		memset(adjlists, 0, sizeof(adjlists));
 	}
@@ -171,7 +172,7 @@ class PMol
 	//assume data is already copied in, setup pointers
 	//return final offset
 	unsigned setup();
-public:
+	public:
 
 	const char *getTitle() const
 	{
@@ -185,6 +186,12 @@ public:
 	//rotate/translate points if requested
 	void writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 			const RMSDResult& rms);
+
+	void writeSDF(ostream& out, const vector<ASDDataItem>& sddata)
+	{
+		RMSDResult rdummy;
+		writeSDF(out, sddata, rdummy);
+	}
 
 	void writeSDF(ostream& out)
 	{
@@ -204,9 +211,16 @@ class PMolReader
 protected:
 	//read into an already allocated buffer
 	virtual void* allocate(unsigned size) = 0;
-public:
-	virtual ~PMolReader() {}
-	virtual PMol* readPMol(const unsigned char *data); //return pmol at data
+	public:
+	virtual ~PMolReader()
+	{
+	}
+	virtual PMol* readPMol(const char *data); //return pmol at data
+	virtual PMol* readPMol(const unsigned char *data)
+	{
+		const char *d = (const char*) data;
+		return readPMol(d);
+	}
 	virtual PMol* readPMol(FILE *f); //return amol at current pos
 
 };
@@ -236,10 +250,11 @@ class PMolReaderSingleAlloc: public PMolReader
 {
 	void *buffer;
 	unsigned bsize;
-protected:
+	protected:
 	virtual void* allocate(unsigned size);
-public:
-	PMolReaderSingleAlloc():bsize(2048)
+	public:
+	PMolReaderSingleAlloc() :
+			bsize(2048)
 	{
 		buffer = malloc(bsize);
 	}

@@ -1,21 +1,21 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
-Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+ Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /*
  * pharmerdb.cpp
@@ -39,10 +39,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "PMol.h"
 #include "MolProperties.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
-
-#ifdef OUTPUTSMINA
 #include "SminaConverter.h"
-#endif
+#include "ShapeObj.h"
 
 using namespace boost;
 using namespace std;
@@ -51,7 +49,6 @@ using namespace OpenBabel;
 extern cl::opt<bool> Quiet;
 extern cl::opt<unsigned> ReduceConfs;
 extern cl::opt<bool> ComputeThresholds;
-
 
 //location comparison functions for pointdata
 bool comparePointDataX(const ThreePointData& lhs, const ThreePointData& rhs)
@@ -87,11 +84,11 @@ unsigned MolDataCreator::ConfCreator::write(unsigned char *buf)
 //initialize data for a conformation
 MolDataCreator::ConfCreator::ConfCreator(unsigned mid, float mw, unsigned cid,
 		OBMol& m) :
-	header(mid, mw, cid)
+		header(mid, mw, cid)
 {
 	PMolCreator mol(m, true);
 	stringstream mdata;
-	if(mol.writeBinary(mdata))
+	if (mol.writeBinary(mdata))
 		molData = mdata.str();
 	else
 		molData = "";
@@ -99,31 +96,29 @@ MolDataCreator::ConfCreator::ConfCreator(unsigned mid, float mw, unsigned cid,
 
 unsigned MolDataCreator::maxIndex = 0;
 
-const char *rotBondsSMART =
-		"[!$([NH]!@C(=O))&!D1&!$(*#*)]-&!@[!$([NH]!@C(=O))&!D1&!$(*#*)]";
-
 //generate pharma points and database infor for mol
 void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 {
 	//identify pharma
 	vector<vector<PharmaPoint> > mcpoints;
 
-	if(false && mol.HasData("pharmacophores")) //eh, doesn't make things faster, let's be safe and always to the reanalysis
+	if (false && mol.HasData("pharmacophores")) //eh, doesn't make things faster, let's be safe and always to the reanalysis
 	{
 		//use precalculated pharmacophore data
 		//this doesn't actually save any time.. need to avoid all the openbabel analysis
-		OBVecData *data = dynamic_cast<OBVecData*>(mol.GetData("pharmacophores"));
-		if(data)
+		OBVecData *data =
+				dynamic_cast<OBVecData*>(mol.GetData("pharmacophores"));
+		if (data)
 		{
 			const vector<string>& pharmtext = data->GetGenericValue();
-			if(mol.NumConformers() == (int)pharmtext.size())
+			if (mol.NumConformers() == (int) pharmtext.size())
 			{
 				mcpoints.resize(pharmtext.size());
-				for(unsigned i = 0, n = pharmtext.size(); i < n; i++)
+				for (unsigned i = 0, n = pharmtext.size(); i < n; i++)
 				{
 					stringstream phstrm(pharmtext[i]);
 					PharmaPoint pt;
-					while(pt.read(pharmas, phstrm))
+					while (pt.read(pharmas, phstrm))
 					{
 						mcpoints[i].push_back(pt);
 					}
@@ -132,20 +127,17 @@ void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 		}
 	}
 
-	if(mcpoints.size() == 0) //nothing precalculated, or something off with precalculated
+	if (mcpoints.size() == 0) //nothing precalculated, or something off with precalculated
 	{
 		getPharmaPointsMC(pharmas, mol, mcpoints);
 	}
 
-	if(mcpoints.size() > 0) props.setHB(mcpoints[0]); //hb feature cnts are not conformer specific
+	if (mcpoints.size() > 0)
+		props.setHB(mcpoints[0]); //hb feature cnts are not conformer specific
 
 	double weight = mol.GetMolWt();
 	//count number of rotatable bounds
-	OBSmartsPattern rot;
-	rot.Init(rotBondsSMART);
-	vector<vector<int> > maplist;
-	rot.Match(mol, maplist, OBSmartsPattern::AllUnique);
-	unsigned numrot = maplist.size();
+	unsigned numrot = countRotatableBonds(mol);
 
 	//store each conformation seperately, this results in about 50% more space used,
 	//but as much as 50% performance improvement when retrieving mols
@@ -158,7 +150,7 @@ void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 		confs.push_back(ConfCreator(mid, weight, confidx, mol));
 		ConfCreator& conf = confs.back();
 
-		if(!conf.isValid())
+		if (!conf.isValid())
 		{
 			cerr << mol.GetTitle() << " is too large.  Omitting.\n";
 			confs.pop_back();
@@ -188,7 +180,8 @@ void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 					unsigned pos = tindex(points[i].pharma->index,
 							points[j].pharma->index, points[k].pharma->index);
 					assert(pos < pdatas.size());
-					ThreePointData trip(bufferSize, weight, numrot, points, i, j, k);
+					ThreePointData trip(bufferSize, weight, numrot, points, i,
+							j, k);
 					pdatas[pos].push_back(trip);
 				}
 			}
@@ -216,7 +209,8 @@ void MolDataCreator::createBuffer()
 }
 
 //write out the data with proper offsets to files (assumed positioned properly and single threaded)
-unsigned MolDataCreator::write(FILE *molData, vector<PointDataFile >& pointDataFiles)
+unsigned MolDataCreator::write(FILE *molData,
+		vector<PointDataFile>& pointDataFiles)
 {
 	unsigned long location = ftell(molData);
 
@@ -233,7 +227,6 @@ unsigned MolDataCreator::write(FILE *molData, vector<PointDataFile >& pointDataF
 			pdatas[p][i].molPos += location;
 		}
 	}
-
 
 	//write out
 	fwrite(buffer, bufferSize, 1, molData);
@@ -363,14 +356,12 @@ void PharmerDatabaseCreator::initializeDatabases()
 	assert(molData);
 
 	//smina data
-#ifdef OUTPUTSMINA
 	filesystem::path smipath = dbpath / "sminaIndex";
 	sminaIndex = fopen(smipath.string().c_str(), "w+");
 	assert(sminaIndex);
 	filesystem::path smdpath = dbpath / "sminaData";
 	sminaData = fopen(smdpath.string().c_str(), "w+");
 	assert(sminaData);
-#endif
 
 	//bincnts
 	filesystem::path binpath = dbpath;
@@ -387,7 +378,7 @@ void PharmerDatabaseCreator::initializeDatabases()
 	pointDataFiles.resize(tindex.size());
 	for (int i = 0, n = tindex.size(); i < n; i++)
 	{
-		string pname = string("pointData_") + lexical_cast<string> (i);
+		string pname = string("pointData_") + lexical_cast<string>(i);
 		filesystem::path pdpath = dbpath / pname;
 		pointDataFiles[i] = PointDataFile(pdpath.string(), i);
 	}
@@ -399,29 +390,29 @@ void PharmerDatabaseCreator::initializeDatabases()
 	MolProperties::createFiles(dbpath, propFiles);
 
 	//initialize tempory files (used for out-of-memory partitioning)
-	for(unsigned i = 0; i < NUMTMPFILES; i++)
+	for (unsigned i = 0; i < NUMTMPFILES; i++)
 	{
-	  filesystem::path tmppath = dbpath / (lexical_cast<string> (i) + string(".tmp"));
-	  tmpFiles[i] = fopen(tmppath.c_str(), "w+");
-	  unlink(tmppath.c_str()); //basically anonymous disk-backed storage
+		filesystem::path tmppath = dbpath
+				/ (lexical_cast<string>(i) + string(".tmp"));
+		tmpFiles[i] = fopen(tmppath.c_str(), "w+");
+		unlink(tmppath.c_str()); //basically anonymous disk-backed storage
 	}
 }
-
 
 //write out index into "correct" mid
 void PharmerDatabaseCreator::writeMIDs()
 {
-	if(midList)
+	if (midList)
 	{
 		fseek(midList, 0, SEEK_SET);
 		unsigned cnt = 0;
-		for(unsigned i = 0, n = mids.size(); i < n; i++)
+		for (unsigned i = 0, n = mids.size(); i < n; i++)
 		{
-			fwrite(&mids[i],sizeof(unsigned),1,midList);
+			fwrite(&mids[i], sizeof(unsigned), 1, midList);
 			cnt++;
-			while(i+1 < n && cnt < mids[i+1])
+			while (i + 1 < n && cnt < mids[i + 1])
 			{
-				fwrite(&mids[i],sizeof(unsigned),1,midList);
+				fwrite(&mids[i], sizeof(unsigned), 1, midList);
 				cnt++;
 			}
 		}
@@ -456,22 +447,23 @@ void PharmerDatabaseCreator::writeStats()
 }
 
 //add a multiconformer mol to the database
-void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const string& name)
+void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid,
+		const string& name)
 {
 	static OBAromaticTyper aromatics;
 	static OBAtomTyper atyper;
 
-	if(mol.NumAtoms() == 0) //skipped
+	if (mol.NumAtoms() == 0) //skipped
 		return;
 
 	mol.Center();
 
-	if(ReduceConfs > 0)
+	if (ReduceConfs > 0)
 	{
-	  while(mol.NumConformers() > ReduceConfs)
-	  {
-	    mol.DeleteConformer(mol.NumConformers()-1);
-	  }
+		while (mol.NumConformers() > (int) ReduceConfs)
+		{
+			mol.DeleteConformer(mol.NumConformers() - 1);
+		}
 	}
 	unsigned nc = mol.NumConformers();
 
@@ -486,11 +478,12 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 	MolProperties props;
 	props.calculate(mol, uniqueid);
 
-  if(mol.NumConformers() != nc) {
-    //there was a bug in openbabel that blew away conformers when adding hydrogens,
-    //make sure we're using afixed version
-    abort();
-  }
+	if (mol.NumConformers() != (int) nc)
+	{
+		//there was a bug in openbabel that blew away conformers when adding hydrogens,
+		//make sure we're using afixed version
+		abort();
+	}
 
 	mol.SetTitle(name.c_str());
 	//generate moldata
@@ -498,15 +491,16 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 
 	unsigned mid = mdc.write(molData, pointDataFiles);
 	mids.push_back(mid);
-	props.write(mid,propFiles);
+	props.write(mid, propFiles);
 
-	//output smina data here
-#ifdef OUTPUTSMINA
+	//output smina and shape data here
 	SminaConverter::MCMolConverter mcsmina(mol);
 	const vector<unsigned>& confOffsets = mdc.ConfOffsets();
 	unsigned long mloc = mid;
 	mloc <<= (TPD_MOLDATA_BITS - TPD_MOLID_BITS);
-	for(unsigned i = 0, n = confOffsets.size(); i < n; i++)
+	ShapeObj::MolInfo minfo(mol, mloc);
+
+	for (unsigned i = 0, n = confOffsets.size(); i < n; i++)
 	{
 		stringstream data;
 		mcsmina.convertConformer(i, data);
@@ -515,20 +509,25 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid, const s
 		unsigned long smpos = ftell(sminaData); //location in smina dta
 
 		//output index mapping
-		fwrite(&pos,sizeof(pos),1,sminaIndex);
-		fwrite(&smpos,sizeof(smpos),1,sminaIndex);
+		fwrite(&pos, sizeof(pos), 1, sminaIndex);
+		fwrite(&smpos, sizeof(smpos), 1, sminaIndex);
 
 		//output actual data
-		fwrite(&sz, sizeof(sz),1, sminaData);
+		fwrite(&sz, sizeof(sz), 1, sminaData);
 		fwrite(data.str().c_str(), sizeof(char), sz, sminaData);
+
+		//shape data
+		minfo.molPos = pos;
+		mol.SetConformer(i);
+		ShapeObj shobj(mol, minfo, shapedb.getDimension(),
+				shapedb.getResolution());
+		shapedb.addObject(shobj);
 	}
-#endif
 
 	stats[NumMols]++;
 	stats[NumConfs] += mdc.NumConfs();
 	stats[NumDbPoints] += mdc.NumPoints();
 }
-
 
 //coalesce very small collections and
 //mmap pointData files, closing file pointer
@@ -539,7 +538,7 @@ void PharmerDatabaseCreator::initPointDataArrays()
 	pointDataArrays = new MMappedRegion<ThreePointData> [n];
 	for (unsigned i = 0; i < n; i++)
 	{
-		if(pointDataFiles[i].isValid())
+		if (pointDataFiles[i].isValid())
 		{
 			pointDataFiles[i].close();
 			pointDataArrays[i].map(pointDataFiles[i].name, false, true);
@@ -601,7 +600,8 @@ static void chooseSplit(const BoundingBox& box, SplitInfo& info,
 }
 
 //find the median value in one sequential scan using counts
-static unsigned short findMedianValue(ThreePointData *start, ThreePointData *end,
+static unsigned short findMedianValue(ThreePointData *start,
+		ThreePointData *end,
 		const SplitInfo& info, unsigned short min, unsigned short max)
 {
 	unsigned long total = 0;
@@ -628,103 +628,106 @@ static unsigned short findMedianValue(ThreePointData *start, ThreePointData *end
 
 class PivotCompareRnd
 {
-  short pivot;
-  const SplitInfo& info;
-public:
-  PivotCompareRnd(short p, const SplitInfo& i) :
-    pivot(p), info(i)
-  {
-  }
+	short pivot;
+	const SplitInfo& info;
+	public:
+	PivotCompareRnd(short p, const SplitInfo& i) :
+			pivot(p), info(i)
+	{
+	}
 
-  //flip a coint as to which way equal vals go
-  bool operator()(const ThreePointData& x)
-  {
-    int diff = info.splitVal(x) - pivot;
-    if (diff < 0)
-      return true;
-    if (diff > 0)
-      return false;
-    return ::random() % 2;
-  }
+	//flip a coint as to which way equal vals go
+	bool operator()(const ThreePointData& x)
+	{
+		int diff = info.splitVal(x) - pivot;
+		if (diff < 0)
+			return true;
+		if (diff > 0)
+			return false;
+		return ::random() % 2;
+	}
 };
 
 // in or out of memory partitioning
 // divides up input (start to end) into three groups - less than, equal to, and greater than median
 //then outputs them in order and returns a middle position
-ThreePointData* PharmerDatabaseCreator::partitionData(ThreePointData *start, ThreePointData *end, SplitInfo& info, unsigned short median)
+ThreePointData* PharmerDatabaseCreator::partitionData(ThreePointData *start,
+		ThreePointData *end, SplitInfo& info, unsigned short median)
 {
-  unsigned long num = end-start;
+	unsigned long num = end - start;
 
-  if (num < pdatasFitInMemory)
-  {
-    PivotCompareRnd rcmp(median, info);
-    ThreePointData *ret = partition(start, end, rcmp);
-    if (ret == end || ret == start) //we got unlucky and did not partition well
-    {
-      sort(start, end, info.func);
-      ret = start + (end - start) / 2;
-    }
-    return ret;
-  }
-  else
-  {
-    assert(tmpFiles[0]); //less
-    assert(tmpFiles[1]); //equal
-    assert(tmpFiles[2]); //more
+	if (num < pdatasFitInMemory)
+	{
+		PivotCompareRnd rcmp(median, info);
+		ThreePointData *ret = partition(start, end, rcmp);
+		if (ret == end || ret == start) //we got unlucky and did not partition well
+		{
+			sort(start, end, info.func);
+			ret = start + (end - start) / 2;
+		}
+		return ret;
+	}
+	else
+	{
+		assert(tmpFiles[0]); //less
+		assert(tmpFiles[1]); //equal
+		assert(tmpFiles[2]); //more
 
-    FILE *less = tmpFiles[0];
-    FILE *equal = tmpFiles[1];
-    FILE *more = tmpFiles[2];
+		FILE *less = tmpFiles[0];
+		FILE *equal = tmpFiles[1];
+		FILE *more = tmpFiles[2];
 
-    rewind(less);
-    rewind(equal);
-    rewind(more);
+		rewind(less);
+		rewind(equal);
+		rewind(more);
 
-    unsigned long nLess = 0, nEqual = 0, nMore = 0;
+		unsigned long nLess = 0, nEqual = 0, nMore = 0;
 
-    for (ThreePointData *itr = start; itr != end; itr++)
-    {
-      unsigned short val = info.splitVal(*itr);
-      if (val < median)
-      {
-        nLess++;
-        fwrite(itr, sizeof(ThreePointData), 1, less);
-      }
-      else if (val == median)
-      {
-        nEqual++;
-        fwrite(itr, sizeof(ThreePointData), 1, equal);
-      }
-      else
-      {
-        nMore++;
-        fwrite(itr, sizeof(ThreePointData), 1, more);
-      }
-    }
+		for (ThreePointData *itr = start; itr != end; itr++)
+		{
+			unsigned short val = info.splitVal(*itr);
+			if (val < median)
+			{
+				nLess++;
+				fwrite(itr, sizeof(ThreePointData), 1, less);
+			}
+			else if (val == median)
+			{
+				nEqual++;
+				fwrite(itr, sizeof(ThreePointData), 1, equal);
+			}
+			else
+			{
+				nMore++;
+				fwrite(itr, sizeof(ThreePointData), 1, more);
+			}
+		}
 
-    //copy back in order
-    rewind(less);
-    size_t num = fread(start, sizeof(ThreePointData), nLess, less);
-    assert(num == nLess);
+		//copy back in order
+		rewind(less);
+		size_t num = fread(start, sizeof(ThreePointData), nLess, less);
+		assert(num == nLess);
 
-    rewind(equal);
-    num = fread(start + nLess, sizeof(ThreePointData), nEqual, equal);
-    assert(num == nEqual);
+		rewind(equal);
+		num = fread(start + nLess, sizeof(ThreePointData), nEqual, equal);
+		assert(num == nEqual);
 
-    rewind(more);
-    num = fread(start + nLess + nEqual, sizeof(ThreePointData), nMore, more);
-    assert(num == nMore);
+		rewind(more);
+		num = fread(start + nLess + nEqual, sizeof(ThreePointData), nMore,
+				more);
+		assert(num == nMore);
 
-    return start + (end - start) / 2;
-  }
+		return start + (end - start) / 2;
+	}
 }
-
 
 //create an internal kd tree
 //each node splits points data in two along the axis with the largest spread
 //every node has an explicit bounding box (so in that sense this is more like an R-tree)
-void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKDPage& page,
-		unsigned pos, ThreePointData *start, ThreePointData *end, ThreePointData *begin,
+void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile,
+		GeoKDPage& page,
+		unsigned pos, ThreePointData *start, ThreePointData *end,
+		ThreePointData *begin,
 		unsigned depth)
 {
 	//first compute the bounding box and count points
@@ -756,7 +759,8 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 	else //need to split
 	{
 		//choose a median value, points with this value can be on either side
-		unsigned short medianVal = findMedianValue(start, end, info, info.getMin(box),
+		unsigned short medianVal = findMedianValue(start, end, info,
+				info.getMin(box),
 				info.getMax(box));
 		ThreePointData *median = partitionData(start, end, info, medianVal);
 
@@ -765,8 +769,11 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 
 		if (2 * pos + 1 < SPLITS_PER_GEOPAGE) //stay on internal page
 		{
-			doSplitInPage(pharma, geoFile, page, 2 * pos, start, median, begin, depth);
-			doSplitInPage(pharma, geoFile, page, 2 * pos + 1, median, end, begin, depth);
+			doSplitInPage(pharma, geoFile, page, 2 * pos, start, median, begin,
+					depth);
+			doSplitInPage(pharma, geoFile, page, 2 * pos + 1, median, end,
+					begin,
+					depth);
 		}
 		else //children pushed to new page
 		{
@@ -774,8 +781,12 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 			unsigned lpos = 2 * pos - SPLITS_PER_GEOPAGE;
 			unsigned rpos = lpos + 1;
 			assert(rpos < SPLITS_PER_GEOPAGE);
-			page.nextPages[lpos] = doSplitNewPage(pharma, geoFile, start, median, begin, depth);
-			page.nextPages[rpos] = doSplitNewPage(pharma, geoFile, median, end, begin, depth);
+			page.nextPages[lpos] = doSplitNewPage(pharma, geoFile, start,
+					median,
+					begin, depth);
+			page.nextPages[rpos] = doSplitNewPage(pharma, geoFile, median, end,
+					begin,
+					depth);
 		}
 	}
 }
@@ -783,8 +794,10 @@ void PharmerDatabaseCreator::doSplitInPage(unsigned pharma, FILE *geoFile, GeoKD
 //create a geokdpage that indexes the data between start and end in geoFile
 //writes out page to geoFile and returns its location as an index into an array
 //of geokdpages
-unsigned long PharmerDatabaseCreator::doSplitNewPage(unsigned pharma, FILE *geoFile,
-		ThreePointData *start, ThreePointData *end, ThreePointData *begin, unsigned depth)
+unsigned long PharmerDatabaseCreator::doSplitNewPage(unsigned pharma,
+		FILE *geoFile,
+		ThreePointData *start, ThreePointData *end, ThreePointData *begin,
+		unsigned depth)
 {
 	GeoKDPage page;
 
@@ -817,13 +830,14 @@ unsigned long PharmerDatabaseCreator::doSplitNewPage(unsigned pharma, FILE *geoF
 static unsigned lengthbin(unsigned len)
 {
 	unsigned ret = len / LENGTHDIV;
-	if(ret >= LENGTH_BINS)
-		ret = LENGTH_BINS-1;
+	if (ret >= LENGTH_BINS)
+		ret = LENGTH_BINS - 1;
 
 	return ret;
 }
 
-void PharmerDatabaseCreator::incrementBinCnt(const ThreePointData& t, unsigned pclass)
+void PharmerDatabaseCreator::incrementBinCnt(const ThreePointData& t,
+		unsigned pclass)
 {
 	binnedCnts[pclass][lengthbin(t.l1)][lengthbin(t.l2)][lengthbin(t.l3)]++;
 }
@@ -836,7 +850,7 @@ void PharmerDatabaseCreator::createIJKSpatialIndex(int p)
 	ThreePointData *begin = start;
 	ThreePointData *end = pointDataArrays[p].end();
 
-	if(start == end)
+	if (start == end)
 		return;
 
 	//count binned frequencies
@@ -846,9 +860,9 @@ void PharmerDatabaseCreator::createIJKSpatialIndex(int p)
 	}
 
 	//open
-	string gname = string("geoData_") + lexical_cast<string> (p);
+	string gname = string("geoData_") + lexical_cast<string>(p);
 	filesystem::path gpath = dbpath / gname;
-	FILE * geoFile= fopen(gpath.string().c_str(), "w");
+	FILE * geoFile = fopen(gpath.string().c_str(), "w");
 	geoDataFiles[p] = geoFile;
 	assert(geoFile);
 
@@ -872,8 +886,11 @@ void PharmerDatabaseCreator::createSpatialIndex()
 	for (unsigned p = 0, n = tindex.size(); p < n; p++)
 		createIJKSpatialIndex(p);
 
-	for(unsigned i = 0, n = binnedCnts.size(); i < n; i ++)
-		fwrite(binnedCnts[i].c_array(),  LENGTH_BINS*LENGTH_BINS*LENGTH_BINS, sizeof(unsigned), binData);
+	for (unsigned i = 0, n = binnedCnts.size(); i < n; i++)
+		fwrite(binnedCnts[i].c_array(), LENGTH_BINS * LENGTH_BINS * LENGTH_BINS,
+				sizeof(unsigned), binData);
+
+	shapedb.createIndex();
 
 	cout << stats[NumConfs] << "\tconformations\n";
 	cout << stats[NumMols] << "\tmolecules\n";
@@ -886,7 +903,6 @@ void PharmerDatabaseCreator::createSpatialIndex()
 }
 
 //Searcher
-
 
 void PharmerDatabaseSearcher::initializeDatabases()
 {
@@ -908,7 +924,8 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	filesystem::path dbipath = dbpath / "dbinfo.json";
 	ifstream json(dbipath.c_str());
 	Json::Reader reader;
-	if(!reader.parse(json, dbinfo)) {
+	if (!reader.parse(json, dbinfo))
+	{
 		cerr << "Error reading database info JSON\n";
 		exit(-1);
 	}
@@ -931,7 +948,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 
 	//smina index and data - do not need to exist
 	filesystem::path smIndex = dbpath / "sminaIndex";
-	if(filesystem::exists(smIndex))
+	if (filesystem::exists(smIndex))
 	{
 		sminaIndex.map(smIndex.string(), true, true);
 		filesystem::path smData = dbpath / "sminaData";
@@ -941,13 +958,13 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	//mids
 	filesystem::path mpath = dbpath;
 	mpath /= "mids";
-	if(filesystem::exists(mpath)) //back-wards compat
-		midList.map(mpath.string(), true, true,true);
+	if (filesystem::exists(mpath)) //back-wards compat
+		midList.map(mpath.string(), true, true, true);
 
 	//length histogram
 	filesystem::path binpath = dbpath / "binCnts";
-	binnedCnts.map(binpath.string(),true,false);
-	if(binnedCnts.length() == 0)
+	binnedCnts.map(binpath.string(), true, false);
+	if (binnedCnts.length() == 0)
 	{
 		cerr << "Missing binnedCnts " << binpath << "\n";
 		return;
@@ -957,9 +974,9 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	tripletDataArrays = new MMappedRegion<ThreePointData> [n];
 	for (unsigned i = 0; i < n; i++)
 	{
-		string pname = string("pointData_") + lexical_cast<string> (i);
+		string pname = string("pointData_") + lexical_cast<string>(i);
 		filesystem::path pdpath = dbpath / pname;
-		if(filesystem::exists(pdpath))
+		if (filesystem::exists(pdpath))
 			tripletDataArrays[i].map(pdpath.string(), true, true);
 	}
 
@@ -967,9 +984,9 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	geoDataArrays = new MMappedRegion<GeoKDPage> [n];
 	for (unsigned i = 0; i < n; i++)
 	{
-		string gname = string("geoData_") + lexical_cast<string> (i);
+		string gname = string("geoData_") + lexical_cast<string>(i);
 		filesystem::path gpath = dbpath / gname;
-		if(filesystem::exists(gpath))
+		if (filesystem::exists(gpath))
 			geoDataArrays[i].map(gpath.string(), true, true);
 	}
 
@@ -978,7 +995,8 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	valid = true;
 }
 
-unsigned PharmerDatabaseSearcher::getBinCnt(unsigned pclass, unsigned i, unsigned j, unsigned k)
+unsigned PharmerDatabaseSearcher::getBinCnt(unsigned pclass, unsigned i,
+		unsigned j, unsigned k)
 {
 	unsigned index = pclass;
 	index *= LENGTH_BINS;
@@ -993,8 +1011,8 @@ unsigned PharmerDatabaseSearcher::getBinCnt(unsigned pclass, unsigned i, unsigne
 
 //generate ranking and return index of best triplet
 //use binnedCnts histogram
-unsigned PharmerDatabaseSearcher::rankTriplets(const
-		vector<QueryTriplet>& triplets, vector<double>& ranking)
+unsigned PharmerDatabaseSearcher::rankTriplets(
+		const vector<QueryTriplet>& triplets, vector<double>& ranking)
 {
 	double minval = HUGE_VAL;
 	unsigned besttrip = 0;
@@ -1016,7 +1034,7 @@ unsigned PharmerDatabaseSearcher::rankTriplets(const
 						mz = lengthbin(trip.getRanges()[2].max); z
 						<= mz; z++)
 				{
-					val += getBinCnt(pclass,x,y,z);
+					val += getBinCnt(pclass, x, y, z);
 				}
 
 		ranking[i] = val * triplets[i].numOrderings(); //symmetries will increases matches
@@ -1036,26 +1054,27 @@ static void getMinMax(const Triplet& t, SplitType split, int& min, int& max)
 	min = max = 0;
 	switch (split)
 	{
-	case SplitXFixed:
-		min = t.getRanges()[0].min;
-		max = t.getRanges()[0].max;
-		break;
-	case SplitYFixed:
-		min = t.getRanges()[1].min;
-		max = t.getRanges()[1].max;
-		break;
-	case SplitZFixed:
-		min = t.getRanges()[2].min;
-		max = t.getRanges()[2].max;
-		break;
-	default:
-		;
+		case SplitXFixed:
+			min = t.getRanges()[0].min;
+			max = t.getRanges()[0].max;
+			break;
+		case SplitYFixed:
+			min = t.getRanges()[1].min;
+			max = t.getRanges()[1].max;
+			break;
+		case SplitZFixed:
+			min = t.getRanges()[2].min;
+			max = t.getRanges()[2].max;
+			break;
+		default:
+			;
 	}
 }
 
 inline void dump(ostream& out, const ThreePointData& tpd)
 {
-	out << tpd.molPos << ": " << tpd.l1 <<" " << tpd.l2 << " " << tpd.l3 << "\n";
+	out << tpd.molPos << ": " << tpd.l1 << " " << tpd.l2 << " " << tpd.l3
+			<< "\n";
 }
 
 void PharmerDatabaseSearcher::queryProcessPoints(QueryInfo& t,
@@ -1090,7 +1109,7 @@ static unsigned pageCnt = 0;
 void PharmerDatabaseSearcher::queryIndex(QueryInfo& t, const GeoKDPage *page,
 		unsigned pos, unsigned long startLoc, unsigned long endLoc)
 {
-	if(startLoc == endLoc)
+	if (startLoc == endLoc)
 		return;
 	if (pos >= SPLITS_PER_GEOPAGE)
 	{
@@ -1138,7 +1157,9 @@ void PharmerDatabaseSearcher::queryIndex(QueryInfo& t, const GeoKDPage *page,
 			//always do left and then right so we access data sequentially
 			//if min or max are exactly equal, then we must consider both sides of the split
 			//in case the split is in the middle of a range of equal values
-			if ((max > node.splitVal && min < node.splitVal) || max == node.splitVal || min == node.splitVal)
+			if ((max > node.splitVal && min < node.splitVal)
+					|| max == node.splitVal
+					|| min == node.splitVal)
 			{
 				//have to do both sides
 				//first go left
@@ -1187,9 +1208,9 @@ void PharmerDatabaseSearcher::generateTripletMatches(const vector<vector<
 		{
 			cout << i << " MatchedCnt " << matchedCnt << " ProcessedCnt "
 					<< processCnt << "  " << 100.0 * double(matchedCnt)
-					/ processCnt << "% ";
-            cout << "Pages " << pageCnt << " ";
-            cout << "Empty " << emptyCnt << " ";
+							/ processCnt << "% ";
+			cout << "Pages " << pageCnt << " ";
+			cout << "Empty " << emptyCnt << " ";
 			cout << "Chunks: " << M.numChunks() << "\n";
 		}
 		if (!M.nextIndex())
@@ -1219,13 +1240,14 @@ void PharmerDatabaseSearcher::getSminaData(unsigned long molloc, ostream& out)
 	ulong_pair findit(molloc, 0);
 
 	//molloc is the conformer location in molData, do binary search
-	ulong_pair *pos = lower_bound(sminaIndex.begin(), sminaIndex.end(), findit, first_pair_cmp);
+	ulong_pair *pos = lower_bound(sminaIndex.begin(), sminaIndex.end(), findit,
+			first_pair_cmp);
 
-	if(pos == sminaIndex.end())
+	if (pos == sminaIndex.end())
 	{
-		pos = sminaIndex.end()-1;
+		pos = sminaIndex.end() - 1;
 	}
-	else if(pos->first > molloc)
+	else if (pos->first > molloc)
 	{
 		pos--;
 	}
@@ -1234,7 +1256,7 @@ void PharmerDatabaseSearcher::getSminaData(unsigned long molloc, ostream& out)
 	//pos is now the correct spot
 	unsigned long sminaloc = pos->second;
 	unsigned sz = 0;
-	memcpy(&sz, sminaData.begin()+sminaloc, sizeof(unsigned)); //size of smina data
-	out.write(sminaData.begin()+sminaloc+sizeof(unsigned), sz);
+	memcpy(&sz, sminaData.begin() + sminaloc, sizeof(unsigned)); //size of smina data
+	out.write(sminaData.begin() + sminaloc + sizeof(unsigned), sz);
 }
 

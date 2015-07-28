@@ -37,6 +37,7 @@ class OBAMolOutput;
 //defines iterator type, intersection, and file create/write
 class OBAMolecule
 {
+protected:
 	//a little icky, make mutable so intersect can bump intersecting spheres
 	//to the front of the list; this ends up being more efficient than filtering
 	//all the intersecting spheres
@@ -142,10 +143,10 @@ public:
 			double interactionDist, double maxClusterDist,
 			unsigned minClusterPoints, double interactionPointRadius);
 
-	void write(ostream& out) const
+	virtual void write(ostream& out) const
 	{
 		OBMol m(mol);
-		shapepmol::PMolCreator pmol(m, true);
+		PMolCreator pmol(m, true);
 		pmol.writeBinary(out);
 	}
 

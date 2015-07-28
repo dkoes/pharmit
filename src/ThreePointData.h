@@ -115,6 +115,7 @@ struct ThreePointData
 	unsigned molID() const { return molPos >> (TPD_MOLDATA_BITS-TPD_MOLID_BITS); }
 };
 
+extern unsigned countRotatableBonds(OpenBabel::OBMol& mol);
 
 
 #endif /* THREEPOINTDATA_H_ */

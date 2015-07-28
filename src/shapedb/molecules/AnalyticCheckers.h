@@ -18,6 +18,7 @@
 #include <openbabel/obconversion.h>
 #include <openbabel/obiter.h>
 #include <openbabel/atom.h>
+#include <openbabel/math/vector3.h>
 #include <cmath>
 #include "MolSphere.h"
 #include "Cube.h"
@@ -32,10 +33,10 @@ class TriChecker
 {
 	double probeSq; //probe radius squared
 	double h_ijk; //height of probe
-	vector3 pc1, pc2; //probe centers
+	OpenBabel::vector3 pc1, pc2; //probe centers
 
-	vector3 normals[6]; //plane normals
-	vector3 points[6]; //points on the plane - the centers of the atoms
+	OpenBabel::vector3 normals[6]; //plane normals
+	OpenBabel::vector3 points[6]; //points on the plane - the centers of the atoms
 	static float distSq(float x1, float y1, float z1, float x2, float y2,
 			float z2)
 	{
@@ -57,6 +58,7 @@ public:
 	TriChecker(const MolSphere& a, const MolSphere& b, const MolSphere& c,
 			float p)
 	{
+	  using namespace OpenBabel;
 		probeSq = p * p;
 		//calculate position of two spheres that touch a, b and c
 		//take these calculations from connely
@@ -171,6 +173,7 @@ public:
 
 	bool containsPoint(float x, float y, float z) const
 	{
+	  using namespace OpenBabel;
 		//can't be within the probe
 		float d1 = distSq(x, y, z, pc1.x(), pc1.y(), pc1.z());
 		if (d1 < probeSq)

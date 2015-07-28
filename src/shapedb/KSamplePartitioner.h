@@ -28,7 +28,7 @@ private:
 	virtual TopDownPartitioner* create(const DataViewer* dv, vector<unsigned>& ind) const;
 
 public:
-	KSamplePartitioner(unsigned kc, unsigned ks, CenterChoice ch, unsigned stop): kcenters(kc), ksamples(ks), stopPartitionSize(stop) {}
+	KSamplePartitioner(unsigned kc=8, unsigned ks=5, CenterChoice ch=AveCenter, unsigned stop=32768): kcenters(kc), ksamples(ks), stopPartitionSize(stop) {}
 	KSamplePartitioner(const DataViewer *dv, unsigned kc, unsigned ks, CenterChoice ch, unsigned stop): TopDownPartitioner(dv), kcenters(kc), ksamples(ks), centerFind(ch), stopPartitionSize(stop) {}
 	~KSamplePartitioner() {}
 

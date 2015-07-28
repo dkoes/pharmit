@@ -1,21 +1,21 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
-Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+ Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /*
  * PMol.cpp
@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <openbabel/data.h>
 #include <openbabel/mol.h>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <iomanip>
 
 using namespace OpenBabel;
@@ -43,14 +44,13 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 	memset(typeindex, -1, sizeof(typeindex));
 	memset(tmpatomindex, -1, sizeof(tmpatomindex));
 
-
 	for (OBAtomIterator aitr = mol.BeginAtoms(); aitr != mol.EndAtoms(); ++aitr)
 	{
 		OBAtom *atom = *aitr;
 		unsigned int idx = atom->GetIdx();
 		unsigned anum = atom->GetAtomicNum();
 		assert(anum < 256);
-		if(deleteH && anum == 1)
+		if (deleteH && anum == 1)
 			continue;
 		int pos = typeindex[anum];
 		if (pos < 0) // no vector for this type yet
@@ -60,12 +60,14 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 		}
 
 		tmpatomindex[idx] = atoms[pos].coords.size();
-		atoms[pos].coords.push_back(FloatCoord(atom->x(), atom->y(), atom->z()));
+		atoms[pos].coords.push_back(
+				FloatCoord(atom->x(), atom->y(), atom->z()));
 	}
 	//create mapping to actual atom index
 	numAtoms = 0;
 	BOOST_FOREACH(AtomGroup& ag, atoms)
-	{	ag.startIndex = numAtoms;
+	{
+		ag.startIndex = numAtoms;
 		numAtoms += ag.coords.size();
 	}
 
@@ -76,22 +78,23 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 		OBAtom *atom = *aitr;
 		unsigned int idx = atom->GetIdx();
 		unsigned anum = atom->GetAtomicNum();
-		if(deleteH && anum == 1)
+		if (deleteH && anum == 1)
 			continue;
 		unsigned ai = tmpatomindex[idx] + atoms[typeindex[anum]].startIndex;
 		atomindex[idx] = ai;
 		//also add properties
 		int charge = atom->GetFormalCharge();
-		if(charge != 0)
+		if (charge != 0)
 		{
 			chg.push_back(Property(ai, charge));
 		}
 
 		unsigned isoi = atom->GetIsotope();
-		if(isoi != 0)
+		if (isoi != 0)
 		{
-			int dmass = round(isotab.GetExactMass(isoi)-isotab.GetExactMass(0));
-			if(dmass != 0)
+			int dmass = round(
+					isotab.GetExactMass(isoi) - isotab.GetExactMass(0));
+			if (dmass != 0)
 			{
 				iso.push_back(Property(ai, dmass));
 			}
@@ -99,7 +102,7 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 	}
 
 	//bonds are directly indexed by atom index
-	for(unsigned i = 0; i < MAX_BONDS; i++)
+	for (unsigned i = 0; i < MAX_BONDS; i++)
 	{
 		bonds[i].resize(numAtoms);
 	}
@@ -110,39 +113,159 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 	for (OBBondIterator bitr = mol.BeginBonds(); bitr != mol.EndBonds(); ++bitr)
 	{
 		OBBond *bond = *bitr;
-		int btype = bond->GetBondOrder() -1;
+		int btype = bond->GetBondOrder() - 1;
 		assert(btype >= 0 && btype < MAX_BONDS);
 		OBAtom *a1 = bond->GetBeginAtom();
 		OBAtom *a2 = bond->GetEndAtom();
 
-		if(deleteH && (a1->GetAtomicNum() == 1 || a2->GetAtomicNum() == 1))
+		if (deleteH && (a1->GetAtomicNum() == 1 || a2->GetAtomicNum() == 1))
 			continue;
 
 		nDsts++; //basically nubmer of bonds
-		if(a2->GetValence() > a1->GetValence())
+		if (a2->GetValence() > a1->GetValence())
 		{
 			//a2 goes first
-			if(bonds[btype][atomindex[a2->GetIdx()]].size() == 0)
+			if (bonds[btype][atomindex[a2->GetIdx()]].size() == 0)
 			{
-				bndSize[btype] += 2*sizeof(unsigned char); //first time, size of src and size
+				bndSize[btype] += 2 * sizeof(unsigned char); //first time, size of src and size
 				nSrcs++;
 			}
-			bonds[btype][atomindex[a2->GetIdx()]].push_back(atomindex[a1->GetIdx()]);
+			bonds[btype][atomindex[a2->GetIdx()]].push_back(
+					atomindex[a1->GetIdx()]);
 		}
 		else
 		{
 			//a1 goes first
-			if(bonds[btype][atomindex[a1->GetIdx()]].size() == 0)
+			if (bonds[btype][atomindex[a1->GetIdx()]].size() == 0)
 			{
-				bndSize[btype] += 2*sizeof(unsigned char); //first time, size of src and size
+				bndSize[btype] += 2 * sizeof(unsigned char); //first time, size of src and size
 				nSrcs++;
 			}
-			bonds[btype][atomindex[a1->GetIdx()]].push_back(atomindex[a2->GetIdx()]);
+			bonds[btype][atomindex[a1->GetIdx()]].push_back(
+					atomindex[a2->GetIdx()]);
 		}
 		bndSize[btype] += sizeof(unsigned char);
 	}
 
 }
+
+#ifdef __RD_ROMOL_H__
+//copy data needed to write out pmol from romol
+void PMolCreator::copyFrom(RDKit::ROMol& mol, bool deleteH)
+{
+	using namespace RDKit;
+
+	static OBIsotopeTable isotable;
+	const Conformer& conf = mol.getConformer();
+
+	mol.getProp("_Name", name);
+	//first construct atoms
+	int typeindex[256];//position in atoms vector of an atom type, indexed by atomic number
+	int tmpatomindex[mol.getNumAtoms()];//position within the atom type vector
+	memset(typeindex, -1, sizeof(typeindex));
+	memset(tmpatomindex, -1, sizeof(tmpatomindex));
+
+	for (ROMol::AtomIterator aitr = mol.beginAtoms(); aitr != mol.endAtoms();
+			++aitr)
+	{
+		Atom *atom = *aitr;
+		unsigned int idx = atom->getIdx();
+		unsigned anum = atom->getAtomicNum();
+		assert(anum < 256);
+		if (deleteH && anum == 1)
+		continue;
+		int pos = typeindex[anum];
+		if (pos < 0) // no vector for this type yet
+		{
+			pos = typeindex[anum] = atoms.size();
+			atoms.push_back(AtomGroup(anum));
+		}
+
+		tmpatomindex[idx] = atoms[pos].coords.size();
+		RDGeom::Point3D pt = conf.getAtomPos(atom->getIdx());
+		atoms[pos].coords.push_back(FloatCoord(pt.x, pt.y, pt.z));
+	}
+	//create mapping to actual atom index
+	numAtoms = 0;
+	BOOST_FOREACH(AtomGroup& ag, atoms)
+	{
+		ag.startIndex = numAtoms;
+		numAtoms += ag.coords.size();
+	}
+
+	int atomindex[mol.getNumAtoms()]; //position within the atom type vector
+	memset(atomindex, -1, sizeof(atomindex));
+	for (ROMol::AtomIterator aitr = mol.beginAtoms(); aitr != mol.endAtoms();
+			++aitr)
+	{
+		Atom *atom = *aitr;
+		unsigned int idx = atom->getIdx();
+		unsigned anum = atom->getAtomicNum();
+		if (deleteH && anum == 1)
+		continue;
+		unsigned ai = tmpatomindex[idx] + atoms[typeindex[anum]].startIndex;
+		atomindex[idx] = ai;
+		//also add properties
+		int charge = atom->getFormalCharge();
+		if (charge != 0)
+		{
+			chg.push_back(Property(ai, charge));
+		}
+
+		int dmass = atom->getIsotope();
+		if (dmass != 0)
+		{
+			iso.push_back(Property(ai, dmass));
+		}
+	}
+
+	//bonds are directly indexed by atom index
+	for (unsigned i = 0; i < MAX_BONDS; i++)
+	{
+		bonds[i].resize(numAtoms);
+	}
+
+	nSrcs = 0;
+	nDsts = 0;
+	//construct bounds, always putting atom with highest degree first
+	for (ROMol::BondIterator bitr = mol.beginBonds(); bitr != mol.endBonds();
+			++bitr)
+	{
+		Bond *bond = *bitr;
+		int btype = bond->getBondTypeAsDouble() - 1;
+		assert(btype >= 0 && btype < MAX_BONDS);
+		Atom *a1 = bond->getBeginAtom();
+		Atom *a2 = bond->getEndAtom();
+
+		if (deleteH && (a1->getAtomicNum() == 1 || a2->getAtomicNum() == 1))
+		continue;
+
+		nDsts++; //basically nubmer of bonds
+		if (a2->getExplicitValence() > a1->getExplicitValence())
+		{
+			//a2 goes first
+			if (bonds[btype][atomindex[a2->getIdx()]].size() == 0)
+			{
+				bndSize[btype] += 2 * sizeof(unsigned char); //first time, size of src and size
+				nSrcs++;
+			}
+			bonds[btype][atomindex[a2->getIdx()]].push_back(atomindex[a1->getIdx()]);
+		}
+		else
+		{
+			//a1 goes first
+			if (bonds[btype][atomindex[a1->getIdx()]].size() == 0)
+			{
+				bndSize[btype] += 2 * sizeof(unsigned char); //first time, size of src and size
+				nSrcs++;
+			}
+			bonds[btype][atomindex[a1->getIdx()]].push_back(atomindex[a2->getIdx()]);
+		}
+		bndSize[btype] += sizeof(unsigned char);
+	}
+
+}
+#endif
 
 /* Writes a  very succinct representation of a small molecule.
  * Format:
@@ -160,16 +283,16 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
  *
  * Returns false if cannot create molecule due to size constraints
  */
-bool PMolCreator::writeBinary(ostream& out)
-{
+bool PMolCreator::writeBinary(ostream& out) const
+		{
 	PMolHeader header;
 
 	//check sizes
-	if(nDsts >= PMOLHEADER_MAX || numAtoms >= PMOLHEADER_MAX) //assume others are < nAtoms
+	if (nDsts >= PMOLHEADER_MAX || numAtoms >= PMOLHEADER_MAX) //assume others are < nAtoms
 		return false;
 	for (unsigned i = 0; i < MAX_BONDS; i++)
 	{
-		if(bndSize[i] >= PMOLHEADER_MAX)
+		if (bndSize[i] >= PMOLHEADER_MAX)
 			return false;
 	}
 
@@ -196,8 +319,9 @@ bool PMolCreator::writeBinary(ostream& out)
 	//coordinates
 	BOOST_FOREACH(const AtomGroup& ag, atoms)
 	{
-		out.write((const char*)&ag.coords[0], sizeof(FloatCoord)*ag.coords.size());
-		check += sizeof(FloatCoord)*ag.coords.size();
+		out.write((const char*) &ag.coords[0],
+				sizeof(FloatCoord) * ag.coords.size());
+		check += sizeof(FloatCoord) * ag.coords.size();
 	}
 
 	//number of each atom type
@@ -224,11 +348,11 @@ bool PMolCreator::writeBinary(ostream& out)
 	}
 
 	//bonds
-	for(unsigned i = 0; i < MAX_BONDS; i++)
+	for (unsigned i = 0; i < MAX_BONDS; i++)
 	{
-		for(unsigned j = 0, n = bonds[i].size(); j < n; j++)
+		for (unsigned j = 0, n = bonds[i].size(); j < n; j++)
 		{
-			if(bonds[i][j].size() > 0)
+			if (bonds[i][j].size() > 0)
 			{
 				out.put(j); //atom index
 				out.put(bonds[i][j].size()); //number of dsts
@@ -243,10 +367,10 @@ bool PMolCreator::writeBinary(ostream& out)
 	}
 
 	//name
-	out.write(name.c_str(), name.size()+1); //include null
-	check += name.size()+1;
+	out.write(name.c_str(), name.size() + 1); //include null
+	check += name.size() + 1;
 
-	if(check != size)
+	if (check != size)
 	{
 		cout << check << " " << size << "\n";
 		cout << name << "\n";
@@ -268,16 +392,16 @@ void* PMolReaderMalloc::allocate(unsigned size)
 
 void* PMolReaderSingleAlloc::allocate(unsigned sz)
 {
-	if(sz >= bsize)
+	if (sz >= bsize)
 	{
-		bsize = 2*sz;
+		bsize = 2 * sz;
 		free(buffer);
 		buffer = malloc(bsize);
 	}
 	return buffer;
 }
 //allocate a pmol from data and return it
-PMol* PMolReader::readPMol(const unsigned char *data)
+PMol* PMolReader::readPMol(const char *data)
 {
 	unsigned short size;
 	memcpy(&size, data, sizeof(size));
@@ -286,7 +410,7 @@ PMol* PMolReader::readPMol(const unsigned char *data)
 	PMol *ret = new (mem) PMol();
 	memcpy(&ret->header, data + sizeof(size), size);
 	unsigned off = ret->setup();
-	assert(size == off+sizeof(PMolHeader));
+	assert(size == off + sizeof(PMolHeader));
 	return ret;
 }
 
@@ -302,7 +426,7 @@ PMol* PMolReader::readPMol(FILE *f)
 	check = fread(&ret->header, size, 1, f);
 	assert(check == 1);
 	unsigned off = ret->setup();
-	assert(size == off+sizeof(PMolHeader));
+	assert(size == off + sizeof(PMolHeader));
 	return ret;
 }
 
@@ -353,11 +477,11 @@ void PMol::getCoords(vector<FloatCoord>& coords, const RMSDResult& rms)
 {
 	FloatCoord *c = header.coords;
 	coords.resize(header.nAtoms);
-	for(unsigned i = 0; i < header.nAtoms; i++)
+	for (unsigned i = 0; i < header.nAtoms; i++)
 	{
 		coords[i] = c[i];
 	}
-	rms.reorient(coords.size(), (float*)&coords[0]);
+	rms.reorient(coords.size(), (float*) &coords[0]);
 }
 
 //write sdf with associated meta data
@@ -371,7 +495,7 @@ void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 		//transform a copy of the points
 		transformed.insert(transformed.begin(), coords, coords + header.nAtoms);
 		coords = &transformed[0];
-		rms.reorient(transformed.size(), (float*)coords);
+		rms.reorient(transformed.size(), (float*) coords);
 	}
 
 	//line 1 - name
@@ -442,7 +566,8 @@ void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 				//number of entries
 				out << "M  CHG" << setw(3) << min(n - counter, 8U);
 			}
-			out << setw(4) << (int)chg[i].atom+1 << setw(4) << (int)chg[i].value;
+			out << setw(4) << (int) chg[i].atom + 1 << setw(4)
+					<< (int) chg[i].value;
 		}
 		out << "\n";
 	}
@@ -460,7 +585,8 @@ void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 				//number of entries
 				out << "M  ISO" << setw(3) << min(n - counter, 8U);
 			}
-			out << setw(4) << (int)iso[i].atom+1 << setw(4) << (int)iso[i].value;
+			out << setw(4) << (int) iso[i].atom + 1 << setw(4)
+					<< (int) iso[i].value;
 		}
 		out << "\n";
 	}
@@ -468,10 +594,10 @@ void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 
 	//output sd data
 	BOOST_FOREACH(const ASDDataItem& data, sddata)
-	{	out << "> <" << data.tag << ">\n";
-	out << data.value << "\n\n";
+	{
+		out << "> <" << data.tag << ">\n";
+		out << boost::lexical_cast<string>(data.value) << "\n\n";
 	}
 	out << "$$$$" << endl;
 }
-
 
