@@ -102,8 +102,7 @@ Pharmit.MinResults = (function() {
 					recname: qobj.recname
 			};
 			
-			table.hide(); //don't show it until it is setup
-			table.DataTable().clear();
+			$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 0}); //don't show table and associated crust until it is setup
 			//start provided query
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
@@ -160,7 +159,7 @@ Pharmit.MinResults = (function() {
 
 					});
 					table.show();
-
+					$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 100}); 
 				} else {
 					cancel();
 					if(onclose) onclose();
