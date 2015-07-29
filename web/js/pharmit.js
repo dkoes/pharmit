@@ -1138,7 +1138,7 @@ Pharmit.MinResults = (function() {
 		});	
 		
 		table.on('draw.dt', function() {
-			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+			$('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
 		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
@@ -1529,42 +1529,42 @@ Pharmit.PhResults = (function() {
 		});	
 		
 		table.on('draw.dt', function() {
-			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+			$('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
 		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var r = this;
 			var mid = table.DataTable().row(r).data()[4];
 			$(".pharmit_iterate_button").remove();
-	        if ( $(r).hasClass('selected') ) {
-	            $(r).removeClass('selected');
-	            viewer.setResult(); //clear
-	        }
-	        else {
-	            table.DataTable().$('tr.selected').removeClass('selected');
-	            $(r).addClass('selected');
-	            
-	            $.post(Pharmit.server,
-	            		{cmd: 'getmol',
-	            		 qid: qid,
-	            		 loc: mid
-	            		}).done(function(ret) {
-	            			if( $(r).hasClass('selected')) { //still selected
-	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
-	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
-						ibutton.tooltip({show: {delay: 500}});
-	            				ibutton.click(function(event) {
-	            					event.stopPropagation();
-	            					//create new window around this molecule
-	            					var win = window.open("search.html");
-	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
-	            					var msg = new Message(JSON.stringify(data), win, '*');
-	            				});
-	            			}
-	            		});
-	        }
-	    });
+        	        if ( $(r).hasClass('selected') ) {
+        	            $(r).removeClass('selected');
+        	            viewer.setResult(); //clear
+        	        }
+        	        else {
+        	            table.DataTable().$('tr.selected').removeClass('selected');
+        	            $(r).addClass('selected');
+        	            
+        	            $.post(Pharmit.server,
+        	            		{cmd: 'getmol',
+        	            		 qid: qid,
+        	            		 loc: mid
+        	            		}).done(function(ret) {
+        	            			if( $(r).hasClass('selected')) { //still selected
+        	            				viewer.setResult(ret);
+        	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
+        	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
+        						ibutton.tooltip({show: {delay: 500}});
+        	            				ibutton.click(function(event) {
+        	            					event.stopPropagation();
+        	            					//create new window around this molecule
+        	            					var win = window.open("search.html");
+        	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
+        	            					var msg = new Message(JSON.stringify(data), win, '*');
+        	            				});
+        	            			}
+        	            		});
+        	        }
+	        });		
 		
 		//footer
 		var footer = $('<div>').appendTo(phdiv).addClass("pharmit_resfooter");
@@ -1925,6 +1925,7 @@ console.log("creating search button");
 			for(i = 0, n = publicinfo.length; i < n; i++) {
 				info = publicinfo[i];
 				display = escHTML(info.name);
+				var titlestr = "";
 				if(info.description) titlestr = " title='"+escHTML(info.description)+"' ";
 				publiclis[i] = '<li value='+subsetinfo.length+titlestr+' class="pharmit_subsetmenu">'+display+'<br>';
 				subsetinfo.push(info);
@@ -2263,7 +2264,7 @@ Pharmit.Results = (function() {
 		//convert a mol name into something more presentable
 		this.mangleName = function(name) {
 			var names = name.split(" ");
-			var ret = '<span title="' + names.join("\n") +
+			var ret = '<span data-powertip="' + names.join("<br>") +
 						'">'+names[0]+'</span>';
 			
 			return ret;
