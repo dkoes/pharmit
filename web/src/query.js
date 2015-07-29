@@ -341,6 +341,7 @@ console.log("creating search button");
 			for(i = 0, n = publicinfo.length; i < n; i++) {
 				info = publicinfo[i];
 				display = escHTML(info.name);
+				var titlestr = "";
 				if(info.description) titlestr = " title='"+escHTML(info.description)+"' ";
 				publiclis[i] = '<li value='+subsetinfo.length+titlestr+' class="pharmit_subsetmenu">'+display+'<br>';
 				subsetinfo.push(info);
