@@ -470,6 +470,9 @@ body {
 	border-left: 1px solid #dddddd;
 }
 
+.pharmit_results.pharmit_overlay {
+	width: 28em;
+}
 
 .pharmit_rightclose {
 	position: absolute;
