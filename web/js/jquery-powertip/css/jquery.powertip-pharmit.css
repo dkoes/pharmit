@@ -11,6 +11,14 @@
 	white-space: nowrap;
 	z-index: 2147483647;
 }
+#powerTip a {
+	color: #fff;
+}
+
+#powerTip a:visited {
+	color: #ddd;
+}
+
 #powerTip:before {
 	content: "";
 	position: absolute;

@@ -2261,10 +2261,40 @@ Pharmit.Results = (function() {
 			viewer.setRight(0);
 		};
 		
+		//if a compound name can be mapped to a url, return it
+		var getNameURL = function(name) {
+		    var m = null;
+		    if((m = name.match(/PubChem-?(\d+)/))) {
+		        return "https://pubchem.ncbi.nlm.nih.gov/compound/"+m[1];
+		    }
+		    else if((m = name.match(/MolPort-?(\S+)/))) {
+		        return "https://www.molport.com/shop/moleculelink/about-this-molecule/"+m[1].replace(/-/g,"");
+		    }
+		    else if((m = name.match(/CHEMBL/))) {
+		        return "https://www.ebi.ac.uk/chembldb/index.php/compound/inspect/"+name;
+		    }
+		    else if((m = name.match(/ChemDiv-?(\S+)/))) {
+		        return "http://chemistryondemand.com:8080/eShop/search_results.jsp?idnumber="+m[1];
+		    }
+		    
+		    return null;
+		};
+		
 		//convert a mol name into something more presentable
 		this.mangleName = function(name) {
 			var names = name.split(" ");
-			var ret = '<span data-powertip="' + names.join("<br>") +
+			var tip = "";
+			for(var i = 0; i < names.length; i++) {
+			    var n = names[i];
+			    var url = getNameURL(n);
+			    if(url) {
+			        tip += "<a target='_blank' href='"+url+"'>"+n+"</a><br>";
+			    }
+			    else {
+			        tip += n+"<br>";
+			    }
+			}
+			var ret = '<span data-powertip="' + tip +
 						'">'+names[0]+'</span>';
 			
 			return ret;
