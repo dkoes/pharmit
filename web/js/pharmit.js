@@ -1701,6 +1701,7 @@ Pharmit.Query = (function() {
 			
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
+					setFeatures(ret.points);					
 					if(ret.mol) {
 						//this was molecular data, save it
 						ligandName = lname;
@@ -1713,7 +1714,9 @@ Pharmit.Query = (function() {
 					
 						viewer.setLigand(data, lname);						
 					}
-					setFeatures(ret.points);					
+					else {
+						viewer.setView(); //orient on features in absence of ligand
+					}
 					
 				} else {
 					alert("Error: "+ret.msg);
@@ -2070,7 +2073,7 @@ console.log("creating search button");
 			.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
 			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
 		var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
-
+		
 		//filters
 		var filtergroup = $('<div>').appendTo(body);
 		$('<div>Filters</div>').appendTo(filtergroup).addClass('pharmit_heading');
