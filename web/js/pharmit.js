@@ -983,11 +983,10 @@ Pharmit.MinResults = (function() {
 					recname: qobj.recname
 			};
 			
-			table.hide(); //don't show it until it is setup
+			$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 0}); //don't show table and associated crust until it is setup
 			//start provided query
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
-					table.show();
 					//setup table
 					sminaid = ret.sminaid;
 					var numrows = Math.floor((body.height()-100)/29); //magic numbers!
@@ -1040,8 +1039,8 @@ Pharmit.MinResults = (function() {
 						 }
 
 					});
-
-
+					table.show();
+					$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 100}); 
 				} else {
 					cancel();
 					if(onclose) onclose();
@@ -1139,7 +1138,7 @@ Pharmit.MinResults = (function() {
 		});	
 		
 		table.on('draw.dt', function() {
-			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+			$('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
 		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
@@ -1401,7 +1400,7 @@ Pharmit.PhResults = (function() {
 							 	" molecules and "+numeral(ret.numConfs).format('0,0')+" conformers...",
 							 	infoFiltered: '',
 							 	infoEmpty: "",
-							 	info: "Searching..."
+							 	info: "<span class='pharmit_pulse'>Searching...</span>"
 						 },
 						 serverSide: true,
 						 processing: false,
@@ -1530,42 +1529,42 @@ Pharmit.PhResults = (function() {
 		});	
 		
 		table.on('draw.dt', function() {
-			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+			$('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
 		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var r = this;
 			var mid = table.DataTable().row(r).data()[4];
 			$(".pharmit_iterate_button").remove();
-	        if ( $(r).hasClass('selected') ) {
-	            $(r).removeClass('selected');
-	            viewer.setResult(); //clear
-	        }
-	        else {
-	            table.DataTable().$('tr.selected').removeClass('selected');
-	            $(r).addClass('selected');
-	            
-	            $.post(Pharmit.server,
-	            		{cmd: 'getmol',
-	            		 qid: qid,
-	            		 loc: mid
-	            		}).done(function(ret) {
-	            			if( $(r).hasClass('selected')) { //still selected
-	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
-	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
-						ibutton.tooltip({show: {delay: 500}});
-	            				ibutton.click(function(event) {
-	            					event.stopPropagation();
-	            					//create new window around this molecule
-	            					var win = window.open("search.html");
-	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
-	            					var msg = new Message(JSON.stringify(data), win, '*');
-	            				});
-	            			}
-	            		});
-	        }
-	    });
+        	        if ( $(r).hasClass('selected') ) {
+        	            $(r).removeClass('selected');
+        	            viewer.setResult(); //clear
+        	        }
+        	        else {
+        	            table.DataTable().$('tr.selected').removeClass('selected');
+        	            $(r).addClass('selected');
+        	            
+        	            $.post(Pharmit.server,
+        	            		{cmd: 'getmol',
+        	            		 qid: qid,
+        	            		 loc: mid
+        	            		}).done(function(ret) {
+        	            			if( $(r).hasClass('selected')) { //still selected
+        	            				viewer.setResult(ret);
+        	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
+        	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
+        						ibutton.tooltip({show: {delay: 500}});
+        	            				ibutton.click(function(event) {
+        	            					event.stopPropagation();
+        	            					//create new window around this molecule
+        	            					var win = window.open("search.html");
+        	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
+        	            					var msg = new Message(JSON.stringify(data), win, '*');
+        	            				});
+        	            			}
+        	            		});
+        	        }
+	        });		
 		
 		//footer
 		var footer = $('<div>').appendTo(phdiv).addClass("pharmit_resfooter");
@@ -1702,6 +1701,7 @@ Pharmit.Query = (function() {
 			
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
+					setFeatures(ret.points);					
 					if(ret.mol) {
 						//this was molecular data, save it
 						ligandName = lname;
@@ -1714,7 +1714,9 @@ Pharmit.Query = (function() {
 					
 						viewer.setLigand(data, lname);						
 					}
-					setFeatures(ret.points);					
+					else {
+						viewer.setView(); //orient on features in absence of ligand
+					}
 					
 				} else {
 					alert("Error: "+ret.msg);
@@ -1926,6 +1928,7 @@ console.log("creating search button");
 			for(i = 0, n = publicinfo.length; i < n; i++) {
 				info = publicinfo[i];
 				display = escHTML(info.name);
+				var titlestr = "";
 				if(info.description) titlestr = " title='"+escHTML(info.description)+"' ";
 				publiclis[i] = '<li value='+subsetinfo.length+titlestr+' class="pharmit_subsetmenu">'+display+'<br>';
 				subsetinfo.push(info);
@@ -2070,7 +2073,7 @@ console.log("creating search button");
 			.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
 			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
 		var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
-
+		
 		//filters
 		var filtergroup = $('<div>').appendTo(body);
 		$('<div>Filters</div>').appendTo(filtergroup).addClass('pharmit_heading');
@@ -2261,10 +2264,40 @@ Pharmit.Results = (function() {
 			viewer.setRight(0);
 		};
 		
+		//if a compound name can be mapped to a url, return it
+		var getNameURL = function(name) {
+		    var m = null;
+		    if((m = name.match(/PubChem-?(\d+)/))) {
+		        return "https://pubchem.ncbi.nlm.nih.gov/compound/"+m[1];
+		    }
+		    else if((m = name.match(/MolPort-?(\S+)/))) {
+		        return "https://www.molport.com/shop/moleculelink/about-this-molecule/"+m[1].replace(/-/g,"");
+		    }
+		    else if((m = name.match(/CHEMBL/))) {
+		        return "https://www.ebi.ac.uk/chembldb/index.php/compound/inspect/"+name;
+		    }
+		    else if((m = name.match(/ChemDiv-?(\S+)/))) {
+		        return "http://chemistryondemand.com:8080/eShop/search_results.jsp?idnumber="+m[1];
+		    }
+		    
+		    return null;
+		};
+		
 		//convert a mol name into something more presentable
 		this.mangleName = function(name) {
 			var names = name.split(" ");
-			var ret = '<span title="' + names.join("\n") +
+			var tip = "";
+			for(var i = 0; i < names.length; i++) {
+			    var n = names[i];
+			    var url = getNameURL(n);
+			    if(url) {
+			        tip += "<a target='_blank' href='"+url+"'>"+n+"</a><br>";
+			    }
+			    else {
+			        tip += n+"<br>";
+			    }
+			}
+			var ret = '<span data-powertip="' + tip +
 						'">'+names[0]+'</span>';
 			
 			return ret;

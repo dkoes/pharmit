@@ -52,22 +52,19 @@ typedef boost::shared_ptr<boost::asio::ip::tcp::iostream> stream_ptr;
 using namespace std;
 
 //stores additional cache info (name)
-#define QR_NAME_SIZE 32
 struct QueryResult
 {
 	const CorrespondenceResult *c;
 
 	//extras; optional
-	char name[QR_NAME_SIZE];
+	string name;
 
 	QueryResult() : c(NULL)
 	{
-		memset(name,0,QR_NAME_SIZE);
 	}
 
 	QueryResult(const CorrespondenceResult *c): c(c)
 	{
-		memset(name,0,QR_NAME_SIZE);
 	}
 };
 

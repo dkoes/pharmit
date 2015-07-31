@@ -563,9 +563,7 @@ void PharmerQuery::setExtraInfo(QueryResult& r)
 		MolData mdata;
 		PMolReaderSingleAlloc pread;
 		db->getMolData(loc, mdata, pread);
-
-		strncpy(r.name, mdata.mol->getTitle(), QR_NAME_SIZE - 1);
-		r.name[QR_NAME_SIZE - 1] = 0;
+		r.name = mdata.mol->getTitle();
 	}
 }
 
@@ -715,7 +713,7 @@ void PharmerQuery::getZINCIDs(vector<unsigned>& ids)
 				&& myres[i]->name[2] == 'N' && myres[i]->name[3] == 'C')
 		{
 			unsigned id = 0;
-			id = atoi(myres[i]->name + 4);
+			id = atoi(myres[i]->name.c_str() + 4);
 			if (id > 0)
 			{
 				ids.push_back(id);

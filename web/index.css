@@ -253,7 +253,7 @@ a {
 	font-style: normal;
 	text-decoration: none;
 	color: rgb(64,64,64);
-	line-height: 82pt;
+	line-height: 60pt;
 	letter-spacing: normal;
 }
 .cont-12 {
@@ -1590,4 +1590,13 @@ a {
 	text-align: center;
 	line-height: 24pt;
 	color: black;
+}
+
+span.beta {
+	margin-top: -1em;
+	font-size: 30pt;
+	vertical-align: super;
+	color: white;
+	text-shadow: 0px 0px 2px #270048, 0px 0px 5px #270048;
+	padding-left: 4px;
 }

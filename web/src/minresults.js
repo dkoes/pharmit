@@ -102,11 +102,10 @@ Pharmit.MinResults = (function() {
 					recname: qobj.recname
 			};
 			
-			table.hide(); //don't show it until it is setup
+			$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 0}); //don't show table and associated crust until it is setup
 			//start provided query
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
-					table.show();
 					//setup table
 					sminaid = ret.sminaid;
 					var numrows = Math.floor((body.height()-100)/29); //magic numbers!
@@ -159,8 +158,8 @@ Pharmit.MinResults = (function() {
 						 }
 
 					});
-
-
+					table.show();
+					$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 100}); 
 				} else {
 					cancel();
 					if(onclose) onclose();
@@ -258,7 +257,7 @@ Pharmit.MinResults = (function() {
 		});	
 		
 		table.on('draw.dt', function() {
-			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+			$('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
 		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {

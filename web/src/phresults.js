@@ -135,7 +135,7 @@ Pharmit.PhResults = (function() {
 							 	" molecules and "+numeral(ret.numConfs).format('0,0')+" conformers...",
 							 	infoFiltered: '',
 							 	infoEmpty: "",
-							 	info: "Searching..."
+							 	info: "<span class='pharmit_pulse'>Searching...</span>"
 						 },
 						 serverSide: true,
 						 processing: false,
@@ -264,42 +264,42 @@ Pharmit.PhResults = (function() {
 		});	
 		
 		table.on('draw.dt', function() {
-			$('.pharmit_namecol span').tooltip({position:{my: 'left-5 top+5', at: 'left bottom', collision: 'flipfit'}});
+			$('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
 		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
 			var r = this;
 			var mid = table.DataTable().row(r).data()[4];
 			$(".pharmit_iterate_button").remove();
-	        if ( $(r).hasClass('selected') ) {
-	            $(r).removeClass('selected');
-	            viewer.setResult(); //clear
-	        }
-	        else {
-	            table.DataTable().$('tr.selected').removeClass('selected');
-	            $(r).addClass('selected');
-	            
-	            $.post(Pharmit.server,
-	            		{cmd: 'getmol',
-	            		 qid: qid,
-	            		 loc: mid
-	            		}).done(function(ret) {
-	            			if( $(r).hasClass('selected')) { //still selected
-	            				viewer.setResult(ret);
-	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
-	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
-						ibutton.tooltip({show: {delay: 500}});
-	            				ibutton.click(function(event) {
-	            					event.stopPropagation();
-	            					//create new window around this molecule
-	            					var win = window.open("search.html");
-	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
-	            					var msg = new Message(JSON.stringify(data), win, '*');
-	            				});
-	            			}
-	            		});
-	        }
-	    });
+        	        if ( $(r).hasClass('selected') ) {
+        	            $(r).removeClass('selected');
+        	            viewer.setResult(); //clear
+        	        }
+        	        else {
+        	            table.DataTable().$('tr.selected').removeClass('selected');
+        	            $(r).addClass('selected');
+        	            
+        	            $.post(Pharmit.server,
+        	            		{cmd: 'getmol',
+        	            		 qid: qid,
+        	            		 loc: mid
+        	            		}).done(function(ret) {
+        	            			if( $(r).hasClass('selected')) { //still selected
+        	            				viewer.setResult(ret);
+        	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
+        	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
+        						ibutton.tooltip({show: {delay: 500}});
+        	            				ibutton.click(function(event) {
+        	            					event.stopPropagation();
+        	            					//create new window around this molecule
+        	            					var win = window.open("search.html");
+        	            					var data = {ligand: ret, ligandFormat: mid+".sdf", receptor: receptor, recname: query.recname};
+        	            					var msg = new Message(JSON.stringify(data), win, '*');
+        	            				});
+        	            			}
+        	            		});
+        	        }
+	        });		
 		
 		//footer
 		var footer = $('<div>').appendTo(phdiv).addClass("pharmit_resfooter");
