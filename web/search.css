@@ -228,8 +228,28 @@ body {
 	color: gray;
 }
 
+.pharmit_shapeconstraints input {
+	width: 2.5em;
+}
 
+.pharmit_shapeconstraints table {
+	    border-collapse: collapse;
+	
+}
 
+.pharmit_shapecell {
+    padding-left: 1em;    
+}
+
+.pharmit_shapedesc {
+	font-style: oblique;
+	padding-bottom: 0.5em;
+	padding-top: 0.5em;
+}
+
+.pharmit_pointsbuttons {
+	text-align: center;
+}
 
 .pharmit_togglediv {
     display: inline-block;
@@ -377,6 +397,7 @@ body {
 	padding-right: 0.5em;
 }
 
+
 .pharmit_styleselectrow td {
 	padding: 0;
 	height: 3em;
@@ -386,6 +407,9 @@ body {
 	width: 11em !important;
 }
 
+.pharmit_styleselectrow.pharmit_shapeselectrow td span.ui-selectmenu-button {
+	width: 15em !important;
+}
 
 .pharmit_styleselectrow td .sp-preview {
 	width: 1em;
@@ -418,6 +442,19 @@ body {
 	vertical-align: middle;
 	display: inline-block;
 	float: none;
+}
+
+.pharmit_shapemodetable {
+	border-collapse: collapse;
+}
+.pharmit_shapemodediv {
+    padding: 0.5em 0em 0.5em 1.5em;
+
+}
+
+.pharmit_shapemodetable td {
+    height: 3em;
+    padding: 0;
 }
 
 

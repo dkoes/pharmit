@@ -1892,7 +1892,6 @@ Pharmit.Query = (function() {
 		
 		//create a split button from a list of vendors and prepend it to header
 		var createSearchButton = function(header,dbinfo) {
-console.log("creating search button");
 			var subsetinfo = dbinfo.standard;
 			var buttons = $('<div>').addClass('pharmit_searchdiv');
 			var run = $('<button id="pharmitsearchbutton" name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
@@ -2074,6 +2073,120 @@ console.log("creating search button");
 			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
 		var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
 		
+		//shape
+		var shapegroup = $('<div>').appendTo(body);
+		$('<div>Shape</div>').appendTo(shapegroup).addClass('pharmit_heading');
+		var shapemodediv = $('<div>').appendTo(shapegroup).addClass('pharmit_shapemodediv');	
+		
+		var modetable = $('<table>').appendTo(shapemodediv).addClass('pharmit_shapemodetable');
+		var moderow = $('<tr>').appendTo(modetable).addClass('pharmit_styleselectrow pharmit_shapeselectrow');
+
+		var shapemodeid = "ShapeModeSelect";
+		$('<label for="'+shapemodeid+'">Mode:</label>').addClass('pharmit_stylelabel').appendTo($('<td>')).appendTo($('<td>').appendTo(moderow));
+		
+		var shapecell = $('<td nowrap>').appendTo(moderow);
+		var shapeselect = $('<select name="'+shapemodeid+'" id="'+shapemodeid+'">').addClass('pharmit_styleselector').appendTo(shapecell);
+		
+		$('<option value="filter">Filter Pharmacophore</option>').appendTo(shapeselect);
+		$('<option value="search">Shape Search</option>').appendTo(shapeselect);	
+		
+		shapeselect.val("filter");
+		shapeselect.selectmenu({
+			width: '11em', 
+			appendTo: shapegroup, 
+			change: function() {},
+			position: {my: "left top", at: "left bottom", collision: "flip"}
+		});
+		
+		//workaround firefox bug - remove element style so css stylesheet takes effect
+		shapeselect.selectmenu( "widget" ).css('width','');
+		
+		//inclusive shape
+		var shapers = $('<div>').appendTo(shapegroup).addClass('pharmit_shapeconstraints');	
+
+		var iheading = $('<h3>Inclusive Shape<br></h3>').appendTo(shapers);
+		var inclusivediv = $('<div>').addClass("pharmit_inclusiveshape").appendTo(shapers);
+		var cell = null;
+		
+		var inselectdiv = $('<div>').appendTo(inclusivediv);
+		var inselect = $('<select name="inselect" id="inselect">').addClass('pharmit_shapeselector').appendTo(inselectdiv);
+		
+		$('<option value="none">None</option>').appendTo(inselect);	
+		$('<option value="ligand">Ligand</option>').appendTo(inselect);
+		$('<option value="points">Interaction Points</option>').appendTo(inselect);
+		
+		inselect.val("none");
+		inselect.selectmenu({
+			width: '11em', 
+			appendTo: inselectdiv, 
+			change: function() {},
+			position: {my: "left top", at: "left bottom", collision: "flip"}
+		});
+		
+		
+		//none
+		var nonediv = $('<div id="none-indiv">').appendTo(inclusivediv);
+		$('<span>No inclusive shape will be used to filter pharmacophore matches.</span>').appendTo(nonediv).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+		$('<span>No inclusive shape will be used for shape screening.</span>').appendTo(nonediv).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+		
+		
+		//ligand
+		var liganddiv = $('<div id="ligand-indiv">').appendTo(inclusivediv);
+		$('<span>At least one heavy atom in a pharmacophore aligned pose must fall within the inclusive shape.</span>').appendTo(liganddiv).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+		$('<span>The entirety of the inclusive shape must be contained within the aligned hit.</span>').appendTo(liganddiv).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+				
+		var inltable = $('<table>').appendTo(liganddiv);
+		var inlrow = $('<tr>').appendTo(inltable);
+		$('<td>').append('<label title="Depth in Angstroms to reduce surface of ligand inclusive shape by." value = "1" for="inltolerance">Tolerance:</label>').appendTo(inlrow);
+		cell = $('<td>').appendTo(inlrow).addClass('pharmit_shapecell');
+		$('<input id="inltolerance" name="inltolerance">').appendTo(cell).spinner();
+		
+		//interaction points
+		var pointsdiv = $('<div id="points-indiv">').appendTo(inclusivediv);
+		$('<span>At least one heavy atom center of a pharmacophore aligned pose must fall within <b>each</b> interaction point.</span>').appendTo(pointsdiv).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+		$('<span>The entirety of the interaction point shapes must be contained within the aligned hit.</span>').appendTo(pointsdiv).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+		
+		var shapepointstable = $('<table>').appendTo(pointsdiv);
+		var adddiv = $('<div class="pharmit_pointsbuttons">').appendTo(pointsdiv);
+		var ptaddbutton = $('<button>Add</button>').appendTo(adddiv)
+		.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
+		.click(function() {}); //feature adds a reference to itself in its container
+
+		
+		//exclusive shape
+		var eheading = $('<h3>Exclusive Shape<br></h3>').appendTo(shapers);
+		var exclusivediv = $('<div>').addClass("pharmit_exclusiveshape").appendTo(shapers);
+		
+		var exselectdiv = $('<div>').appendTo(exclusivediv);
+		var exselect = $('<select name="exselect" id="exselect">').addClass('pharmit_shapeselector').appendTo(exselectdiv);
+		
+		$('<option value="none">None</option>').appendTo(exselect);	
+		$('<option value="receptor">Receptor</option>').appendTo(exselect);
+		
+		exselect.val("none");
+		exselect.selectmenu({
+			width: '11em', 
+			appendTo: exselectdiv, 
+			change: function() {},
+			position: {my: "left top", at: "left bottom", collision: "flip"}
+		});
+		
+		var phexdesc = $('<div>').appendTo(exclusivediv).addClass("pharmit_shapedesc");
+		phexdesc.text("Hits that have heavy atom centers within the exclusive shape in their pharmacophore aligned pose will be filtered out.");
+
+		var shexdesc = $('<div>').appendTo(exclusivediv).addClass("pharmit_shapedesc");
+		shexdesc.text("Aligned hits will not overlap any portion of the exclusive shape.");
+
+		
+		var extable = $('<table>').appendTo(exclusivediv);
+		var exrow = $('<tr>').appendTo(extable);
+		$('<td>').append('<label title="Depth in Angstroms to reduce surface of receptor exclusive shape by." value = "1" for="extolerance">Tolerance:</label>').appendTo(exrow);
+		cell = $('<td>').appendTo(exrow).addClass('pharmit_shapecell');
+		$('<input id="extolerance" name="extolerance">').appendTo(cell).spinner();
+		
+		shapers.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
+
+		
 		//filters
 		var filtergroup = $('<div>').appendTo(body);
 		$('<div>Filters</div>').appendTo(filtergroup).addClass('pharmit_heading');
@@ -2097,7 +2210,7 @@ console.log("creating search button");
 
 		var row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
 		$('<td>').append('<label title="Maximum number of orientations returned for each conformation" value="1" for="reduceorienttext">Max Hits per Conf:</label>').appendTo(row);
-		var cell = $('<td>').appendTo(row);
+		cell = $('<td>').appendTo(row);
 		$('<input id="reduceorienttext" name="max-orient">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
 		
 		row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
