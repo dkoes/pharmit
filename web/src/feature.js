@@ -10,13 +10,19 @@
     FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
  */
 /*
-	query.js
+	feature.js
 	Represents a single pharmacophore feature.
 */
 
 /* object representing a single pharmacophore feature*/
-function Feature(viewer, features, fobj) {
+function Feature(viewer, features, fobj, isShapeFeature) {
 	
+	if(isShapeFeature) {
+		featureNames = ['InclusionSphere'];
+	} else {
+		featureNames = ['Aromatic','HydrogenDonor', 'HydrogenAcceptor', 
+	                          		'Hydrophobic', 'NegativeIon', 'PositiveIon','ExclusionSphere'];
+	}
 	//setup html
 	var F = this;
 	this.obj = {}; //set in setFeature
@@ -71,7 +77,7 @@ function Feature(viewer, features, fobj) {
 	
 	//feature kind selection (name)
 	var select = this.select = $('<select name="featurename">').addClass('pharmit_featureselect').appendTo(editdiv);
-	$.each(this.featureNames, function(key,val) {
+	$.each(featureNames, function(key,val) {
 		$('<option value="'+val+'">'+val+'</option>').appendTo(select);
 	});
 	select.change(function() {
@@ -95,7 +101,7 @@ function Feature(viewer, features, fobj) {
 		}
 		F.updateViewer();
 		});
-	select.selectmenu({width: "12em", change: function() {select.trigger('change');}});
+	select.selectmenu({width: "15em", change: function() {select.trigger('change');}});
 	
 	//position (x,y,z)
 	var locationdiv = $('<div>').appendTo(editdiv).addClass('pharmit_locationdiv');
@@ -111,14 +117,21 @@ function Feature(viewer, features, fobj) {
 	//for prettier display round values to 3 decimal places
 	var round = function(x) { return Math.round(x*1000)/1000;};
 	
+	//intelligently apply rounding and return final result
+	var updateNumber = function(elem, text) {
+		if($.isNumeric(elem.value)) {
+			var x = parseFloat(elem.value);
+			if(text) text.text(numeral(x).format('0.0[0]'));
+			F.updateViewer();
+			return round(x);
+		}
+	};
+	
 	var c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>x:</label>').appendTo(c);
 	this.x = $('<input>').appendTo(c).addClass('pharmit_coordinput').change(function() {
-		//change x value
-		var x = this.value = round(parseFloat(this.value));
-		F.xsummary.text(numeral(x).format('0.[00]'));
-		F.obj.x = round(x);
-		F.updateViewer();
+			//change x value
+			F.obj.x = updateNumber(this, F.xsummary);
 		});
 	this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
 	
@@ -126,21 +139,15 @@ function Feature(viewer, features, fobj) {
 	$('<label>y:</label>').appendTo(c);
 	this.y = $('<input>').appendTo(c).addClass('pharmit_coordinput');
 	this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
-		//change y value
-		var y = this.value = round(parseFloat(this.value));
-		F.ysummary.text(numeral(y).format('0.[00]'));
-		F.obj.y = round(y);
-		F.updateViewer();
+			//change y value
+			F.obj.y = updateNumber(this, F.ysummary);
 		});
 
 	c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>z:</label>').appendTo(c);
 	this.z = $('<input>').appendTo(c).addClass('pharmit_coordinput');
 	this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
-		var z = this.value = round(parseFloat(this.value));
-		F.zsummary.text(numeral(z).format('0.[00]'));
-		F.obj.z = z;
-		F.updateViewer();
+			F.obj.z = updateNumber(this, F.zsummary);
 		});
 
 	//radius
@@ -148,9 +155,7 @@ function Feature(viewer, features, fobj) {
 	$('<label>Radius:</label>').appendTo(c);
 	this.radius = $('<input>').appendTo(c).addClass('pharmit_radiusinput');
 	this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
-		F.rsummary.text(numeral(this.value).format('0.[00]'));
-		F.obj.radius = this.value = round(this.value);
-		F.updateViewer();
+		F.obj.radius = updateNumber(this, F.rsummary);
 		});
 
 	//orientation (for hbonds and aromatic)
@@ -271,9 +276,6 @@ Feature.prototype.setFeature = function(fobj) {
 		this.phi.val(phi).trigger('change');
 	}
 };
-
-Feature.prototype.featureNames = ['Aromatic','HydrogenDonor', 'HydrogenAcceptor', 
-		'Hydrophobic', 'NegativeIon', 'PositiveIon','ExclusionSphere'];
 
 Feature.prototype.updateViewer = function() {
 	//anything that changes the geometry requires a new shape 

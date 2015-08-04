@@ -29,7 +29,8 @@ Pharmit.Viewer = (function() {
 		var margins = {left: 0, right: 0}; 
 		
 		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xf0f0f0', 'HydrogenAcceptor': 'orange', 
-							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey'};
+							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey',
+							'InclusionSphere': 'yellow'};
 
 		
 		var modelsAndStyles = {

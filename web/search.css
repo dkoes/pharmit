@@ -233,8 +233,7 @@ body {
 }
 
 .pharmit_shapeconstraints table {
-	    border-collapse: collapse;
-	
+	border-collapse: collapse;
 }
 
 .pharmit_shapecell {
@@ -247,7 +246,16 @@ body {
 	padding-top: 0.5em;
 }
 
+#pharmit_inclusiveshape {
+    padding: 1em;
+}
+
+#pharmit_exclusiveshape {
+	padding: 1em;
+}
+
 .pharmit_pointsbuttons {
+	padding-top: 0.5em;
 	text-align: center;
 }
 
@@ -277,7 +285,7 @@ body {
 }
 
 .pharmit_featurebuttons {
-	padding: 0.5em;
+	padding: 0.5em 0.5em 1em 0.5em;
 	text-align: center;
 	white-space: nowrap;
 }
@@ -285,6 +293,11 @@ body {
 .pharmit_featurebuttons button {
 	   margin-left: 0.5em;
     margin-right: 0.5em;
+}
+
+.pharmit_disabledmessage {
+	font-style: oblique;
+	padding: 1em;
 }
 
 .pharmit_selectedFeature.pharmit_enabledfeature h3 {
@@ -397,7 +410,6 @@ body {
 	padding-right: 0.5em;
 }
 
-
 .pharmit_styleselectrow td {
 	padding: 0;
 	height: 3em;
@@ -450,6 +462,10 @@ body {
 .pharmit_shapemodediv {
     padding: 0.5em 0em 0.5em 1.5em;
 
+}
+
+#points-indiv .pharmit_featurediv {
+	margin-right: -1em;
 }
 
 .pharmit_shapemodetable td {
