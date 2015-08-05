@@ -19,7 +19,8 @@ var Pharmit = Pharmit || {};
 Pharmit.Query = (function() {
 	
 	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
-	var defaultShapeFeature = {name:"InclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
+	var defaultInShapeFeature = {name:"InclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
+	var defaultExShapeFeature = {name:"ExclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 	var pharmaGistRegEx = /@<TRIPOS>MOLECULE[^@]*?@<TRIPOS>ATOM\n(\s*\d+\s*(ACC|DON|CAT|ANI|HYD|AR).*)*\n@<TRIPOS>BOND\n/g;
 	var privatedialog = null;
 	var endsWith = function(str, suffix) {
@@ -31,6 +32,7 @@ Pharmit.Query = (function() {
 		var querydiv = $('<div>').addClass('pharmit_query pharmit_overlay');
 		var features = null;
 		var inshapefeatures = null;
+		var exshapefeatures = null;
 		
 		var featuregroup = null;
 		var featurenone = null;
@@ -65,14 +67,9 @@ Pharmit.Query = (function() {
 			}
 		};
 		
-		//take an array of pharmacophore features (query.points) and
-		//put them in the query view
-		var setFeatures = function(featurearray, features) {
-			var start = new Date().getTime();
-			
-			viewer.disableRendering();
-			//while we're removing/adding bunches of features, don't bother rendering until the end
-			
+		
+		var setFeaturesHelper = function(featurearray, features, type) {
+			var container = features.parent();
 			features.detach();
 			//replace features
 			var old = features.children();
@@ -83,13 +80,45 @@ Pharmit.Query = (function() {
 			features.empty();
 			if(featurearray) {
 				$.each(featurearray, function(i, pt) {
-					new Feature(viewer, features, pt);
+					new Feature(viewer, features, pt, type);
 				});
 			}
 			features.accordion("option","active",false);
 			features.accordion("refresh");
 
-			featuregroup.prepend(features); 
+			container.prepend(features); 
+		};
+		
+		//take an array of pharmacophore features (query.points) and
+		//put them in the query view
+		var setFeatures = function(featurearray) {
+			var start = new Date().getTime();
+			
+			viewer.disableRendering();
+			//while we're removing/adding bunches of features, don't bother rendering until the end
+			
+			var phfeatures = [];
+			var inspheres = [];
+			var exspheres = [];
+			
+			//split up the featurearray by feature type so shape features go in the right place
+			
+			for(var i = 0, n = featurearray.length; i < n; i++) {
+				var f = featurearray[i];
+				if(f.name == "InclusionSphere") {
+					inspheres.push(f);
+				}
+				else if(f.name == "ExclusionSphere") {
+					exspheres.push(f);
+				}
+				else {
+					phfeatures.push(f);
+				}
+			}
+			
+			setFeaturesHelper(phfeatures, features);
+			setFeaturesHelper(inspheres, inshapefeatures, Feature.INCLUSIVESHAPE);
+			setFeaturesHelper(exspheres, exshapefeatures, Feature.EXCLUSIVESHAPE);
 			
 			viewer.enableRendering();
 			var end = new Date().getTime();
@@ -121,7 +150,7 @@ Pharmit.Query = (function() {
 			
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
-					setFeatures(ret.points, features);					
+					setFeatures(ret.points);					
 					if(ret.mol) {
 						//this was molecular data, save it
 						ligandName = lname;
@@ -216,13 +245,19 @@ Pharmit.Query = (function() {
 			if(typeof(data) == "string") 
 				query = $.parseJSON(data);
  
-			setFeatures(query.points, features);
+			setFeatures(query.points);
 			
 			//get named settings, including visualization
 			$.each(query, function(key,value) {
 				var i = $('input[name='+key+']');
 				if(i.length) {
 					i.val(value).change();
+				}
+				else {
+					i = $('select[name='+key+']');
+					if(i.length) {
+						i.val(value).change();
+					}
 				}
 			});
 			
@@ -262,6 +297,12 @@ Pharmit.Query = (function() {
 			ret.points = [];
 			
 			$.each(features.children(), function(key, fdiv) {
+				ret.points.push(fdiv.feature.obj);
+			});
+			$.each(inshapefeatures.children(), function(key, fdiv) {
+				ret.points.push(fdiv.feature.obj);
+			});
+			$.each(exshapefeatures.children(), function(key, fdiv) {
 				ret.points.push(fdiv.feature.obj);
 			});
 			//everything with a name is something we want to save
@@ -355,12 +396,14 @@ Pharmit.Query = (function() {
 					featuregroup.show();
 					featurenone.hide();
 				}
+				shapeselect.selectmenu("refresh");	       
+
 			});
 			
 			//inclusive shape
 			var shapers = $('<div>').appendTo(shapegroup).addClass('pharmit_shapeconstraints');	
 
-			var iheading = $('<h3>Inclusive Shape<br></h3>').appendTo(shapers);
+			var iheading = $('<h3 id="inshapehead">Inclusive Shape<br></h3>').appendTo(shapers);
 			var inclusivediv = $('<div id="pharmit_inclusiveshape">').appendTo(shapers);
 			var cell = null;
 			
@@ -397,11 +440,11 @@ Pharmit.Query = (function() {
 			$('<input id="inltolerance" name="inltolerance">').appendTo(cell).spinner();
 			
 			//interaction points
-			var pointsdiv = $('<div id="points-indiv">').appendTo(inclusivediv);
-			$('<div>At least one heavy atom center of a pharmacophore aligned pose must fall within <b>each</b> sphere.</div>').appendTo(pointsdiv).addClass("pharmit_shapedesc pharmit_shapefiltertext");
-			$('<div>The entirety of the interaction point shapes must be contained within the aligned hit.</div>').appendTo(pointsdiv).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+			var inpoints = $('<div id="points-indiv">').appendTo(inclusivediv);
+			$('<div>At least one heavy atom center of a pharmacophore aligned pose must fall within <b>each</b> sphere.</div>').appendTo(inpoints).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+			$('<div>The entirety of the interaction point shapes must be contained within the aligned hit.</div>').appendTo(inpoints).addClass("pharmit_shapedesc pharmit_shapesearchtext");
 						
-			inshapefeatures = $('<div>').appendTo(pointsdiv);
+			inshapefeatures = $('<div>').appendTo(inpoints);
 			inshapefeatures.accordion({header: "> div > h3", 
 				animate: true, 
 				active: false,
@@ -433,30 +476,34 @@ Pharmit.Query = (function() {
 					}
 					});			
 			
-			var adddiv = $('<div class="pharmit_pointsbuttons">').appendTo(pointsdiv);
+			var adddiv = $('<div class="pharmit_pointsbuttons">').appendTo(inpoints);
 			var ptaddbutton = $('<button>Add</button>').appendTo(adddiv)
 				.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
-				.click(function() {new Feature(viewer, inshapefeatures, defaultShapeFeature, true);}); //feature adds a reference to itself in its container
+				.click(function() {new Feature(viewer, inshapefeatures, defaultInShapeFeature, Feature.INCLUSIVESHAPE);}); //feature adds a reference to itself in its container
 
 			//handler for choosing inclusive mode
 			inselect.change(function() {
 				nonediv.hide();
 				liganddiv.hide();
-				pointsdiv.hide();
+				inpoints.hide();
 				if(this.value == 'ligand'){ 
 					liganddiv.show();
+					$('#inshapehead').addClass("pharmit_oblique");
 				}
 				else if(this.value == 'points') {
-					pointsdiv.show();
+					$('#inshapehead').addClass("pharmit_oblique");
+					inpoints.show();
 				}
 				else {
+					$('#inshapehead').removeClass("pharmit_oblique");
 					nonediv.show();
 				}
+				inselect.selectmenu("refresh");	       
 			});
 			inselect.change();
 			
 			//exclusive shape
-			var eheading = $('<h3>Exclusive Shape<br></h3>').appendTo(shapers);
+			var eheading = $('<h3 id="exshapehead">Exclusive Shape<br></h3>').appendTo(shapers);
 			var exclusivediv = $('<div id="pharmit_exclusiveshape">').appendTo(shapers);
 			
 			var exselectdiv = $('<div>').appendTo(exclusivediv);
@@ -464,6 +511,7 @@ Pharmit.Query = (function() {
 			
 			$('<option value="none">None</option>').appendTo(exselect);	
 			$('<option value="receptor">Receptor</option>').appendTo(exselect);
+			$('<option value="points">Spheres</option>').appendTo(exselect);
 			
 			exselect.val("none");
 			exselect.selectmenu({
@@ -490,15 +538,69 @@ Pharmit.Query = (function() {
 			cell = $('<td>').appendTo(exrow).addClass('pharmit_shapecell');
 			$('<input id="extolerance" name="extolerance">').appendTo(cell).spinner();
 			
+			
+			var expoints = $('<div id="points-exdiv">').appendTo(exclusivediv);
+			$('<div>Heavy atom centers of pharmacophore aligned poses may not fall within any exclusion sphere.</div>').appendTo(expoints).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+			$('<div>Aligned hits may not overlap any exclusion sphere.</div>').appendTo(expoints).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+						
+			exshapefeatures = $('<div>').appendTo(expoints);
+			exshapefeatures.accordion({header: "> div > h3", 
+				animate: true, 
+				active: false,
+				collapsible: true,
+				heightStyle:'content',
+				beforeActivate: function( event, ui ) { 
+					var fdiv = null;
+					
+					//deslect all features
+					var fdivs = exshapefeatures.children();
+					$.each(fdivs, function(key,fdiv) {
+						fdiv.feature.deselectFeature();
+					});
+					if(ui.newHeader.length > 0) { //being activated
+						fdiv = ui.newHeader.parent();
+						fdiv.get(0).feature.selectFeature();
+					}
+
+				}})
+				.sortable({ //from jquery ui example
+					axis: "y",
+					handle: "h3",
+					stop: function( event, ui ) {
+					// IE doesn't register the blur when sorting
+					// so trigger focusout handlers to remove .ui-state-focus
+					ui.item.children( "h3" ).triggerHandler( "focusout" );
+					// Refresh accordion to handle new order
+					$( this ).accordion( "refresh" );
+					}
+					});			
+			
+			adddiv = $('<div class="pharmit_pointsbuttons">').appendTo(expoints);
+			ptaddbutton = $('<button>Add</button>').appendTo(adddiv)
+				.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
+				.click(function() {new Feature(viewer, exshapefeatures, defaultExShapeFeature, Feature.EXCLUSIVESHAPE);}); //feature adds a reference to itself in its container
+
+			
 			//handler for choosing exclusive mode
 			exselect.change(function() {
 				if(this.value == "receptor") {
 					exnonediv.hide();
+					expoints.hide();
 					recdiv.show();
-				} else {
+					$('#exshapehead').addClass("pharmit_oblique");
+				} else if(this.value == "points") {
+					exnonediv.hide();
+					recdiv.hide();
+					expoints.show();
+					$('#exshapehead').addClass("pharmit_oblique");
+				} 
+				else {
+					$('#exshapehead').removeClass("pharmit_oblique");
 					exnonediv.show();
+					expoints.hide();
 					recdiv.hide();
 				}
+				exselect.selectmenu("refresh");	       
 			});
 			exselect.change();
 			
@@ -731,7 +833,7 @@ Pharmit.Query = (function() {
 		var body = $('<div>').appendTo(querydiv).addClass("pharmit_querybody");
 		var featureheading = $('<div>Pharmacophore</div>').appendTo(body).addClass('pharmit_heading');
 		featuregroup = $('<div>').appendTo(body);
-		featurenone = $('<div>Pharmacophore matching disabled during shape-only search.</div>').addClass('pharmit_disabledmessage').appendTo(body);
+		featurenone = $('<div>Pharmacophore filtering of aligned shape hits currently not implemented.</div>').addClass('pharmit_disabledmessage').appendTo(body);
 		features = $('<div>').appendTo(featuregroup);
 		features.accordion({header: "> div > h3", 
 			animate: true, 

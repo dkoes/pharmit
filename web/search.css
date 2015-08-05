@@ -246,6 +246,10 @@ body {
 	padding-top: 0.5em;
 }
 
+.pharmit_oblique {
+	font-style: oblique;
+}
+
 #pharmit_inclusiveshape {
     padding: 1em;
 }
@@ -344,7 +348,7 @@ body {
 	top: 50%;	
 }
 
-.pharmit_locationdiv {
+.ui-selectmenu-button:not([style*="display: none"]) + .pharmit_locationdiv {
 	padding-top: 0.5em;
 }
 .pharmit_coorddiv {
@@ -466,6 +470,12 @@ body {
 
 #points-indiv .pharmit_featurediv {
 	margin-right: -1em;
+    margin-left: -1em;
+}
+
+#points-exdiv .pharmit_featurediv {
+    margin-right: -1em;
+    margin-left: -1em;
 }
 
 .pharmit_shapemodetable td {

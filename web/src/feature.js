@@ -15,14 +15,18 @@
 */
 
 /* object representing a single pharmacophore feature*/
-function Feature(viewer, features, fobj, isShapeFeature) {
+function Feature(viewer, features, fobj, type) {
 	
-	if(isShapeFeature) {
+	var featureNames = null;
+	if(type == Feature.INCLUSIVESHAPE) {
 		featureNames = ['InclusionSphere'];
-	} else {
+	} else if(type == Feature.EXCLUSIVESHAPE) {
+		featureNames = ['ExclusionSphere'];
+	} else { //pharmacophores
 		featureNames = ['Aromatic','HydrogenDonor', 'HydrogenAcceptor', 
-	                          		'Hydrophobic', 'NegativeIon', 'PositiveIon','ExclusionSphere'];
+	                          		'Hydrophobic', 'NegativeIon', 'PositiveIon'];
 	}
+	
 	//setup html
 	var F = this;
 	this.obj = {}; //set in setFeature
@@ -76,7 +80,7 @@ function Feature(viewer, features, fobj, isShapeFeature) {
 	var editdiv = $('<div>').appendTo(this.container);
 	
 	//feature kind selection (name)
-	var select = this.select = $('<select name="featurename">').addClass('pharmit_featureselect').appendTo(editdiv);
+	var select = this.select = $('<select>').addClass('pharmit_featureselect').appendTo(editdiv);
 	$.each(featureNames, function(key,val) {
 		$('<option value="'+val+'">'+val+'</option>').appendTo(select);
 	});
@@ -102,6 +106,10 @@ function Feature(viewer, features, fobj, isShapeFeature) {
 		F.updateViewer();
 		});
 	select.selectmenu({width: "15em", change: function() {select.trigger('change');}});
+	
+	if(featureNames.length <= 1) {
+		select.next('.ui-selectmenu-button').hide(); //don't bother showing if no choices
+	}
 	
 	//position (x,y,z)
 	var locationdiv = $('<div>').appendTo(editdiv).addClass('pharmit_locationdiv');
@@ -239,6 +247,9 @@ function Feature(viewer, features, fobj, isShapeFeature) {
 	features.accordion("option","active",features.children().length-1);
 
 }
+
+Feature.INCLUSIVESHAPE = 1;
+Feature.EXCLUSIVESHAPE = 2;
 
 //set the feature to fobj, fill in ui
 Feature.prototype.setFeature = function(fobj) {

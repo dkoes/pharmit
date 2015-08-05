@@ -178,6 +178,7 @@ Pharmit.Viewer = (function() {
 			
 			select.change(function() {
 				rec.selectedStyle = this.value;
+				select.selectmenu("refresh");	       
 				updateStyle(name);
 			});
 			
