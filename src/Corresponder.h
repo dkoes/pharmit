@@ -76,15 +76,7 @@ class Corresponder
 		PMolReaderSingleAlloc pread;
 		dbptr->getMolData(tm->id, mdata, pread);
 
-		vector<FloatCoord> coords;
-		mdata.mol->getCoords(coords, result->rmsd);
-		for (unsigned i = 0, n = coords.size(); i < n; i++)
-		{
-			if (excluder.isExcluded(coords[i]))
-				return true;
-		}
-
-		return false;
+		return excluder.isExcluded(mdata.mol, result->rmsd);
 	}
 
 	//recursively generate all possible legal correspondences

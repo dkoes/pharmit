@@ -18,8 +18,10 @@
 
 class ShapeObj: public OBAMolecule
 {
-	pair<double,double> calcSplitMoments(OBMol& mol, unsigned C);
+	static pair<double,double> calcSplitMoments(const vector<Eigen::Vector3d>& coords, unsigned C);
+
 	void normalizeMol(OBMol& mol);
+
 	public:
 	struct MolInfo
 	{
@@ -45,11 +47,17 @@ class ShapeObj: public OBAMolecule
 
 	ShapeObj(OBMol& mol, const MolInfo& info, float dimension,
 			float resolution);
+
+	ShapeObj(OBMol& mol, const Eigen::Vector3d translate, const Eigen::Matrix3d& rotate, const MolInfo& info, float dimension,
+			float resolution);
+
 	virtual ~ShapeObj()
 	{
 	}
 
 	virtual void write(ostream& out) const; //writes molinfo
+
+	static void computeAndApplyNormalization(vector<Eigen::Vector3d>& coords, Eigen::Vector3d& translate, Eigen::Matrix3d& rotate);
 };
 
 #endif /* SHAPEOBJ_H_ */

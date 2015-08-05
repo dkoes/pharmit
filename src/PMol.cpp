@@ -484,6 +484,19 @@ void PMol::getCoords(vector<FloatCoord>& coords, const RMSDResult& rms)
 	rms.reorient(coords.size(), (float*) &coords[0]);
 }
 
+//populate coordes with heavy atom coordinates transformed according to transform
+void PMol::getCoords(vector<Eigen::Vector3f>& coords, const Eigen::Transform<double, 3, Eigen::Affine>& transform)
+{
+	using namespace Eigen;
+	FloatCoord *c = header.coords;
+	coords.resize(header.nAtoms);
+	for (unsigned i = 0; i < header.nAtoms; i++)
+	{
+		Vector3d pt(c[i].x, c[i].y, c[i].z);
+		coords[i] = (transform*pt).cast<float>();
+	}
+}
+
 //write sdf with associated meta data
 void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 		const RMSDResult& rms)

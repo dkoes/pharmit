@@ -12,13 +12,14 @@
 #define PHARMITSERVER_EXCLUDER_H_
 
 #include "FloatCoord.h"
+#include "PMol.h"
 #include <json/json.h>
 #include <vector>
 using namespace std;
 
 class Excluder
 {
-	struct ExclusionSphere
+	struct Sphere
 	{
 		float x, y, z;
 		float rSq;
@@ -35,32 +36,39 @@ class Excluder
 			return distSq <= rSq;
 		}
 
-		ExclusionSphere(): x(0),y(0),z(0),rSq(0) {}
-		ExclusionSphere(float _x, float _y, float _z, float _r): x(_x), y(_y), z(_z), rSq(_r*_r) {}
+		Sphere(): x(0),y(0),z(0),rSq(0) {}
+		Sphere(float _x, float _y, float _z, float _r): x(_x), y(_y), z(_z), rSq(_r*_r) {}
 	};
 
-	vector<ExclusionSphere> spheres;
+	vector<Sphere> exspheres; //exclusion spheres - can't overlap any
+	vector<Sphere> inspheres; //inclusion spheres - must overlap all
 
 public:
 	Excluder() {}
 	~Excluder() {}
 
-	//read exclusion spheres from json
-	bool addJSONPoints(Json::Value& root);
+	//read steric constraints from json
+	bool readJSONExclusion(Json::Value& root);
 
 	//write exclusion information to root
 	void addToJSON(Json::Value& root) const;
 
-	//return true if in the exclusion zone
-	bool isExcluded(const FloatCoord& pnt) const;
+	//return true if coordinates are excluded by spatial constraints
+	//provide the molecule and any transformation to the coordinates
+	bool isExcluded(PMol *mol, const RMSDResult& res) const;
 
-	bool isDefined() const { return spheres.size() > 0; }
+	bool isDefined() const { return exspheres.size() > 0 || inspheres.size() > 0; }
 
-	void clear() { spheres.clear(); }
+	void clear() { exspheres.clear(); inspheres.clear(); }
 
 	void addExclusionSphere(float x, float y, float z, float r)
 	{
-		spheres.push_back(ExclusionSphere(x,y,z,r));
+		exspheres.push_back(Sphere(x,y,z,r));
+	}
+
+	void addInclusionSphere(float x, float y, float z, float r)
+	{
+		inspheres.push_back(Sphere(x,y,z,r));
 	}
 };
 

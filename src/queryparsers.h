@@ -134,7 +134,7 @@ public:
 			in >> root;
 			if (!readPharmaPointsJSON(pharmas, root, points))
 				return false;
-			return excluder.addJSONPoints(root);
+			return excluder.readJSONExclusion(root);
 		}
 		catch (std::exception& e)
 		{

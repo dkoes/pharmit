@@ -468,15 +468,14 @@ body {
 
 }
 
-#points-indiv .pharmit_featurediv {
+#points-indiv .pharmit_featurediv, #points-exdiv .pharmit_featurediv {
 	margin-right: -1em;
     margin-left: -1em;
 }
 
-#points-exdiv .pharmit_featurediv {
-    margin-right: -1em;
-    margin-left: -1em;
-}
+#points-exdiv, #points-indiv {
+    padding-top: 0.5em;	
+} 
 
 .pharmit_shapemodetable td {
     height: 3em;

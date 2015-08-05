@@ -322,7 +322,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	readPharmaPointsJSON(pharmas, data, queryPoints);
 
 	Excluder excluder;
-	excluder.addJSONPoints(data);
+	excluder.readJSONExclusion(data);
 
 	//check result - need at least 3 points to define a triangle
 	if (queryPoints.size() < 3)
