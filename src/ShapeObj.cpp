@@ -157,7 +157,7 @@ ShapeObj::ShapeObj(OBMol& mol, const MolInfo& info, float dimension,
 
 //use provided transformation to move molecule
 ShapeObj::ShapeObj(OBMol& mol, const Eigen::Vector3d translate, const Eigen::Matrix3d& rotate, const MolInfo& info, float dimension,
-		float resolution)
+		float resolution): minfo(info)
 {
 	OBMol m = mol;
 	m.DeleteHydrogens();

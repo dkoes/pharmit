@@ -5,22 +5,23 @@
  *      Author: dkoes
  */
 
-#include "Excluder.h"
 #include "ShapeObj.h"
 #include <string>
 #include <cmath>
 #include <openbabel/mol.h>
 #include <openbabel/obconversion.h>
+#include <ShapeConstraints.h>
+#include "MappableOctTree.h"
 using namespace OpenBabel;
 using namespace Eigen;
 
 
-const double Excluder::probeRadius = 1.4; //radius of water
+const double ShapeConstraints::probeRadius = 1.4; //radius of water
 
 //return a "good" transformation to put the query coordinate system into
 //a centered coordinate system; use the ligand coordinates if available in query,
 //otherwise use pharmacophore points
-Eigen::Affine3d Excluder::computeTransform(Json::Value& root)
+Eigen::Affine3d ShapeConstraints::computeTransform(Json::Value& root)
 {
 	vector<Vector3d> coords;
 
@@ -35,8 +36,11 @@ Eigen::Affine3d Excluder::computeTransform(Json::Value& root)
 		for (OBAtomIterator aitr = lig.BeginAtoms(); aitr != lig.EndAtoms(); ++aitr)
 		{
 			OBAtom* atom = *aitr;
-			Vector3d c(atom->x(), atom->y(), atom->z());
-			coords.push_back(c);
+			if(!atom->IsHydrogen())
+			{
+				Vector3d c(atom->x(), atom->y(), atom->z());
+				coords.push_back(c);
+			}
 		}
 	}
 
@@ -68,12 +72,15 @@ Eigen::Affine3d Excluder::computeTransform(Json::Value& root)
 
 	Affine3d ret = Affine3d::Identity();
 	ret.rotate(rotate);
+	//make sure long parts of ligand are on a diagonal in the grid
+	ret.rotate(AngleAxisd(0.25*M_PI, Vector3d::UnitZ()));
+	ret.rotate(AngleAxisd(0.25*M_PI, Vector3d::UnitY()));
 	ret.translate(translate);
 
 	return ret;
 }
 
-void Excluder::makeGrid(MGrid& grid, OBMol& mol, const Affine3d& transform, double tolerance)
+void ShapeConstraints::makeGrid(MGrid& grid, OBMol& mol, const Affine3d& transform, double tolerance)
 {
 	//set adjustments based on tolerance
 	double grow = 0.0;
@@ -101,7 +108,7 @@ void Excluder::makeGrid(MGrid& grid, OBMol& mol, const Affine3d& transform, doub
 
 //read exclusion sphere points from a json formatted stream
 //and add to excluder
-bool Excluder::readJSONExclusion(Json::Value& root)
+bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 {
 	try
 	{
@@ -177,6 +184,47 @@ bool Excluder::readJSONExclusion(Json::Value& root)
 
 			makeGrid(excludeGrid, rec, gridtransform, tolerance);
 		}
+		if(inselect.isString() && inselect.asString() == "ligand" && root["ligand"].isString())
+		{
+			//get tolerance,
+			double tolerance = 0.0;
+
+			if(root["intolerance"].isNumeric())
+			{
+				tolerance = root["intolerance"].asDouble();
+			}
+
+			//parse ligand
+			OBConversion conv;
+			string lname = root["ligandFormat"].asString();
+			conv.SetInFormat(OBConversion::FormatFromExt(lname.c_str()));
+			OBMol lig;
+			conv.ReadString(&lig, root["ligand"].asString());
+
+			double resolution = includeGrid.getResolution();
+			double dimension = includeGrid.getDimension();
+
+			//transform to grid space
+			for (OBAtomIterator aitr = lig.BeginAtoms(); aitr != lig.EndAtoms(); ++aitr)
+			{
+				OBAtom* atom = *aitr;
+				Vector3d c(atom->x(), atom->y(), atom->z());
+				c = gridtransform*c;
+				atom->SetVector(c.x(), c.y(), c.z());
+			}
+
+			//compute grid using obanalytic for closest fidelty to database shapes
+			ShapeObj::MolInfo minfo;
+			ShapeObj obj(lig, Vector3d::Zero(), Matrix3d::Identity(), minfo, dimension, resolution);
+			MappableOctTree *tree = MappableOctTree::create(dimension, resolution, obj);
+			tree->makeGrid(includeGrid, 0.5);
+			delete tree;
+			if(tolerance > 0)
+				includeGrid.shrink(tolerance);
+			else if(tolerance < 0)
+				includeGrid.grow(-tolerance);
+			//makeGrid(includeGrid, lig, gridtransform, tolerance);
+		}
 
 
 	} catch (std::exception& e)
@@ -188,7 +236,7 @@ bool Excluder::readJSONExclusion(Json::Value& root)
 	return true;
 }
 
-bool Excluder::isExcluded(PMol *mol, const RMSDResult& res) const
+bool ShapeConstraints::isExcluded(PMol *mol, const RMSDResult& res) const
 {
 	using namespace Eigen;
 	vector<Vector3f> coords;
@@ -212,6 +260,23 @@ bool Excluder::isExcluded(PMol *mol, const RMSDResult& res) const
 			if(excludeGrid.inGrid(x,y,z) && excludeGrid.test(x,y,z))
 				return true;
 		}
+	}
+
+	if(includeGrid.numSet() > 0)
+	{
+		//as long as a single heavy atom is included, we are good
+		bool nogood = true;
+		for (unsigned c = 0, nc = coords.size(); c < nc && nogood; c++)
+		{
+			const Vector3d& pnt = gridtransform*coords[c].cast<double>();
+			float x = pnt.x();
+			float y = pnt.y();
+			float z = pnt.z();
+			if(includeGrid.inGrid(x,y,z) && includeGrid.test(x,y,z))
+				nogood = false;
+		}
+		if(nogood) //nothing overlapped
+			return true;
 	}
 
 	//if any coordinate overlaps with any exclusion sphere, no good
@@ -242,7 +307,7 @@ bool Excluder::isExcluded(PMol *mol, const RMSDResult& res) const
 	return false;
 }
 
-void Excluder::addToJSON(Json::Value& root) const
+void ShapeConstraints::addToJSON(Json::Value& root) const
 {
 	Json::Value jpoints = root["points"];
 	unsigned start = jpoints.size();
@@ -267,8 +332,14 @@ void Excluder::addToJSON(Json::Value& root) const
 	}
 }
 
-//set json formated mesh of exclusive grid
-void Excluder::getExclusiveMesh(Json::Value& mesh)
+//truncate floats to reduce the number of digits
+static double Round2(double num)
+{
+    return round(num * 100.0)/100.0;
+}
+
+//set json formatted mesh of provided grid
+void ShapeConstraints::getMesh(MGrid& grid, Json::Value& mesh)
 {
 	Json::Value& verts = mesh["vertexArr"] =  Json::arrayValue;
 	Json::Value& norms =mesh["normalArr"] =  Json::arrayValue;
@@ -279,7 +350,7 @@ void Excluder::getExclusiveMesh(Json::Value& mesh)
 	vector<int> faces;
 
 	//create mesh from mgrid
-	excludeGrid.makeMesh(vertices, normals, faces);
+	grid.makeMesh(vertices, normals, faces);
 
 	//copy face indices
 	for(unsigned i = 0, n = faces.size(); i < n; i++)
@@ -293,18 +364,30 @@ void Excluder::getExclusiveMesh(Json::Value& mesh)
 	for(unsigned i = 0, n = vertices.size(); i < n; i++)
 	{
 		Vector3d v = trans*vertices[i].cast<double>();
-		verts[i]["x"] = v.x();
-		verts[i]["y"] = v.y();
-		verts[i]["z"] = v.z();
+		verts[i]["x"] = Round2(v.x());
+		verts[i]["y"] = Round2(v.y());
+		verts[i]["z"] = Round2(v.z());
 	}
 
+	return;
 	for(unsigned i = 0, n = normals.size(); i < n; i++)
 	{
-		Vector3d v = trans.linear()*vertices[i].cast<double>();
-		v.normalize();
-		norms[i]["x"] = v.x();
-		norms[i]["y"] = v.y();
-		norms[i]["z"] = v.z();
+		Vector3d norm = normals[i].cast<double>();
+		norm.normalize();
+		Vector3d v = trans.linear()*norm;
+		norms[i]["x"] = Round2(v.x());
+		norms[i]["y"] = Round2(v.y());
+		norms[i]["z"] = Round2(v.z());
 	}
 }
 
+//set json formated mesh of exclusive grid
+void ShapeConstraints::getExclusiveMesh(Json::Value& mesh)
+{
+	getMesh(excludeGrid, mesh);
+}
+
+void ShapeConstraints::getInclusiveMesh(Json::Value& mesh)
+{
+	getMesh(includeGrid, mesh);
+}

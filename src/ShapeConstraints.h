@@ -22,7 +22,7 @@
 
 using namespace std;
 
-class Excluder
+class ShapeConstraints
 {
 	struct Sphere
 	{
@@ -57,9 +57,10 @@ class Excluder
 
 	static const double probeRadius;
 
+	void getMesh(MGrid& grid, Json::Value& mesh);
 public:
-	Excluder() {}
-	~Excluder() {}
+	ShapeConstraints(): excludeGrid(32,0.5), includeGrid(32,0.5) {}
+	~ShapeConstraints() {}
 
 	//read steric constraints from json
 	bool readJSONExclusion(Json::Value& root);
@@ -86,6 +87,7 @@ public:
 	}
 
 	void getExclusiveMesh(Json::Value& mesh);
+	void getInclusiveMesh(Json::Value& mesh);
 };
 
 #endif /* PHARMITSERVER_EXCLUDER_H_ */

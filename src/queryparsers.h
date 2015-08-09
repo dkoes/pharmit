@@ -29,10 +29,10 @@
 
 #include "pharmarec.h"
 #include "tinyxml/tinyxml.h"
-#include "Excluder.h"
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/function.hpp>
+#include <ShapeConstraints.h>
 #include <cstdlib>
 
 //base class of query file parsers
@@ -40,7 +40,7 @@ class QueryParser
 {
 public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
-			vector<PharmaPoint>& points, Excluder& excluder) = 0;
+			vector<PharmaPoint>& points, ShapeConstraints& excluder) = 0;
 };
 
 //parses our own text based format OR LigBuilder txt files
@@ -48,7 +48,7 @@ class TextQueryParser: public QueryParser
 {
 public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
-			vector<PharmaPoint>& points, Excluder& excluder)
+			vector<PharmaPoint>& points, ShapeConstraints& excluder)
 	{
 		using namespace boost;
 		points.clear();
@@ -123,7 +123,7 @@ class JSonQueryParser: public QueryParser
 {
 public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
-			vector<PharmaPoint>& points, Excluder& excluder)
+			vector<PharmaPoint>& points, ShapeConstraints& excluder)
 	{
 		try
 		{
@@ -211,7 +211,7 @@ class PH4Parser: public QueryParser
 	}
 public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
-			vector<PharmaPoint>& points, Excluder& excluder)
+			vector<PharmaPoint>& points, ShapeConstraints& excluder)
 	{
 		points.clear();
 		//first #moe
@@ -335,7 +335,7 @@ class PMLParser: public QueryParser
 {
 public:
 	virtual bool parse(const Pharmas& pharmas, istream& in,
-			vector<PharmaPoint>& points, Excluder& excluder)
+			vector<PharmaPoint>& points, ShapeConstraints& excluder)
 	{
 		using namespace OpenBabel;
 		//class to find the first pharmacophore element in a document

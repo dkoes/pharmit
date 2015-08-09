@@ -27,6 +27,7 @@
 #ifndef PHARMITSERVER_CORRESPONDER_H_
 #define PHARMITSERVER_CORRESPONDER_H_
 
+#include <ShapeConstraints.h>
 #include "pharmerdb.h"
 #include "Triplet.h"
 #include "cors.h"
@@ -34,7 +35,6 @@
 #include "RMSD.h"
 #include "params.h"
 #include "CommandLine2/CommandLine.h"
-#include "Excluder.h"
 
 using namespace std;
 extern cl::opt<bool> UnWeightedRMSD;
@@ -52,7 +52,7 @@ class Corresponder
 	unsigned threadQ;
 	MTQueue<CorrespondenceResult*>& resultQ;
 	const QueryParameters& qparams;
-	const Excluder& excluder;
+	const ShapeConstraints& excluder;
 
 	CorrespondenceResult *tmpresult; //used for building up result
 	TripletMatch *tm; //current match being processed
@@ -274,7 +274,7 @@ public:
 			unsigned ndbids, const vector<PharmaPoint>& pts,
 			const vector<vector<QueryTriplet> >& trips, TripletMatches& m,
 			CorAllocator& ca, unsigned t, MTQueue<CorrespondenceResult*> & Q,
-			const QueryParameters& qp, const Excluder& ex, bool& stop) :
+			const QueryParameters& qp, const ShapeConstraints& ex, bool& stop) :
 			dbptr(dptr), dbid(dbid_), numdbids(ndbids), points(pts), triplets(
 					trips), inQ(m), alloc(ca), threadQ(t), resultQ(Q), qparams(
 					qp), excluder(ex), tmpresult(NULL), tm(NULL), thisConfCnt(

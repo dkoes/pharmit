@@ -350,7 +350,7 @@ void MGrid::makeFace(Eigen::Vector3f pt, int which, double r,vector<Eigen::Vecto
 
 		//the normals are all the same - r
 		Vector3f norm(0,0,0);
-		norm[which] = r;
+		norm[which] = -1.0; //I have no idea why this has the desired effect
 		normals.push_back(norm);
 		normals.push_back(norm);
 		normals.push_back(norm);

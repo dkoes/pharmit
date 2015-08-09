@@ -380,12 +380,20 @@ public:
 						}
 					}
 
-					Excluder excluder;
+					ShapeConstraints excluder;
 					excluder.readJSONExclusion(root);
 					Json::Value mesh;
 
-					if(cgiTagExists(CGI, "getexclusive"))
+					if(cgiGetString(CGI, "type") == "exclusive")
+					{
+						mesh["tolerance"] = root["extolerance"];
 						excluder.getExclusiveMesh(mesh);
+					}
+					else if(cgiGetString(CGI, "type") == "inclusive")
+					{
+						mesh["tolerance"] = root["intolerance"];
+						excluder.getInclusiveMesh(mesh);
+					}
 
 					IO << HTTPPlainHeader();
 					Json::FastWriter writer;
@@ -535,7 +543,7 @@ public:
 				//a pharmacophore query format
 				stringstream str(filedata);
 				vector<PharmaPoint> points;
-				Excluder excluder;
+				ShapeConstraints excluder;
 				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
 					if (points.size() > 25)

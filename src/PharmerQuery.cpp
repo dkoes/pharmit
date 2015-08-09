@@ -122,7 +122,7 @@ PharmerQuery::PharmerQuery(
 PharmerQuery::PharmerQuery(
 		const vector< boost::shared_ptr<PharmerDatabaseSearcher> >& dbs,
 		const vector<PharmaPoint>& pts, const QueryParameters& qp,
-		const Excluder& ex, unsigned nth) :
+		const ShapeConstraints& ex, unsigned nth) :
 		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
 				false), tripletMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
 				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(

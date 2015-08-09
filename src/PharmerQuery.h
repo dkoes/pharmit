@@ -40,10 +40,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
 #include <json/json.h>
+#include <ShapeConstraints.h>
 #include "Triplet.h"
 #include "tripletmatching.h"
 #include "params.h"
-#include "Excluder.h"
 #include "pharmarec.h"
 #include "pharmerdb.h"
 
@@ -78,7 +78,7 @@ class PharmerQuery
 	vector<QueryTriplet> triplets; //all n^3 triangles
 	boost::multi_array<unsigned, 3> tripIndex; //for any (i,j,k), the index of the corresponding triplet
 	QueryParameters params;
-	Excluder excluder;
+	ShapeConstraints excluder;
 
 	bool valid;
 	bool stopQuery;
@@ -137,7 +137,7 @@ public:
 
 	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> > & dbs,
 			const vector<PharmaPoint>& pts, const QueryParameters& qp =
-					QueryParameters(), const Excluder& ex = Excluder(), unsigned nth = 1);
+					QueryParameters(), const ShapeConstraints& ex = ShapeConstraints(), unsigned nth = 1);
 
 	virtual ~PharmerQuery();
 

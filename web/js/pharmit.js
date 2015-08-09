@@ -1660,7 +1660,6 @@ Pharmit.Query = (function() {
 			if(qobj.receptor && qobj.reckey) {
 				delete qobj.receptor; //server can get data w/reckey if need be
 			}
-			delete qobj.ligand;
 			
 			//results manages queries
 			results.phquery(qobj);
@@ -1964,53 +1963,35 @@ Pharmit.Query = (function() {
 		//escape special characters to avoid injections
 		var escHTML = function(str) { return $('<div/>').text(str).html(); };	
 		
+		var updateShapeMesh = function(sel) {
+			//send query to server to get mesh
+			var qobj = getQueryObj();
+			var kind = sel.meshstyle.kind;
+			if(qobj.receptor && qobj.receptorid) delete qobj.receptor; //don't send receptor if it is cached
+			var postData = {cmd: 'getmesh',
+					type: kind,
+					json: JSON.stringify(qobj)
+			};
+			
+			if(sel.mesh === null || sel.meshtolerance != sel.val()) {				
+				$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
+					
+					if(ret.tolerance == sel.val() || sel.mesh === null) {
+						if(sel.mesh) viewer.removeMesh(sel.mesh);
+						sel.mesh = viewer.addMesh(ret, sel.meshstyle);
+						sel.meshtolerance = ret.tolerance;
+					}
+					
+				}
+				);
+			}
+		};
+		
 		//setup all the shape query controls
 		var createShapeQuery = function(body) {
 			//shape
 			var shapegroup = $('<div>').appendTo(body);
 			$('<div>Shape</div>').appendTo(shapegroup).addClass('pharmit_heading');
-			var shapemodediv = $('<div>').appendTo(shapegroup).addClass('pharmit_shapemodediv');	
-			
-			var modetable = $('<table>').appendTo(shapemodediv).addClass('pharmit_shapemodetable');
-			var moderow = $('<tr>').appendTo(modetable).addClass('pharmit_styleselectrow pharmit_shapeselectrow');
-
-			var shapemodeid = "ShapeModeSelect";
-			$('<label for="'+shapemodeid+'">Mode:</label>').addClass('pharmit_stylelabel').appendTo($('<td>')).appendTo($('<td>').appendTo(moderow));
-			
-			var shapecell = $('<td nowrap>').appendTo(moderow);
-			var shapeselect = $('<select name="'+shapemodeid+'" id="'+shapemodeid+'">').addClass('pharmit_styleselector').appendTo(shapecell);
-			
-			$('<option value="filter">Filter Pharmacophore</option>').appendTo(shapeselect);
-			$('<option value="search">Shape Search</option>').appendTo(shapeselect);	
-			
-			shapeselect.val("filter");
-			shapeselect.selectmenu({
-				width: '11em', 
-				appendTo: shapegroup, 
-				change: function() {
-					shapeselect.change();
-				},
-				position: {my: "left top", at: "left bottom", collision: "flip"}
-			});
-			
-			//workaround firefox bug - remove element style so css stylesheet takes effect
-			shapeselect.selectmenu( "widget" ).css('width','');
-			
-			shapeselect.change(function() {
-				if(this.value == 'search') {
-					$('.pharmit_shapefiltertext',shapegroup).hide();
-					$('.pharmit_shapesearchtext',shapegroup).show();
-					featuregroup.hide();
-					featurenone.show();
-				} else { //filter
-					$('.pharmit_shapefiltertext',shapegroup).show();
-					$('.pharmit_shapesearchtext',shapegroup).hide();
-					featuregroup.show();
-					featurenone.hide();
-				}
-				shapeselect.selectmenu("refresh");	       
-
-			});
 			
 			//inclusive shape
 			var shapers = $('<div>').appendTo(shapegroup).addClass('pharmit_shapeconstraints');	
@@ -2047,9 +2028,45 @@ Pharmit.Query = (function() {
 					
 			var inltable = $('<table>').appendTo(liganddiv);
 			var inlrow = $('<tr>').appendTo(inltable);
-			$('<td>').append('<label title="Depth in Angstroms to reduce surface of ligand inclusive shape by." value = "1" for="inltolerance">Tolerance:</label>').appendTo(inlrow);
+			$('<td>').append('<label title="Depth in Angstroms to reduce surface of ligand inclusive shape by." value = "1" for="intolerance">Tolerance:</label>').appendTo(inlrow);
 			cell = $('<td>').appendTo(inlrow).addClass('pharmit_shapecell');
-			$('<input id="inltolerance" name="inltolerance">').appendTo(cell).spinner();
+			var intol = $('<input id="intolerance" name="intolerance">').appendTo(cell);
+			intol.mesh = null;
+			intol.meshstyle = {kind: "inclusive"};
+			
+			intol.change(function() { updateShapeMesh(intol); });
+			intol.spinner({step: 0.5, stop: function() { intol.change();}});
+			intol.val(1);
+			
+			var instylediv = $('<div>').appendTo(liganddiv).addClass('pharmit_meshstylediv');
+			$('<input type="radio" id="inshapestyle-hide" name="inshapestyle"><label for="inshapestyle-hide">Hide</label>').appendTo(instylediv)
+				.change(function() {
+					if($(this).prop("checked")) {
+						intol.meshstyle.hidden = true;
+						viewer.updateMesh(intol.mesh, intol.meshstyle);
+					}
+					instylediv.buttonset("refresh");
+				});
+			$('<input type="radio" id="inshapestyle-wire" name="inshapestyle"><label for="inshapestyle-wire">Wire</label>').appendTo(instylediv)
+				.change(function() {
+						if($(this).prop("checked")) {
+							intol.meshstyle.hidden = false;
+							intol.meshstyle.wireframe = true;
+							viewer.updateMesh(intol.mesh, intol.meshstyle);
+						}
+						instylediv.buttonset("refresh");
+					});
+			$('<input type="radio" id="inshapestyle-solid" name="inshapestyle"><label for="inshapestyle-solid">Solid</label>').appendTo(instylediv)
+			.change(function() {
+					if($(this).prop("checked")) {
+						intol.meshstyle.hidden = false;
+						intol.meshstyle.wireframe = false;
+						viewer.updateMesh(intol.mesh, intol.meshstyle);
+					}
+					instylediv.buttonset("refresh");
+				}).prop("checked",true);
+			instylediv.buttonset();
+			
 			
 			//interaction points
 			var inpoints = $('<div id="points-indiv">').appendTo(inclusivediv);
@@ -2104,6 +2121,7 @@ Pharmit.Query = (function() {
 					});
 					liganddiv.show();
 					$('#inshapehead').addClass("pharmit_oblique");
+					intol.change();
 				}
 				else if(this.value == 'points') {
 					$.each(inshapefeatures.children(), function(key, fdiv) {
@@ -2111,6 +2129,8 @@ Pharmit.Query = (function() {
 					});
 					$('#inshapehead').addClass("pharmit_oblique");
 					inpoints.show();
+					if(intol.mesh) viewer.removeMesh(intol.mesh);
+					intol.mesh = null;
 				}
 				else {
 					$.each(inshapefeatures.children(), function(key, fdiv) {
@@ -2118,6 +2138,8 @@ Pharmit.Query = (function() {
 					});
 					$('#inshapehead').removeClass("pharmit_oblique");
 					nonediv.show();
+					if(intol.mesh) viewer.removeMesh(intol.mesh);
+					intol.mesh = null;
 				}
 				inselect.selectmenu("refresh");	       
 			});
@@ -2157,7 +2179,42 @@ Pharmit.Query = (function() {
 			var exrow = $('<tr>').appendTo(extable);
 			$('<td>').append('<label title="Depth in Angstroms to reduce surface of receptor exclusive shape by." value = "1" for="extolerance">Tolerance:</label>').appendTo(exrow);
 			cell = $('<td>').appendTo(exrow).addClass('pharmit_shapecell');
-			$('<input id="extolerance" name="extolerance">').appendTo(cell).spinner();
+			var extol = $('<input id="extolerance" name="extolerance">').appendTo(cell).val(1.0);
+			extol.mesh = null;
+			extol.meshstyle = {kind: "exclusive"};
+			
+			extol.change(function() { updateShapeMesh(extol); });
+			extol.spinner({step: 0.5, stop: function() { extol.change();}});
+			
+			var exstylediv = $('<div>').appendTo(recdiv).addClass('pharmit_meshstylediv');
+			$('<input type="radio" id="exshapestyle-hide" name="exshapestyle"><label for="exshapestyle-hide">Hide</label>').appendTo(exstylediv)
+				.change(function() {
+					if($(this).prop("checked")) {
+						extol.meshstyle.hidden = true;
+						viewer.updateMesh(extol.mesh, extol.meshstyle);
+					}
+					exstylediv.buttonset("refresh");
+				});
+			$('<input type="radio" id="exshapestyle-wire" name="exshapestyle"><label for="exshapestyle-wire">Wire</label>').appendTo(exstylediv)
+				.change(function() {
+						if($(this).prop("checked")) {
+							extol.meshstyle.hidden = false;
+							extol.meshstyle.wireframe = true;
+							viewer.updateMesh(extol.mesh, extol.meshstyle);
+						}
+						exstylediv.buttonset("refresh");
+					});
+			$('<input type="radio" id="exshapestyle-solid" name="exshapestyle"><label for="exshapestyle-solid">Solid</label>').appendTo(exstylediv)
+			.change(function() {
+					if($(this).prop("checked")) {
+						extol.meshstyle.hidden = false;
+						extol.meshstyle.wireframe = false;
+						viewer.updateMesh(extol.mesh, extol.meshstyle);
+					}
+					exstylediv.buttonset("refresh");
+				}).prop("checked",true);
+			exstylediv.buttonset();
+			
 			
 			
 			var expoints = $('<div id="points-exdiv">').appendTo(exclusivediv);
@@ -2211,6 +2268,7 @@ Pharmit.Query = (function() {
 					exnonediv.hide();
 					expoints.hide();
 					recdiv.show();
+					extol.change(); //mesh
 					$('#exshapehead').addClass("pharmit_oblique");
 				} else if(this.value == "points") {
 					$.each(exshapefeatures.children(), function(key, fdiv) {
@@ -2220,6 +2278,8 @@ Pharmit.Query = (function() {
 					recdiv.hide();
 					expoints.show();
 					$('#exshapehead').addClass("pharmit_oblique");
+					if(extol.mesh) viewer.removeMesh(extol.mesh);
+					extol.mesh = null;
 				} 
 				else { //none
 					$.each(exshapefeatures.children(), function(key, fdiv) {
@@ -2230,13 +2290,14 @@ Pharmit.Query = (function() {
 					exnonediv.show();
 					expoints.hide();
 					recdiv.hide();
+					if(extol.mesh) viewer.removeMesh(extol.mesh);
+					extol.mesh = null;
 				}
 				exselect.selectmenu("refresh");	       
 			});
 			exselect.change();
 			
 			
-			shapeselect.change(); //set proper visibility of text after it is created
 			shapers.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
 
 		};
@@ -2317,6 +2378,50 @@ Pharmit.Query = (function() {
 			addScreeningRow("hbd", "HBD", "Minimum/maximum number of hydrogen bond donors",0);
 			
 			filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
+		};
+		
+		//setup select menu for choosing search mode
+		var prependModeSelect = function(header) {
+			var shapemodediv = $('<div>').prependTo(header).addClass('pharmit_shapemodediv');	
+			
+			var shapemodeid = "ShapeModeSelect";
+			
+			var shapeselect = $('<select name="'+shapemodeid+'" id="'+shapemodeid+'">').addClass('pharmit_styleselector').appendTo(shapemodediv);
+			
+			$('<option value="filter">Pharmacophore Search / Shape Filter</option>').appendTo(shapeselect);
+			$('<option value="search">Shape Search / Pharmacophore Filter</option>').appendTo(shapeselect);	
+			
+			shapeselect.val("filter");
+			shapeselect.selectmenu({
+				width: '11em', 
+				appendTo: header, 
+				change: function() {
+					shapeselect.change();
+				},
+				position: {my: "left top", at: "left bottom", collision: "flip"}
+			});
+			
+			//workaround firefox bug - remove element style so css stylesheet takes effect
+			shapeselect.selectmenu( "widget" ).css('width','');
+			
+			shapeselect.change(function() {
+				if(this.value == 'search') {
+					$('.pharmit_shapefiltertext').hide();
+					$('.pharmit_shapesearchtext').show();
+					featuregroup.hide();
+					featurenone.show();
+				} else { //filter
+					$('.pharmit_shapefiltertext').show();
+					$('.pharmit_shapesearchtext').hide();
+					featuregroup.show();
+					featurenone.hide();
+				}
+				shapeselect.selectmenu("refresh");	       
+
+			});
+			
+			shapeselect.change(); //set proper visibility of text after it is created
+
 		};
 		
 		//create a split button from a list of vendors and prepend it to header
@@ -2506,6 +2611,9 @@ Pharmit.Query = (function() {
 		createShapeQuery(body);
 		
 		createFilterQuery(body);
+		
+		prependModeSelect(header); //setup mode select after shape/pharmacophore elements are created
+
 		
 		//viewer settings
 		var vizgroup = $('<div>').appendTo(body);
@@ -5351,6 +5459,41 @@ Pharmit.Viewer = (function() {
 		
 		this.getView = function() {
 			return viewer.getView();
+		};
+		
+		//add a mesh object, returns identifier
+		this.addMesh = function(mesh, style) {
+			if(style.kind == "exclusive") {
+				mesh.color = "grey";
+			} else if(style.kind == "inclusive") {
+				mesh.color = "yellow";
+			}
+			$.extend(mesh, style);
+			var ret = viewer.addCustom(mesh);
+			viewer.render();
+			return ret;
+		};
+		
+		
+		this.updateMesh = function(m, newstyle) {
+			if(m.updateStyle) m.updateStyle(newstyle);
+			viewer.render();
+		};
+		
+		//removes previously created mesh object m
+		this.removeMesh = function(m) {
+			viewer.removeShape(m);
+			viewer.render();
+		};
+		
+		//hides, but does not remove, mesh object m
+		this.hideMesh = function(m) {
+			
+		};
+		
+		//restores visibility of mesh object m
+		this.unhideMesh = function(m) {
+			
 		};
 		
 		//add a feature as specified by fobj
