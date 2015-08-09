@@ -48,7 +48,6 @@ Pharmit.Query = (function() {
 			if(qobj.receptor && qobj.reckey) {
 				delete qobj.receptor; //server can get data w/reckey if need be
 			}
-			delete qobj.ligand;
 			
 			//results manages queries
 			results.phquery(qobj);
@@ -487,14 +486,23 @@ Pharmit.Query = (function() {
 				liganddiv.hide();
 				inpoints.hide();
 				if(this.value == 'ligand'){ 
+					$.each(inshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
 					liganddiv.show();
 					$('#inshapehead').addClass("pharmit_oblique");
 				}
 				else if(this.value == 'points') {
+					$.each(inshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.unhideFeature();
+					});
 					$('#inshapehead').addClass("pharmit_oblique");
 					inpoints.show();
 				}
 				else {
+					$.each(inshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
 					$('#inshapehead').removeClass("pharmit_oblique");
 					nonediv.show();
 				}
@@ -584,17 +592,27 @@ Pharmit.Query = (function() {
 			//handler for choosing exclusive mode
 			exselect.change(function() {
 				if(this.value == "receptor") {
+					$.each(exshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
 					exnonediv.hide();
 					expoints.hide();
 					recdiv.show();
 					$('#exshapehead').addClass("pharmit_oblique");
 				} else if(this.value == "points") {
+					$.each(exshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.unhideFeature();
+					});
 					exnonediv.hide();
 					recdiv.hide();
 					expoints.show();
 					$('#exshapehead').addClass("pharmit_oblique");
 				} 
-				else {
+				else { //none
+					$.each(exshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
+					
 					$('#exshapehead').removeClass("pharmit_oblique");
 					exnonediv.show();
 					expoints.hide();

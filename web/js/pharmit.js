@@ -288,6 +288,20 @@ Feature.prototype.setFeature = function(fobj) {
 	}
 };
 
+//don't show in viewer, but don't change enabled state
+Feature.prototype.hideFeature = function() {
+	this.obj.hidden = true;
+	if(this.shape !== null) this.viewer.removeFeature(this.shape);
+	this.updateViewer();
+};
+
+//undow hid
+Feature.prototype.unhideFeature = function() {
+	this.obj.hidden = false;
+	this.updateViewer();
+};
+
+
 Feature.prototype.updateViewer = function() {
 	//anything that changes the geometry requires a new shape 
 	//(position, arrow orientation, radius)
@@ -296,7 +310,7 @@ Feature.prototype.updateViewer = function() {
 		this.viewer.removeFeature(this.shape);
 		this.shape = null;
 	}
-	if(this.obj.enabled) {
+	if(this.obj.enabled && !this.obj.hidden) {
 		var F = this;
 		this.shape = this.viewer.addFeature(this.obj, function() {
 			if(F.selected) {
@@ -334,6 +348,7 @@ Feature.prototype.deleteFeature = function() {
 	this.container.feature = null;
 	this.container.remove();
 };
+
 
 /*
  * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
@@ -2084,14 +2099,23 @@ Pharmit.Query = (function() {
 				liganddiv.hide();
 				inpoints.hide();
 				if(this.value == 'ligand'){ 
+					$.each(inshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
 					liganddiv.show();
 					$('#inshapehead').addClass("pharmit_oblique");
 				}
 				else if(this.value == 'points') {
+					$.each(inshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.unhideFeature();
+					});
 					$('#inshapehead').addClass("pharmit_oblique");
 					inpoints.show();
 				}
 				else {
+					$.each(inshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
 					$('#inshapehead').removeClass("pharmit_oblique");
 					nonediv.show();
 				}
@@ -2181,17 +2205,27 @@ Pharmit.Query = (function() {
 			//handler for choosing exclusive mode
 			exselect.change(function() {
 				if(this.value == "receptor") {
+					$.each(exshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
 					exnonediv.hide();
 					expoints.hide();
 					recdiv.show();
 					$('#exshapehead').addClass("pharmit_oblique");
 				} else if(this.value == "points") {
+					$.each(exshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.unhideFeature();
+					});
 					exnonediv.hide();
 					recdiv.hide();
 					expoints.show();
 					$('#exshapehead').addClass("pharmit_oblique");
 				} 
-				else {
+				else { //none
+					$.each(exshapefeatures.children(), function(key, fdiv) {
+						fdiv.feature.hideFeature();
+					});
+					
 					$('#exshapehead').removeClass("pharmit_oblique");
 					exnonediv.show();
 					expoints.hide();

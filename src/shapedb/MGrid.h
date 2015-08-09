@@ -13,6 +13,7 @@
 #include <bm/bm.h>
 #include <vector>
 #include "Cube.h"
+#include <eigen3/Eigen/Core>
 
 typedef bm::bvector<bm::standard_allocator> bvect;
 
@@ -26,6 +27,10 @@ class MGrid
 	void shrinkByOne();
 	void growByOne();
 
+	 void makeFace(Eigen::Vector3f pt, int which, double r,
+			 vector<Eigen::Vector3f>& vertices, vector<Eigen::Vector3f>& normals, vector<int>& faces);
+
+
 	double dimension; //max size, in distance unites
 	double resolution; //size of each grid cube
 	bvect grid;
@@ -38,7 +43,7 @@ public:
 		Point(float X, float Y, float Z): x(X), y(Y), z(Z) {}
 	};
 
-	MGrid() {}
+	MGrid(): dimension(32), resolution(0.5) {}
 	MGrid(float d, float r): dimension(d), resolution(r) {}
 	~MGrid() {}
 
@@ -57,6 +62,11 @@ public:
 			return true; //for exposed point testing and shrinking this makes the most sense
 	}
 
+	bool inGrid(float x, float y, float z) const
+	{
+		return pointToGrid(x,y,z) >= 0;
+	}
+
 	//test for x,y,z - match signature expected from oct tree creation
 	bool containsPoint(float x, float y, float z) const
 	{
@@ -72,7 +82,7 @@ public:
 	}
 
 	void setPoint(float x, float y, float z);
-	void makeSurface(const MGrid& sagrid, const MGrid& lesssagrid, double probe);
+	void makeSurface(const MGrid& sagrid, double probe);
 
 	bool isInteriorPoint(float x, float y, float z) const;
 	bool isExposedPoint(float x, float y, float z) const;
@@ -106,6 +116,8 @@ public:
 	}
 
 	void getSetPoints(std::vector<Point>& points) const;
+
+	void makeMesh(vector<Eigen::Vector3f>& vertices, vector<Eigen::Vector3f>& normals, vector<int>& faces);
 };
 
 #endif /* MGRID_H_ */
