@@ -376,9 +376,8 @@ void PharmerQuery::thread_shapeMatch(PharmerQuery *query)
 		corrQ.addProducer();
 
 		ShapeResults shapes(query->databases[db], corrQ, query->coralloc, query->params, query->excluder, db, query->databases.size());
-
 		pharmdb.generateShapeMatches(query->excluder, shapes, query->stopQuery);
-
+		corrQ.removeProducer();
 	}
 }
 
@@ -440,10 +439,15 @@ void PharmerQuery::cancelSmina()
 	}
 }
 
-bool PharmerQuery::finished() //okay to deallocate
+bool PharmerQuery::done()
 {
 	checkThreads();
-	if (tripletMatchThread != NULL)
+	return tripletMatchThread == NULL && shapeMatchThread == NULL;
+}
+
+bool PharmerQuery::finished() //okay to deallocate
+{
+	if (!done())
 		return false;
 	if (inUseCnt > 0)
 		return false;
@@ -619,7 +623,7 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 	if (jsonHeader)
 	{
 		out << "{\"status\" : 1, \"done\" : ";
-		if (tripletMatchThread == NULL)
+		if (done())
 			out << "true, ";
 		else
 			out << "false, ";
@@ -643,7 +647,7 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 	data["draw"] = dp.drawCode;
 	data["recordsTotal"] = (unsigned) results.size();
 	data["recordsFiltered"] = (unsigned) results.size();
-	data["finished"] = (tripletMatchThread == NULL);
+	data["finished"] = done();
 	data["data"].resize(0); //make empty array
 
 	for (unsigned i = 0, n = r.size(); i < n; i++)

@@ -2383,7 +2383,7 @@ Pharmit.Results = (function() {
 		//private variables and functions
 		var resultsdiv = this.div = $('<div>').addClass('pharmit_results pharmit_overlay').appendTo(element);
 		var phresults = null;
-		var shresult = null;
+		var shresults = null;
 		var minresults = null;
 		
 		

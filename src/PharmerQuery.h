@@ -176,6 +176,7 @@ public:
 	//attempt to cancel, non-blocking, query neest time to wrap up
 	void cancel();
 	bool finished(); //okay to deallocate, user may still care though
+	bool done(); //searching is not happening
 	bool cancelled() { return stopQuery; } //user no longer cares
 	void access()
 	{

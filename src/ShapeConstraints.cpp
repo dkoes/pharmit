@@ -70,11 +70,9 @@ Eigen::Affine3d ShapeConstraints::computeTransform(Json::Value& root)
 
 	ShapeObj::computeAndApplyNormalization(coords, translate, rotate);
 
+	//grid must also be aligned to moments
 	Affine3d ret = Affine3d::Identity();
 	ret.rotate(rotate);
-	//make sure long parts of ligand are on a diagonal in the grid
-	ret.rotate(AngleAxisd(0.25*M_PI, Vector3d::UnitZ()));
-	ret.rotate(AngleAxisd(0.25*M_PI, Vector3d::UnitY()));
 	ret.translate(translate);
 
 	return ret;

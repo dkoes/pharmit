@@ -26,7 +26,7 @@ void ShapeResults::add(const char *data, double score)
 
 	unsigned long loc = minfo.molPos;
 	unsigned mid = ThreePointData::unpackMolID(loc);
-cout << "Adding " << score << " " << loc << "\n";
+
 	//filter out unsavory characters
 	//check against query params
 	if(minfo.nrot < qparams.minRot)
