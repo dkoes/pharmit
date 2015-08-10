@@ -18,6 +18,7 @@ var Pharmit = Pharmit || {};
 
 Pharmit.Query = (function() {
 	
+	var shapemodeid = "ShapeModeSelect";
 	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 	var defaultInShapeFeature = {name:"InclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 	var defaultExShapeFeature = {name:"ExclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
@@ -43,14 +44,14 @@ Pharmit.Query = (function() {
 		var ligandName = null;
 		
 		var doSearch = function() {
-			var qobj = getQueryObj();
-			//remove receptor and ligand data to reduce size of query
-			if(qobj.receptor && qobj.reckey) {
-				delete qobj.receptor; //server can get data w/reckey if need be
-			}
+			var qobj = getQueryObj(true);
 			
-			//results manages queries
-			results.phquery(qobj);
+			if($('#'+shapemodeid).val() == 'search') {
+				results.shquery(qobj);
+			} else {
+				//results manages queries
+				results.phquery(qobj);
+			}
 		};
 		
 		//boiler plate for asynchronously extracting text from a file input
@@ -289,7 +290,8 @@ Pharmit.Query = (function() {
 		};
 		
 		//return the query object
-		var getQueryObj = function() {
+		//if trimreceptor is true, will delete receptor information if a key is set
+		var getQueryObj = function(trimreceptor) {
 			
 			//get features
 			var ret = {};
@@ -324,7 +326,8 @@ Pharmit.Query = (function() {
 			//structures
 			ret.ligand = ligandData;
 			ret.ligandFormat = ligandName;
-			ret.receptor = receptorData;
+			
+			if(!receptorKey) ret.receptor = receptorData; //send full receptor
 			ret.recname = receptorName;
 			ret.receptorid = receptorKey;
 			
@@ -340,7 +343,7 @@ Pharmit.Query = (function() {
 			// echo data back as a file to save
 			var cmd = Pharmit.server+'?cmd=savedata&type="text%2Fphjson"&fname="pharmit.json"';
 			var form = $('<form>', { 'action': cmd, 'method': 'post'});
-			var qobj = getQueryObj();
+			var qobj = getQueryObj(false);
 			form.append($('<input>', {'name':"data",'type':"hidden",value:JSON.stringify(qobj,null,4)}));
 			form.appendTo(document.body);
 			form.submit();
@@ -353,9 +356,9 @@ Pharmit.Query = (function() {
 		
 		var updateShapeMesh = function(sel) {
 			//send query to server to get mesh
-			var qobj = getQueryObj();
+			var qobj = getQueryObj(true);
 			var kind = sel.meshstyle.kind;
-			if(qobj.receptor && qobj.receptorid) delete qobj.receptor; //don't send receptor if it is cached
+
 			var postData = {cmd: 'getmesh',
 					type: kind,
 					json: JSON.stringify(qobj)
@@ -770,18 +773,15 @@ Pharmit.Query = (function() {
 		
 		//setup select menu for choosing search mode
 		var prependModeSelect = function(header) {
-			var shapemodediv = $('<div>').prependTo(header).addClass('pharmit_shapemodediv');	
-			
-			var shapemodeid = "ShapeModeSelect";
-			
+			var shapemodediv = $('<div>').prependTo(header).addClass('pharmit_shapemodediv');					
 			var shapeselect = $('<select name="'+shapemodeid+'" id="'+shapemodeid+'">').addClass('pharmit_styleselector').appendTo(shapemodediv);
 			
-			$('<option value="filter">Pharmacophore Search &#65515; Shape Filter</option>').appendTo(shapeselect);
-			$('<option value="search">Shape Search &#65515; Pharmacophore Filter</option>').appendTo(shapeselect);	
+			$('<option value="filter">Pharmacophore Search-&gt;Shape Filter</option>').appendTo(shapeselect);
+			$('<option value="search">Shape Search-&gt;Pharmacophore Filter</option>').appendTo(shapeselect);	
 			
 			shapeselect.val("filter");
 			shapeselect.selectmenu({
-				width: '11em', 
+				width: '23em', 
 				appendTo: header, 
 				change: function() {
 					shapeselect.change();

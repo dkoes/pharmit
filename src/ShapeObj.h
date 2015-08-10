@@ -16,11 +16,13 @@
 #include "OBMoleculeAnalytic.h"
 #include "ThreePointData.h"
 
+#define PHARMIT_RESOLUTION (0.5)
+#define PHARMIT_DIMENSION (32)
+
+
 class ShapeObj: public OBAMolecule
 {
 	static pair<double,double> calcSplitMoments(const vector<Eigen::Vector3d>& coords, unsigned C);
-
-	void normalizeMol(OBMol& mol);
 
 	public:
 	struct MolInfo
@@ -45,6 +47,7 @@ class ShapeObj: public OBAMolecule
 
 	MolInfo minfo;
 
+	//initializes shape to mol without any transformation
 	ShapeObj(OBMol& mol, const MolInfo& info, float dimension,
 			float resolution);
 
@@ -56,6 +59,8 @@ class ShapeObj: public OBAMolecule
 	}
 
 	virtual void write(ostream& out) const; //writes molinfo
+
+	static void normalizeMol(OBMol& mol);
 
 	static void computeAndApplyNormalization(vector<Eigen::Vector3d>& coords, Eigen::Vector3d& translate, Eigen::Matrix3d& rotate);
 };

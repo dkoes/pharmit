@@ -126,8 +126,11 @@ void ShapeObj::normalizeMol(OBMol& mol)
 	//find center of mass
 	for (atom = mol.BeginAtom(j); atom; atom = mol.NextAtom(j))
 	{
-		Vector3d c(atom->x(), atom->y(), atom->z());
-		coords.push_back(c);
+		if(!atom->IsHydrogen())
+		{
+			Vector3d c(atom->x(), atom->y(), atom->z());
+			coords.push_back(c);
+		}
 	}
 
 	Vector3d translate;
@@ -138,7 +141,9 @@ void ShapeObj::normalizeMol(OBMol& mol)
 	unsigned i = 0;
 	for (atom = mol.BeginAtom(j); atom; atom = mol.NextAtom(j), i++)
 	{
-		Vector3d& c = coords[i];
+		Vector3d c(atom->x(), atom->y(), atom->z());
+		c += translate;
+		c = rotate*c;
 		atom->SetVector(c[0], c[1], c[2]);
 	}
 
@@ -150,7 +155,6 @@ ShapeObj::ShapeObj(OBMol& mol, const MolInfo& info, float dimension,
 {
 	OBMol m = mol;
 	m.DeleteHydrogens();
-	normalizeMol(m);
 	//set in parent
 	set(m, dimension, resolution);
 }

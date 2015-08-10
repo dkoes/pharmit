@@ -358,6 +358,12 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		}
 	}
 
+	if(qp.isshape && !searchers->hasShape)
+	{
+		msg = "Missing shape information.";
+		return 0;
+	}
+
 	dbs = searchers->stripes;
 	numslices = dbs.size(); //how many threads we should run
 	totalMols = searchers->totalMols;

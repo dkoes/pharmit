@@ -74,13 +74,14 @@ struct QueryParameters
 	unsigned minRot;
 	unsigned maxRot;
 
+	bool isshape;
 	string subset;
 
 	vector<PropFilter> propfilters;
 
 	QueryParameters() :
 		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),
-		sort(SortType::Undefined), minWeight(0), maxWeight(UINT_MAX), reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX)
+		sort(SortType::Undefined), minWeight(0), maxWeight(UINT_MAX), reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX), isshape(false)
 	{
 
 	}
@@ -140,6 +141,9 @@ struct QueryParameters
 
 		if(data["subset"].isString())
 			subset = data["subset"].asString();
+
+		if(data["ShapeModeSelect"].isString() && data["ShapeModeSelect"].asString() == "search")
+			isshape = true; //shape search
 
 		addPropFilter(MolProperties::LogP, "logp", data);
 		addPropFilter(MolProperties::PSA, "psa", data);

@@ -32,6 +32,7 @@
 #include "Corresponder.h"
 #include "queryparsers.h"
 #include "Timer.h"
+#include "ShapeResults.h"
 
 using namespace std;
 using namespace boost;
@@ -85,7 +86,7 @@ PharmerQuery::PharmerQuery(
 		const vector< boost::shared_ptr<PharmerDatabaseSearcher> >& dbs,
 		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
 		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
-		NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
+		NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
 				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0), sminaid(
 				0)
 {
@@ -124,7 +125,7 @@ PharmerQuery::PharmerQuery(
 		const vector<PharmaPoint>& pts, const QueryParameters& qp,
 		const ShapeConstraints& ex, unsigned nth) :
 		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
-				false), tripletMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
+				false), tripletMatchThread(NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
 				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
 				0), inUseCnt(0), sminaid(0)
 {
@@ -280,6 +281,15 @@ void PharmerQuery::checkThreads()
 		}
 	}
 
+	if (shapeMatchThread != NULL)
+	{
+		if (shapeMatchThread->timed_join(posix_time::time_duration(0, 0, 0)))
+		{
+			delete shapeMatchThread;
+			shapeMatchThread = NULL; // thread is done
+		}
+	}
+
 }
 
 //launch Nthreads to match triplets
@@ -293,6 +303,19 @@ void PharmerQuery::thread_tripletMatches(PharmerQuery *query)
 		tmthreads.add_thread(new thread(thread_tripletMatch, query));
 	}
 	tmthreads.join_all();
+}
+
+//launch Nthreads to match shapes
+void PharmerQuery::thread_shapeMatches(PharmerQuery *query)
+{
+	//generate a thread for each set of databases
+	thread_group shthreads;
+
+	for (unsigned t = 0; t < query->nthreads; t++)
+	{
+		shthreads.add_thread(new thread(thread_shapeMatch, query));
+	}
+	shthreads.join_all();
 }
 
 //match all the triplets in a database
@@ -338,20 +361,58 @@ void PharmerQuery::thread_tripletMatch(PharmerQuery *query)
 	}
 }
 
+
+//perform shape matching
+void PharmerQuery::thread_shapeMatch(PharmerQuery *query)
+{
+	unsigned db = 0;
+	while (query->dbSearchQ.pop(db))
+	{
+		if (query->stopQuery)
+			break;
+
+		PharmerDatabaseSearcher& pharmdb = *query->databases[db];
+		MTQueue<CorrespondenceResult*>& corrQ =	query->corrsQs[db];
+		corrQ.addProducer();
+
+		ShapeResults shapes(query->databases[db], corrQ, query->coralloc, query->params, query->excluder, db, query->databases.size());
+
+		pharmdb.generateShapeMatches(query->excluder, shapes, query->stopQuery);
+
+	}
+}
+
+
 //execute the query, if block is true then perform asynchronously
 void PharmerQuery::execute(bool block)
 {
 	for (unsigned d = 0, nd = databases.size(); d < nd; d++)
 		dbSearchQ.push(d);
 
-	assert(tripletMatchThread == NULL);
-	tripletMatchThread = new thread(thread_tripletMatches, this);
-
-	if (block) //wait for completion
+	if(params.isshape)
 	{
-		tripletMatchThread->join();
-		delete tripletMatchThread;
-		tripletMatchThread = NULL;
+		coralloc.setSize(0); //no actuall correspondances
+		assert(shapeMatchThread == NULL);
+		shapeMatchThread = new thread(thread_shapeMatches, this);
+
+		if (block) //wait for completion
+		{
+			shapeMatchThread->join();
+			delete shapeMatchThread;
+			shapeMatchThread = NULL;
+		}
+	}
+	else
+	{
+		assert(tripletMatchThread == NULL);
+		tripletMatchThread = new thread(thread_tripletMatches, this);
+
+		if (block) //wait for completion
+		{
+			tripletMatchThread->join();
+			delete tripletMatchThread;
+			tripletMatchThread = NULL;
+		}
 	}
 }
 
@@ -359,6 +420,8 @@ PharmerQuery::~PharmerQuery()
 {
 	checkThreads();
 	if (tripletMatchThread != NULL)
+		abort(); //threds must be done before we can destruct the results array
+	if (shapeMatchThread != NULL)
 		abort(); //threds must be done before we can destruct the results array
 }
 
@@ -448,20 +511,6 @@ void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 		else
 			stable_sort(results.begin(), results.end(), cmp);
 	}
-}
-
-//return true if result doesn't have any atoms in the exclusion zone
-//this will load the molecular data and therefor be slower
-bool PharmerQuery::isExcluded(QueryResult* result)
-{
-
-	MolData mdata;
-	PMolReaderSingleAlloc pread;
-	shared_ptr<PharmerDatabaseSearcher> db;
-	unsigned long loc = getLocation(result, db);
-	db->getMolData(loc, mdata, pread);
-
-	return excluder.isExcluded(mdata.mol, result->c->rmsd);
 }
 
 //reduce according to parameters, ie, fewer conformers

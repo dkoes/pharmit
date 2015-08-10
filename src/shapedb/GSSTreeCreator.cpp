@@ -41,6 +41,7 @@ bool GSSTreeCreator::createIndex()
 	//map the data
 	currenttrees.switchToMap();
 	//this clears the indices
+	unsigned long numobjs = objindices.size();
 	LeafViewer leafdata(currenttrees.map->get_address(), treeindices,
 			objindices);
 	leveler->createNextLevel(leafdata, nodes.back().file, nodeindices,
@@ -79,7 +80,7 @@ bool GSSTreeCreator::createIndex()
 	filesystem::path infoname = dbpath / "info";
 	ofstream info(infoname.string().c_str());
 	info << dimension << " " << resolution << " " << nodes.size() << " "
-			<< objindices.size() << "\n";
+			<< numobjs << "\n";
 
 	//clear workfile memory
 	for (unsigned i = 0, n = nodes.size(); i < n; i++)

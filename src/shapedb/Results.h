@@ -35,6 +35,8 @@ public:
 	{
 		return 0;
 	}
+
+	virtual bool stopEarly() const { return false; }
 };
 
 //for ojects that just store a string identifier (null terminated)
@@ -69,7 +71,7 @@ class StringResults: public Results
 		return strs.size();
 	}
 
-	const string& getString(unsigned i) const { return strs[i]; }
+	const std::string& getString(unsigned i) const { return strs[i]; }
 	double getScore(unsigned i) const { return scores[i]; }
 };
 

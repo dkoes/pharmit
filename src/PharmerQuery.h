@@ -69,6 +69,8 @@ struct QueryResult
 };
 
 
+
+
 class PharmerQuery
 {
 	string errorStr;
@@ -84,6 +86,7 @@ class PharmerQuery
 	bool stopQuery;
 
 	boost::thread *tripletMatchThread; //performs triplet matching
+	boost::thread *shapeMatchThread; //performs shape matching
 	time_t lastAccessed;
 
 	MTQueue<unsigned> dbSearchQ;
@@ -110,6 +113,9 @@ class PharmerQuery
 	static void thread_tripletMatches(PharmerQuery *query);
 	static void thread_tripletMatch(PharmerQuery *query);
 
+	static void thread_shapeMatches(PharmerQuery *query);
+	static void thread_shapeMatch(PharmerQuery *query);
+
 	void generateQueryTriplets(PharmerDatabaseSearcher& pharmdb, vector<vector<
 			QueryTriplet> >& trips);
 	void loadResults();
@@ -121,8 +127,6 @@ class PharmerQuery
 
 	void sortResults(SortTyp srt, bool reverse);
 	void reduceResults();
-
-	bool isExcluded(QueryResult* result);
 
 	unsigned long getLocation(const QueryResult* r,boost::shared_ptr<PharmerDatabaseSearcher>& db);
 

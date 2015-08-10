@@ -10,18 +10,18 @@
     FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
  */
 /*
-	phresults.js
-	This is a div for managing pharmacophore results.
+	SearchResults.js
+	This is a div for managing pharmacophore/shape results.
 	
 */
 
 
 var Pharmit = Pharmit || {};
 
-Pharmit.PhResults = (function() {
+Pharmit.SearchResults = (function() {
 	// private class variables and functions
 
-	function PhResults(r, viewer, minresults) {
+	function SearchResults(r, viewer, minresults, type) {
 		//private variables and functions
 		var phdiv = null;
 		var qid = null;
@@ -79,10 +79,7 @@ Pharmit.PhResults = (function() {
 		//perform the query
 		this.query = function(qobj) {
 			query = $.extend({}, qobj);
-			//don't need receptor or ligand structures and they are big
 			receptor = query.receptor; //save for iteration
-			delete query.receptor;
-			delete query.ligand;
 			//start provided query
 			var postData = {cmd: 'startquery',
 					json: JSON.stringify(query)
@@ -101,7 +98,7 @@ Pharmit.PhResults = (function() {
 						pageLength: numrows,
 						destroy: true, //replace any existing table
 						lengthChange: false,
-						order: [[ 1, "asc" ]],
+						order: type == 'shape' ? [[ 1, "desc" ]] : [[ 1, "asc" ]],
 						orderMulti: false,
 						columnDefs: [
 						                {
@@ -164,6 +161,14 @@ Pharmit.PhResults = (function() {
 			phdiv.show(); //make sure we're showing
 		};
 		
+		this.hide = function() {
+			phdiv.hide();
+		};
+		
+		this.show = function() {
+			phdiv.show();
+		};
+		
 		//cancel any query. clear out the table, and hide the div
 		var cancel = this.cancel = function() {
 			
@@ -212,7 +217,11 @@ Pharmit.PhResults = (function() {
 		phdiv = $('<div>').appendTo(results.div).addClass('pharmit_rescontainer');
 		//header
 		var header = $('<div>').appendTo(phdiv).addClass("pharmit_resheader");
-		var heading = $('<div>Pharmacophore Results</div>').appendTo(header).addClass('pharmit_heading').addClass("pharmit_rightheading");
+		var headingname = "Pharmacophore Results";
+		if(type == "shape") {
+			headingname = "Aligned Shape Results";
+		}
+		var heading = $('<div>'+headingname+'</div>').appendTo(header).addClass('pharmit_heading').addClass("pharmit_rightheading");
 		var closediv = $('<div>').addClass('pharmit_resclose').appendTo(heading).click(function() {
 			//cancel the current query 
 			cancel();
@@ -228,7 +237,12 @@ Pharmit.PhResults = (function() {
 		table = $('<table width="100%" class="display compact" cellspacing="0">').addClass('pharmit_phtable').appendTo(body);
 		var headrow = $('<tr>').appendTo($('<thead>').appendTo(table));
 		$('<th>Name</th>').appendTo(headrow);
-		$('<th>RMSD</th>').appendTo(headrow);
+		
+		if(type == 'shape') {
+			$('<th>Sim</th>').appendTo(headrow);			
+		} else {
+			$('<th>RMSD</th>').appendTo(headrow);
+		}
 		$('<th>Mass</th>').appendTo(headrow);
 		$('<th>RBnds</th>').appendTo(headrow);
 		$('<th>mid</th>').appendTo(headrow);
@@ -314,5 +328,5 @@ Pharmit.PhResults = (function() {
 
 	}
 
-	return PhResults;
+	return SearchResults;
 })();

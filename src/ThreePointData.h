@@ -100,6 +100,8 @@ struct ThreePointData
 
 	static unsigned reduceRotatable(unsigned nr);
 
+	static unsigned unpackMolID(unsigned long mp) { return mp >> (TPD_MOLDATA_BITS-TPD_MOLID_BITS); }
+
 	signed x1() const { return x; };
 	signed y1() const { return y; };
 	signed z1() const { return z; };
@@ -112,7 +114,7 @@ struct ThreePointData
 	signed y3() const { return round((y) + (l3)* sin(unreduceAngle(theta3)) * sin(unreduceAngle(phi3))); }
 	signed z3() const { return round((z) + (l3) * cos(unreduceAngle(phi3))); }
 
-	unsigned molID() const { return molPos >> (TPD_MOLDATA_BITS-TPD_MOLID_BITS); }
+	unsigned molID() const { return unpackMolID(molPos); }
 };
 
 extern unsigned countRotatableBonds(OpenBabel::OBMol& mol);

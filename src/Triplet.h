@@ -38,7 +38,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "SimpleFingers.h"
 #include "basis.h"
 #include "SphereGrid.h"
-
+#include <algorithm>
 
 //convenience class for dealing with indexed pharma points
 struct PharmaIndex
@@ -124,7 +124,7 @@ protected:
 	//swap points i and j in p and update ranges appropriately
 	void swap(unsigned i, unsigned j)
 	{
-		::swap(PIs[i], PIs[j]);
+		std::swap(PIs[i], PIs[j]);
 
 		if (nextUnconnectIndex == i)
 			nextUnconnectIndex = j;
@@ -141,31 +141,31 @@ protected:
 		case 0:
 			if (j == 1)
 			{
-				::swap(range[1], range[2]);
+				std::swap(range[1], range[2]);
 			}
 			else if (j == 2)
 			{
-				::swap(range[0], range[1]);
+				std::swap(range[0], range[1]);
 			}
 			break;
 		case 1:
 			if (j == 0)
 			{
-				::swap(range[1], range[2]);
+				std::swap(range[1], range[2]);
 			}
 			else if (j == 2)
 			{
-				::swap(range[0], range[2]);
+				std::swap(range[0], range[2]);
 			}
 			break;
 		case 2:
 			if (j == 0)
 			{
-				::swap(range[0], range[1]);
+				std::swap(range[0], range[1]);
 			}
 			else if (j == 1)
 			{
-				::swap(range[0], range[2]);
+				std::swap(range[0], range[2]);
 			}
 			break;
 		}

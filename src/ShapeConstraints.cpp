@@ -112,18 +112,42 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 {
 	try
 	{
-		bool getexpoints = true, getinpoints = true;
+		gridtransform = computeTransform(root);
+		excludeGrid.clear();
+		includeGrid.clear();
+		ligandGrid.clear();
 
 		//read setting for type of shape constraints
 		Json::Value exselect = root["exselect"];
-		if(exselect.isString() && exselect.asString() != "points")
-			getexpoints = false;
-
 		Json::Value inselect = root["inselect"];
-		if(inselect.isString() && inselect.asString() != "points")
-			getinpoints = false;
 
-		if(getinpoints || getexpoints)
+		//set what sort of shape constraints these are
+		if(exselect.isString())
+		{
+			if(exselect.asString() == "points")
+				exclusiveKind = Spheres;
+			else if(exselect.asString() == "receptor")
+				exclusiveKind = Shape;
+			else
+				exclusiveKind = None;
+		}
+		else
+			exclusiveKind = None;
+
+		if(inselect.isString())
+		{
+			if(inselect.asString() == "points")
+				inclusiveKind = Spheres;
+			else if(inselect.asString() == "ligand")
+				inclusiveKind = Shape;
+			else
+				inclusiveKind = None;
+		}
+		else
+			inclusiveKind = None;
+
+
+		if(exclusiveKind == Spheres || inclusiveKind == Spheres)
 		{ //scan through points
 			Json::Value jpoints = root["points"];
 			for (unsigned i = 0, n = jpoints.size(); i < n; i++)
@@ -132,7 +156,7 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 				if (jpnt.isMember("enabled") && !jpnt["enabled"].asBool())
 					continue;
 				string name = jpnt["name"].asString();
-				if(getexpoints && name == "ExclusionSphere")
+				if(exclusiveKind == Spheres && name == "ExclusionSphere")
 				{
 					double radius = 0;
 					if (jpnt.isMember("radius"))
@@ -143,9 +167,10 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 						double y = jpnt["y"].asDouble();
 						double z = jpnt["z"].asDouble();
 						exspheres.push_back(Sphere(x,y,z,radius));
+						excludeGrid.markXYZSphere(x,y,z,radius);
 					}
 				}
-				else if(getinpoints && name == "InclusionSphere")
+				else if(inclusiveKind == Spheres && name == "InclusionSphere")
 				{
 					double radius = 0;
 					if (jpnt.isMember("radius"))
@@ -156,16 +181,14 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 						double y = jpnt["y"].asDouble();
 						double z = jpnt["z"].asDouble();
 						inspheres.push_back(Sphere(x,y,z,radius));
+						includeGrid.markXYZSphere(x,y,z,radius);
 					}
 				}
 			}
 		}
 
 		//check for full shape constraints
-		gridtransform = computeTransform(root);
-		excludeGrid.clear();
-		includeGrid.clear();
-		if(exselect.isString() && exselect.asString() == "receptor" && root["receptor"].isString())
+		if(exclusiveKind == Shape)
 		{
 			//get tolerance,
 			double tolerance = 0.0;
@@ -184,25 +207,19 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 
 			makeGrid(excludeGrid, rec, gridtransform, tolerance);
 		}
-		if(inselect.isString() && inselect.asString() == "ligand" && root["ligand"].isString())
+
+		OBMol lig;
+		if(root["ligand"].isString())
 		{
-			//get tolerance,
-			double tolerance = 0.0;
-
-			if(root["intolerance"].isNumeric())
-			{
-				tolerance = root["intolerance"].asDouble();
-			}
-
-			//parse ligand
+			//parse ligand if available and create grid
 			OBConversion conv;
 			string lname = root["ligandFormat"].asString();
 			conv.SetInFormat(OBConversion::FormatFromExt(lname.c_str()));
 			OBMol lig;
 			conv.ReadString(&lig, root["ligand"].asString());
 
-			double resolution = includeGrid.getResolution();
-			double dimension = includeGrid.getDimension();
+			double resolution = ligandGrid.getResolution();
+			double dimension = ligandGrid.getDimension();
 
 			//transform to grid space
 			for (OBAtomIterator aitr = lig.BeginAtoms(); aitr != lig.EndAtoms(); ++aitr)
@@ -217,13 +234,25 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 			ShapeObj::MolInfo minfo;
 			ShapeObj obj(lig, Vector3d::Zero(), Matrix3d::Identity(), minfo, dimension, resolution);
 			MappableOctTree *tree = MappableOctTree::create(dimension, resolution, obj);
-			tree->makeGrid(includeGrid, 0.5);
+			tree->makeGrid(ligandGrid, 0.5);
 			delete tree;
+		}
+
+		if(inclusiveKind == Shape)
+		{
+			//get tolerance,
+			double tolerance = 0.0;
+			if(root["intolerance"].isNumeric())
+			{
+				tolerance = root["intolerance"].asDouble();
+			}
+
+			includeGrid = ligandGrid;
+
 			if(tolerance > 0)
 				includeGrid.shrink(tolerance);
 			else if(tolerance < 0)
 				includeGrid.grow(-tolerance);
-			//makeGrid(includeGrid, lig, gridtransform, tolerance);
 		}
 
 
@@ -249,7 +278,7 @@ bool ShapeConstraints::isExcluded(PMol *mol, const RMSDResult& res) const
 
 	mol->getCoords(coords, transform);
 
-	if(excludeGrid.numSet() > 0)
+	if(exclusiveKind == Shape)
 	{
 		for (unsigned c = 0, nc = coords.size(); c < nc; c++)
 		{
@@ -261,8 +290,23 @@ bool ShapeConstraints::isExcluded(PMol *mol, const RMSDResult& res) const
 				return true;
 		}
 	}
+	else if(exclusiveKind == Spheres)
+	{
+		//todo: accelerate with grid?  but it isn't perfect.. evaluate accuracy/performance tradeoff
 
-	if(includeGrid.numSet() > 0)
+		//if any coordinate overlaps with any exclusion sphere, no good
+		for(unsigned i = 0, n = exspheres.size(); i < n; i++)
+		{
+			for (unsigned c = 0, nc = coords.size(); c < nc; c++)
+			{
+				const Vector3f& pnt = coords[c];
+				if(exspheres[i].contains(pnt.x(),pnt.y(),pnt.z()))
+					return true;
+			}
+		}
+	}
+
+	if(inclusiveKind == Shape)
 	{
 		//as long as a single heavy atom is included, we are good
 		bool nogood = true;
@@ -278,32 +322,22 @@ bool ShapeConstraints::isExcluded(PMol *mol, const RMSDResult& res) const
 		if(nogood) //nothing overlapped
 			return true;
 	}
-
-	//if any coordinate overlaps with any exclusion sphere, no good
-	for(unsigned i = 0, n = exspheres.size(); i < n; i++)
+	else if(inclusiveKind == Spheres)
 	{
-		for (unsigned c = 0, nc = coords.size(); c < nc; c++)
+		//at least one atom must overlap inclusion sphere
+		for(unsigned i = 0, n = inspheres.size(); i < n; i++)
 		{
-			const Vector3f& pnt = coords[c];
-			if(exspheres[i].contains(pnt.x(),pnt.y(),pnt.z()))
+			unsigned c = 0, nc = coords.size();
+			for ( ; c < nc; c++)
+			{
+				const Vector3f& pnt = coords[c];
+				if(inspheres[i].contains(pnt.x(),pnt.y(),pnt.z()))
+					break;
+			}
+			if(c == nc) //nothing overlapped
 				return true;
 		}
 	}
-
-	//at least one atom must overlap inclusion sphere
-	for(unsigned i = 0, n = inspheres.size(); i < n; i++)
-	{
-		unsigned c = 0, nc = coords.size();
-		for ( ; c < nc; c++)
-		{
-			const Vector3f& pnt = coords[c];
-			if(inspheres[i].contains(pnt.x(),pnt.y(),pnt.z()))
-				break;
-		}
-		if(c == nc) //nothing overlapped
-			return true;
-	}
-
 	return false;
 }
 
@@ -397,6 +431,6 @@ void ShapeConstraints::computeInteractionPoints(OBMol& ligand, OBMol& receptor, 
 	points.clear();
 	//compute steric points
 	ShapeObj::MolInfo minfo;
-	ShapeObj obj(ligand, Vector3d::Zero(), Matrix3d::Identity(), minfo, 32, 0.5);
+	ShapeObj obj(ligand, Vector3d::Zero(), Matrix3d::Identity(), minfo, PHARMIT_DIMENSION, PHARMIT_RESOLUTION);
 	obj.computeInteractionPoints(receptor, points);
 }

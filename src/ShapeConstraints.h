@@ -1,5 +1,5 @@
 /*
- * Excluder.h
+ * ShapeConstraints.h
  *
  *  Created on: Jun 11, 2012
  *      Author: dkoes
@@ -8,8 +8,8 @@
  *      check to see if any points fall within this space.
  */
 
-#ifndef PHARMITSERVER_EXCLUDER_H_
-#define PHARMITSERVER_EXCLUDER_H_
+#ifndef PHARMITSERVER_SHAPECONSTRAINTS_H_
+#define PHARMITSERVER_SHAPECONSTRAINTS_H_
 
 #include "FloatCoord.h"
 #include "pharmarec.h"
@@ -19,6 +19,7 @@
 #include <vector>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
+#include "ShapeObj.h"
 
 using namespace std;
 
@@ -50,6 +51,7 @@ class ShapeConstraints
 
 	MGrid excludeGrid;
 	MGrid includeGrid;
+	MGrid ligandGrid;
 	Eigen::Affine3d gridtransform;//transformation to be applied to points to move into grid space
 
 	Eigen::Affine3d computeTransform(Json::Value& root);
@@ -58,8 +60,16 @@ class ShapeConstraints
 	static const double probeRadius;
 
 	void getMesh(MGrid& grid, Json::Value& mesh);
+
+	enum Kind {None, Shape, Spheres};
+
+	Kind inclusiveKind;
+	Kind exclusiveKind;
 public:
-	ShapeConstraints(): excludeGrid(32,0.5), includeGrid(32,0.5) {}
+	ShapeConstraints(): excludeGrid(PHARMIT_DIMENSION,PHARMIT_RESOLUTION),
+	includeGrid(PHARMIT_DIMENSION,PHARMIT_RESOLUTION),
+	ligandGrid(PHARMIT_DIMENSION,PHARMIT_RESOLUTION),
+	inclusiveKind(None),exclusiveKind(None) {}
 	~ShapeConstraints() {}
 
 	//read steric constraints from json
@@ -72,7 +82,7 @@ public:
 	//provide the molecule and any transformation to the coordinates
 	bool isExcluded(PMol *mol, const RMSDResult& res) const;
 
-	bool isDefined() const { return exspheres.size() > 0 || inspheres.size() > 0 || excludeGrid.numSet() > 0 || includeGrid.numSet() > 0; }
+	bool isDefined() const { return inclusiveKind != None || exclusiveKind != None; }
 
 	void clear() { exspheres.clear(); inspheres.clear(); }
 
@@ -89,7 +99,12 @@ public:
 	void getExclusiveMesh(Json::Value& mesh);
 	void getInclusiveMesh(Json::Value& mesh);
 
+	const MGrid& getExclusiveGrid() const { return excludeGrid; }
+	const MGrid& getInclusiveGrid() const { return includeGrid; }
+	const MGrid& getLigandGrid() const { return ligandGrid; }
+
+	Eigen::Affine3d getGridTransform() const { return gridtransform; }
 	static void computeInteractionPoints(OpenBabel::OBMol& ligand, OpenBabel::OBMol& receptor, vector<Eigen::Vector3d>& points);
 };
 
-#endif /* PHARMITSERVER_EXCLUDER_H_ */
+#endif /* PHARMITSERVER_SHAPECONSTRAINTS_H_ */
