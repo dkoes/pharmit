@@ -461,15 +461,7 @@ bool PharmerQuery::isExcluded(QueryResult* result)
 	unsigned long loc = getLocation(result, db);
 	db->getMolData(loc, mdata, pread);
 
-	vector<FloatCoord> coords;
-	mdata.mol->getCoords(coords, result->c->rmsd);
-	for (unsigned i = 0, n = coords.size(); i < n; i++)
-	{
-		if (excluder.isExcluded(coords[i]))
-			return true;
-	}
-
-	return false;
+	return excluder.isExcluded(mdata.mol, result->c->rmsd);
 }
 
 //reduce according to parameters, ie, fewer conformers

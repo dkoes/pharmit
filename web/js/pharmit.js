@@ -10,12 +10,22 @@
     FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
  */
 /*
-	query.js
+	feature.js
 	Represents a single pharmacophore feature.
 */
 
 /* object representing a single pharmacophore feature*/
-function Feature(viewer, features, fobj) {
+function Feature(viewer, features, fobj, type) {
+	
+	var featureNames = null;
+	if(type == Feature.INCLUSIVESHAPE) {
+		featureNames = ['InclusionSphere'];
+	} else if(type == Feature.EXCLUSIVESHAPE) {
+		featureNames = ['ExclusionSphere'];
+	} else { //pharmacophores
+		featureNames = ['Aromatic','HydrogenDonor', 'HydrogenAcceptor', 
+	                          		'Hydrophobic', 'NegativeIon', 'PositiveIon'];
+	}
 	
 	//setup html
 	var F = this;
@@ -70,8 +80,8 @@ function Feature(viewer, features, fobj) {
 	var editdiv = $('<div>').appendTo(this.container);
 	
 	//feature kind selection (name)
-	var select = this.select = $('<select name="featurename">').addClass('pharmit_featureselect').appendTo(editdiv);
-	$.each(this.featureNames, function(key,val) {
+	var select = this.select = $('<select>').addClass('pharmit_featureselect').appendTo(editdiv);
+	$.each(featureNames, function(key,val) {
 		$('<option value="'+val+'">'+val+'</option>').appendTo(select);
 	});
 	select.change(function() {
@@ -95,7 +105,11 @@ function Feature(viewer, features, fobj) {
 		}
 		F.updateViewer();
 		});
-	select.selectmenu({width: "12em", change: function() {select.trigger('change');}});
+	select.selectmenu({width: "15em", change: function() {select.trigger('change');}});
+	
+	if(featureNames.length <= 1) {
+		select.next('.ui-selectmenu-button').hide(); //don't bother showing if no choices
+	}
 	
 	//position (x,y,z)
 	var locationdiv = $('<div>').appendTo(editdiv).addClass('pharmit_locationdiv');
@@ -111,14 +125,21 @@ function Feature(viewer, features, fobj) {
 	//for prettier display round values to 3 decimal places
 	var round = function(x) { return Math.round(x*1000)/1000;};
 	
+	//intelligently apply rounding and return final result
+	var updateNumber = function(elem, text) {
+		if($.isNumeric(elem.value)) {
+			var x = parseFloat(elem.value);
+			if(text) text.text(numeral(x).format('0.0[0]'));
+			F.updateViewer();
+			return round(x);
+		}
+	};
+	
 	var c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>x:</label>').appendTo(c);
 	this.x = $('<input>').appendTo(c).addClass('pharmit_coordinput').change(function() {
-		//change x value
-		var x = this.value = round(parseFloat(this.value));
-		F.xsummary.text(numeral(x).format('0.[00]'));
-		F.obj.x = round(x);
-		F.updateViewer();
+			//change x value
+			F.obj.x = updateNumber(this, F.xsummary);
 		});
 	this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
 	
@@ -126,21 +147,15 @@ function Feature(viewer, features, fobj) {
 	$('<label>y:</label>').appendTo(c);
 	this.y = $('<input>').appendTo(c).addClass('pharmit_coordinput');
 	this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
-		//change y value
-		var y = this.value = round(parseFloat(this.value));
-		F.ysummary.text(numeral(y).format('0.[00]'));
-		F.obj.y = round(y);
-		F.updateViewer();
+			//change y value
+			F.obj.y = updateNumber(this, F.ysummary);
 		});
 
 	c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
 	$('<label>z:</label>').appendTo(c);
 	this.z = $('<input>').appendTo(c).addClass('pharmit_coordinput');
 	this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
-		var z = this.value = round(parseFloat(this.value));
-		F.zsummary.text(numeral(z).format('0.[00]'));
-		F.obj.z = z;
-		F.updateViewer();
+			F.obj.z = updateNumber(this, F.zsummary);
 		});
 
 	//radius
@@ -148,9 +163,7 @@ function Feature(viewer, features, fobj) {
 	$('<label>Radius:</label>').appendTo(c);
 	this.radius = $('<input>').appendTo(c).addClass('pharmit_radiusinput');
 	this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
-		F.rsummary.text(numeral(this.value).format('0.[00]'));
-		F.obj.radius = this.value = round(this.value);
-		F.updateViewer();
+		F.obj.radius = updateNumber(this, F.rsummary);
 		});
 
 	//orientation (for hbonds and aromatic)
@@ -235,6 +248,9 @@ function Feature(viewer, features, fobj) {
 
 }
 
+Feature.INCLUSIVESHAPE = 1;
+Feature.EXCLUSIVESHAPE = 2;
+
 //set the feature to fobj, fill in ui
 Feature.prototype.setFeature = function(fobj) {
 	//this.obj will be set by the change handlers
@@ -271,9 +287,6 @@ Feature.prototype.setFeature = function(fobj) {
 		this.phi.val(phi).trigger('change');
 	}
 };
-
-Feature.prototype.featureNames = ['Aromatic','HydrogenDonor', 'HydrogenAcceptor', 
-		'Hydrophobic', 'NegativeIon', 'PositiveIon','ExclusionSphere'];
 
 Feature.prototype.updateViewer = function() {
 	//anything that changes the geometry requires a new shape 
@@ -1603,6 +1616,8 @@ var Pharmit = Pharmit || {};
 Pharmit.Query = (function() {
 	
 	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
+	var defaultInShapeFeature = {name:"InclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
+	var defaultExShapeFeature = {name:"ExclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 	var pharmaGistRegEx = /@<TRIPOS>MOLECULE[^@]*?@<TRIPOS>ATOM\n(\s*\d+\s*(ACC|DON|CAT|ANI|HYD|AR).*)*\n@<TRIPOS>BOND\n/g;
 	var privatedialog = null;
 	var endsWith = function(str, suffix) {
@@ -1613,7 +1628,11 @@ Pharmit.Query = (function() {
 		//private variables and functions
 		var querydiv = $('<div>').addClass('pharmit_query pharmit_overlay');
 		var features = null;
-		var featureheading = null;
+		var inshapefeatures = null;
+		var exshapefeatures = null;
+		
+		var featuregroup = null;
+		var featurenone = null;
 		var receptorData = null;
 		var receptorName = null; //filename (need ext)
 		var receptorKey = null; //md5 key to avoid transfering full structure
@@ -1645,14 +1664,9 @@ Pharmit.Query = (function() {
 			}
 		};
 		
-		//take an array of pharmacophore features (query.points) and
-		//put them in the query view
-		var setFeatures = function(featurearray) {
-			var start = new Date().getTime();
-			
-			viewer.disableRendering();
-			//while we're removing/adding bunches of features, don't bother rendering until the end
-			
+		
+		var setFeaturesHelper = function(featurearray, features, type) {
+			var container = features.parent();
 			features.detach();
 			//replace features
 			var old = features.children();
@@ -1663,13 +1677,45 @@ Pharmit.Query = (function() {
 			features.empty();
 			if(featurearray) {
 				$.each(featurearray, function(i, pt) {
-					new Feature(viewer, features, pt);
+					new Feature(viewer, features, pt, type);
 				});
 			}
 			features.accordion("option","active",false);
 			features.accordion("refresh");
 
-			featureheading.after(features); 
+			container.prepend(features); 
+		};
+		
+		//take an array of pharmacophore features (query.points) and
+		//put them in the query view
+		var setFeatures = function(featurearray) {
+			var start = new Date().getTime();
+			
+			viewer.disableRendering();
+			//while we're removing/adding bunches of features, don't bother rendering until the end
+			
+			var phfeatures = [];
+			var inspheres = [];
+			var exspheres = [];
+			
+			//split up the featurearray by feature type so shape features go in the right place
+			
+			for(var i = 0, n = featurearray.length; i < n; i++) {
+				var f = featurearray[i];
+				if(f.name == "InclusionSphere") {
+					inspheres.push(f);
+				}
+				else if(f.name == "ExclusionSphere") {
+					exspheres.push(f);
+				}
+				else {
+					phfeatures.push(f);
+				}
+			}
+			
+			setFeaturesHelper(phfeatures, features);
+			setFeaturesHelper(inspheres, inshapefeatures, Feature.INCLUSIVESHAPE);
+			setFeaturesHelper(exspheres, exshapefeatures, Feature.EXCLUSIVESHAPE);
 			
 			viewer.enableRendering();
 			var end = new Date().getTime();
@@ -1789,6 +1835,7 @@ Pharmit.Query = (function() {
 			features.append(fdivs);
 		};
 		
+		
 		var loadSession = this.loadSession = function(data) {
 
 			var query = data; //support passing an object directly
@@ -1802,6 +1849,12 @@ Pharmit.Query = (function() {
 				var i = $('input[name='+key+']');
 				if(i.length) {
 					i.val(value).change();
+				}
+				else {
+					i = $('select[name='+key+']');
+					if(i.length) {
+						i.val(value).change();
+					}
 				}
 			});
 			
@@ -1841,6 +1894,12 @@ Pharmit.Query = (function() {
 			ret.points = [];
 			
 			$.each(features.children(), function(key, fdiv) {
+				ret.points.push(fdiv.feature.obj);
+			});
+			$.each(inshapefeatures.children(), function(key, fdiv) {
+				ret.points.push(fdiv.feature.obj);
+			});
+			$.each(exshapefeatures.children(), function(key, fdiv) {
 				ret.points.push(fdiv.feature.obj);
 			});
 			//everything with a name is something we want to save
@@ -1890,9 +1949,344 @@ Pharmit.Query = (function() {
 		//escape special characters to avoid injections
 		var escHTML = function(str) { return $('<div/>').text(str).html(); };	
 		
+		//setup all the shape query controls
+		var createShapeQuery = function(body) {
+			//shape
+			var shapegroup = $('<div>').appendTo(body);
+			$('<div>Shape</div>').appendTo(shapegroup).addClass('pharmit_heading');
+			var shapemodediv = $('<div>').appendTo(shapegroup).addClass('pharmit_shapemodediv');	
+			
+			var modetable = $('<table>').appendTo(shapemodediv).addClass('pharmit_shapemodetable');
+			var moderow = $('<tr>').appendTo(modetable).addClass('pharmit_styleselectrow pharmit_shapeselectrow');
+
+			var shapemodeid = "ShapeModeSelect";
+			$('<label for="'+shapemodeid+'">Mode:</label>').addClass('pharmit_stylelabel').appendTo($('<td>')).appendTo($('<td>').appendTo(moderow));
+			
+			var shapecell = $('<td nowrap>').appendTo(moderow);
+			var shapeselect = $('<select name="'+shapemodeid+'" id="'+shapemodeid+'">').addClass('pharmit_styleselector').appendTo(shapecell);
+			
+			$('<option value="filter">Filter Pharmacophore</option>').appendTo(shapeselect);
+			$('<option value="search">Shape Search</option>').appendTo(shapeselect);	
+			
+			shapeselect.val("filter");
+			shapeselect.selectmenu({
+				width: '11em', 
+				appendTo: shapegroup, 
+				change: function() {
+					shapeselect.change();
+				},
+				position: {my: "left top", at: "left bottom", collision: "flip"}
+			});
+			
+			//workaround firefox bug - remove element style so css stylesheet takes effect
+			shapeselect.selectmenu( "widget" ).css('width','');
+			
+			shapeselect.change(function() {
+				if(this.value == 'search') {
+					$('.pharmit_shapefiltertext',shapegroup).hide();
+					$('.pharmit_shapesearchtext',shapegroup).show();
+					featuregroup.hide();
+					featurenone.show();
+				} else { //filter
+					$('.pharmit_shapefiltertext',shapegroup).show();
+					$('.pharmit_shapesearchtext',shapegroup).hide();
+					featuregroup.show();
+					featurenone.hide();
+				}
+				shapeselect.selectmenu("refresh");	       
+
+			});
+			
+			//inclusive shape
+			var shapers = $('<div>').appendTo(shapegroup).addClass('pharmit_shapeconstraints');	
+
+			var iheading = $('<h3 id="inshapehead">Inclusive Shape<br></h3>').appendTo(shapers);
+			var inclusivediv = $('<div id="pharmit_inclusiveshape">').appendTo(shapers);
+			var cell = null;
+			
+			var inselectdiv = $('<div>').appendTo(inclusivediv);
+			var inselect = $('<select name="inselect" id="inselect">').addClass('pharmit_shapeselector').appendTo(inselectdiv);
+			
+			$('<option value="none">None</option>').appendTo(inselect);	
+			$('<option value="ligand">Ligand</option>').appendTo(inselect);
+			$('<option value="points">Spheres</option>').appendTo(inselect);
+			
+			inselect.val("none");
+			inselect.selectmenu({
+				width: '14em', 
+				appendTo: inselectdiv, 
+				change: function() { inselect.change();},
+				position: {my: "left top", at: "left bottom", collision: "flip"}
+			});			
+			
+			//none
+			var nonediv = $('<div id="none-indiv">').appendTo(inclusivediv);
+			$('<div>No inclusive shape will be used to filter pharmacophore matches.</div>').appendTo(nonediv).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+			$('<div>No inclusive shape will be used for shape screening.</div>').appendTo(nonediv).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+			
+			
+			//ligand
+			var liganddiv = $('<div id="ligand-indiv">').appendTo(inclusivediv);
+			$('<div>At least one heavy atom in a pharmacophore aligned pose must fall within the inclusive shape.</div>').appendTo(liganddiv).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+			$('<div>The entirety of the inclusive shape must be contained within the aligned hit.</div>').appendTo(liganddiv).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+					
+			var inltable = $('<table>').appendTo(liganddiv);
+			var inlrow = $('<tr>').appendTo(inltable);
+			$('<td>').append('<label title="Depth in Angstroms to reduce surface of ligand inclusive shape by." value = "1" for="inltolerance">Tolerance:</label>').appendTo(inlrow);
+			cell = $('<td>').appendTo(inlrow).addClass('pharmit_shapecell');
+			$('<input id="inltolerance" name="inltolerance">').appendTo(cell).spinner();
+			
+			//interaction points
+			var inpoints = $('<div id="points-indiv">').appendTo(inclusivediv);
+			$('<div>At least one heavy atom center of a pharmacophore aligned pose must fall within <b>each</b> sphere.</div>').appendTo(inpoints).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+			$('<div>The entirety of the interaction point shapes must be contained within the aligned hit.</div>').appendTo(inpoints).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+						
+			inshapefeatures = $('<div>').appendTo(inpoints);
+			inshapefeatures.accordion({header: "> div > h3", 
+				animate: true, 
+				active: false,
+				collapsible: true,
+				heightStyle:'content',
+				beforeActivate: function( event, ui ) { 
+					var fdiv = null;
+					
+					//deslect all features
+					var fdivs = inshapefeatures.children();
+					$.each(fdivs, function(key,fdiv) {
+						fdiv.feature.deselectFeature();
+					});
+					if(ui.newHeader.length > 0) { //being activated
+						fdiv = ui.newHeader.parent();
+						fdiv.get(0).feature.selectFeature();
+					}
+
+				}})
+				.sortable({ //from jquery ui example
+					axis: "y",
+					handle: "h3",
+					stop: function( event, ui ) {
+					// IE doesn't register the blur when sorting
+					// so trigger focusout handlers to remove .ui-state-focus
+					ui.item.children( "h3" ).triggerHandler( "focusout" );
+					// Refresh accordion to handle new order
+					$( this ).accordion( "refresh" );
+					}
+					});			
+			
+			var adddiv = $('<div class="pharmit_pointsbuttons">').appendTo(inpoints);
+			var ptaddbutton = $('<button>Add</button>').appendTo(adddiv)
+				.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
+				.click(function() {new Feature(viewer, inshapefeatures, defaultInShapeFeature, Feature.INCLUSIVESHAPE);}); //feature adds a reference to itself in its container
+
+			//handler for choosing inclusive mode
+			inselect.change(function() {
+				nonediv.hide();
+				liganddiv.hide();
+				inpoints.hide();
+				if(this.value == 'ligand'){ 
+					liganddiv.show();
+					$('#inshapehead').addClass("pharmit_oblique");
+				}
+				else if(this.value == 'points') {
+					$('#inshapehead').addClass("pharmit_oblique");
+					inpoints.show();
+				}
+				else {
+					$('#inshapehead').removeClass("pharmit_oblique");
+					nonediv.show();
+				}
+				inselect.selectmenu("refresh");	       
+			});
+			inselect.change();
+			
+			//exclusive shape
+			var eheading = $('<h3 id="exshapehead">Exclusive Shape<br></h3>').appendTo(shapers);
+			var exclusivediv = $('<div id="pharmit_exclusiveshape">').appendTo(shapers);
+			
+			var exselectdiv = $('<div>').appendTo(exclusivediv);
+			var exselect = $('<select name="exselect" id="exselect">').addClass('pharmit_shapeselector').appendTo(exselectdiv);
+			
+			$('<option value="none">None</option>').appendTo(exselect);	
+			$('<option value="receptor">Receptor</option>').appendTo(exselect);
+			$('<option value="points">Spheres</option>').appendTo(exselect);
+			
+			exselect.val("none");
+			exselect.selectmenu({
+				width: '11em', 
+				appendTo: exselectdiv, 
+				change: function() { exselect.change(); },
+				position: {my: "left top", at: "left bottom", collision: "flip"}
+			});
+			
+			var exnonediv = $('<div id="none-exdiv">').appendTo(exclusivediv);
+			$('<div>No exclusive shape constraint will be applied.</div>').appendTo(exnonediv).addClass("pharmit_shapedesc");
+
+			var recdiv = $('<div id="receptor-exdiv">').appendTo(exclusivediv);
+			var phexdesc = $('<div>').appendTo(recdiv).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+			phexdesc.text("Hits that have heavy atom centers within the exclusive shape in their pharmacophore aligned pose will be filtered out.");
+
+			var shexdesc = $('<div>').appendTo(recdiv).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+			shexdesc.text("Aligned hits may not overlap any portion of the exclusive shape.");
+
+			
+			var extable = $('<table>').appendTo(recdiv);
+			var exrow = $('<tr>').appendTo(extable);
+			$('<td>').append('<label title="Depth in Angstroms to reduce surface of receptor exclusive shape by." value = "1" for="extolerance">Tolerance:</label>').appendTo(exrow);
+			cell = $('<td>').appendTo(exrow).addClass('pharmit_shapecell');
+			$('<input id="extolerance" name="extolerance">').appendTo(cell).spinner();
+			
+			
+			var expoints = $('<div id="points-exdiv">').appendTo(exclusivediv);
+			$('<div>Heavy atom centers of pharmacophore aligned poses may not fall within any exclusion sphere.</div>').appendTo(expoints).addClass("pharmit_shapedesc pharmit_shapefiltertext");
+			$('<div>Aligned hits may not overlap any exclusion sphere.</div>').appendTo(expoints).addClass("pharmit_shapedesc pharmit_shapesearchtext");
+						
+			exshapefeatures = $('<div>').appendTo(expoints);
+			exshapefeatures.accordion({header: "> div > h3", 
+				animate: true, 
+				active: false,
+				collapsible: true,
+				heightStyle:'content',
+				beforeActivate: function( event, ui ) { 
+					var fdiv = null;
+					
+					//deslect all features
+					var fdivs = exshapefeatures.children();
+					$.each(fdivs, function(key,fdiv) {
+						fdiv.feature.deselectFeature();
+					});
+					if(ui.newHeader.length > 0) { //being activated
+						fdiv = ui.newHeader.parent();
+						fdiv.get(0).feature.selectFeature();
+					}
+
+				}})
+				.sortable({ //from jquery ui example
+					axis: "y",
+					handle: "h3",
+					stop: function( event, ui ) {
+					// IE doesn't register the blur when sorting
+					// so trigger focusout handlers to remove .ui-state-focus
+					ui.item.children( "h3" ).triggerHandler( "focusout" );
+					// Refresh accordion to handle new order
+					$( this ).accordion( "refresh" );
+					}
+					});			
+			
+			adddiv = $('<div class="pharmit_pointsbuttons">').appendTo(expoints);
+			ptaddbutton = $('<button>Add</button>').appendTo(adddiv)
+				.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
+				.click(function() {new Feature(viewer, exshapefeatures, defaultExShapeFeature, Feature.EXCLUSIVESHAPE);}); //feature adds a reference to itself in its container
+
+			
+			//handler for choosing exclusive mode
+			exselect.change(function() {
+				if(this.value == "receptor") {
+					exnonediv.hide();
+					expoints.hide();
+					recdiv.show();
+					$('#exshapehead').addClass("pharmit_oblique");
+				} else if(this.value == "points") {
+					exnonediv.hide();
+					recdiv.hide();
+					expoints.show();
+					$('#exshapehead').addClass("pharmit_oblique");
+				} 
+				else {
+					$('#exshapehead').removeClass("pharmit_oblique");
+					exnonediv.show();
+					expoints.hide();
+					recdiv.hide();
+				}
+				exselect.selectmenu("refresh");	       
+			});
+			exselect.change();
+			
+			
+			shapeselect.change(); //set proper visibility of text after it is created
+			shapers.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
+
+		};
+		
+		//create controls for specifying filters of query
+		var createFilterQuery = function(body) {
+			//filters
+			var filtergroup = $('<div>').appendTo(body);
+			$('<div>Filters</div>').appendTo(filtergroup).addClass('pharmit_heading');
+			var filters = $('<div>').appendTo(filtergroup);		
+			
+			var heading = $('<h3>Hit Reduction<br></h3>').appendTo(filters);
+
+			var hitreductions = $('<div>').addClass("pharmit_hitreduction").appendTo(filters);
+			var reducetable = $('<table>').appendTo(hitreductions);
+			
+			var setReductionStyle = function() { //change style of headings of filters are specified
+				if($('#reduceorienttext').val() !== '' ||
+						$('#reduceconfstext').val() !== '' ||
+						$('#reducehitstext').val() !== '') {
+					heading.addClass('pharmit_filtermodified');
+				} else {
+					heading.removeClass('pharmit_filtermodified');
+				}
+			};
+			
+
+			var row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
+			$('<td>').append('<label title="Maximum number of orientations returned for each conformation" value="1" for="reduceorienttext">Max Hits per Conf:</label>').appendTo(row);
+			var cell = $('<td>').appendTo(row);
+			$('<input id="reduceorienttext" name="max-orient">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
+			
+			row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
+			$('<td>').append('<label title="Maximum number of conformations returned for each compound" value="1" for="reduceconfstext">Max Hits per Mol:</label>').appendTo(row);
+			cell = $('<td>').appendTo(row);
+			$('<input id="reduceconfstext" name="reduceConfs">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
+			
+			row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
+			$('<td>').append('<label title="Maximum number of hits returned" value="1" for="reducehitstext">Max Total Hits:</label>').appendTo(row);
+			cell = $('<td>').appendTo(row);
+			$('<input id="reducehitstext" name="max-hits">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
+			
+			
+			var screenheading = $('<h3>Hit Screening<br></h3>').appendTo(filters);
+			var hitscreening = $('<div>').appendTo(filters).addClass('pharmit_hitscreening');
+			var screentable = $('<table>').appendTo(hitscreening);
+			
+			var setScreensStyle = function() { //change style of headings of filters are specified
+				var nothingset = true;
+				$('[name]',hitscreening).each( function(index, element) {
+					if(element.value !== '')
+						nothingset = false;
+				});
+				if(!nothingset)  {
+					screenheading.addClass('pharmit_filtermodified');
+				} else {
+					screenheading.removeClass('pharmit_filtermodified');
+				}
+			};
+			
+			var addScreeningRow = function(name, label, title, minval) {
+				//boilerplate for screening row
+				var row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
+				var cell = $('<td>').appendTo(row);
+				$('<input name="min'+name+'">').appendTo(cell).spinner({min: minval, stop: setScreensStyle}).change(setScreensStyle);
+				$('<td>').appendTo(row).append($('<label title="'+title+'" value="1" >&le;  '+label+' &le;</label>'));
+				cell = $('<td>').appendTo(row);
+				$('<input name="max'+name+'">').appendTo(cell).spinner({min: minval, stop: setScreensStyle}).change(setScreensStyle);
+
+			};
+			
+			addScreeningRow("MolWeight", "MolWeight", "Minimum/maximum molecular weight (weights are approximate)", 0);
+			addScreeningRow("rotbonds", "RotBonds", "Minimum/maximum number of rotatable bonds", 0);
+			addScreeningRow("logp", "LogP", "Minimum/maximum partition coefficient as calculated by OpenBabel");
+			addScreeningRow("psa", "PSA", "Minimum/maximum polar surface area as calculated by OpenBabel");
+			addScreeningRow("aromatics", "Aromatics", "Minimum/maximum number of smallest aromatic rings", 0);
+			addScreeningRow("hba", "HBA", "Minimum/maximum number of hydrogen bond acceptors",0);
+			addScreeningRow("hbd", "HBD", "Minimum/maximum number of hydrogen bond donors",0);
+			
+			filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
+		};
+		
 		//create a split button from a list of vendors and prepend it to header
 		var createSearchButton = function(header,dbinfo) {
-console.log("creating search button");
 			var subsetinfo = dbinfo.standard;
 			var buttons = $('<div>').addClass('pharmit_searchdiv');
 			var run = $('<button id="pharmitsearchbutton" name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
@@ -2034,8 +2428,9 @@ console.log("creating search button");
 		
 		//query features
 		var body = $('<div>').appendTo(querydiv).addClass("pharmit_querybody");
-		var featuregroup = $('<div>').appendTo(body);
-		featureheading = $('<div>Pharmacophore</div>').appendTo(featuregroup).addClass('pharmit_heading');
+		var featureheading = $('<div>Pharmacophore</div>').appendTo(body).addClass('pharmit_heading');
+		featuregroup = $('<div>').appendTo(body);
+		featurenone = $('<div>Pharmacophore filtering of aligned shape hits currently not implemented.</div>').addClass('pharmit_disabledmessage').appendTo(body);
 		features = $('<div>').appendTo(featuregroup);
 		features.accordion({header: "> div > h3", 
 			animate: true, 
@@ -2073,81 +2468,10 @@ console.log("creating search button");
 			.button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
 			.click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
 		var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
+	
+		createShapeQuery(body);
 		
-		//filters
-		var filtergroup = $('<div>').appendTo(body);
-		$('<div>Filters</div>').appendTo(filtergroup).addClass('pharmit_heading');
-		var filters = $('<div>').appendTo(filtergroup);		
-		
-		var heading = $('<h3>Hit Reduction<br></h3>').appendTo(filters);
-
-		var hitreductions = $('<div>').addClass("pharmit_hitreduction").appendTo(filters);
-		var reducetable = $('<table>').appendTo(hitreductions);
-		
-		var setReductionStyle = function() { //change style of headings of filters are specified
-			if($('#reduceorienttext').val() !== '' ||
-					$('#reduceconfstext').val() !== '' ||
-					$('#reducehitstext').val() !== '') {
-				heading.addClass('pharmit_filtermodified');
-			} else {
-				heading.removeClass('pharmit_filtermodified');
-			}
-		};
-		
-
-		var row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
-		$('<td>').append('<label title="Maximum number of orientations returned for each conformation" value="1" for="reduceorienttext">Max Hits per Conf:</label>').appendTo(row);
-		var cell = $('<td>').appendTo(row);
-		$('<input id="reduceorienttext" name="max-orient">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
-		
-		row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
-		$('<td>').append('<label title="Maximum number of conformations returned for each compound" value="1" for="reduceconfstext">Max Hits per Mol:</label>').appendTo(row);
-		cell = $('<td>').appendTo(row);
-		$('<input id="reduceconfstext" name="reduceConfs">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
-		
-		row = $('<tr>').addClass('pharmit_filterrow').appendTo(reducetable);
-		$('<td>').append('<label title="Maximum number of hits returned" value="1" for="reducehitstext">Max Total Hits:</label>').appendTo(row);
-		cell = $('<td>').appendTo(row);
-		$('<input id="reducehitstext" name="max-hits">').appendTo(cell).spinner({min: 0, stop: setReductionStyle}).change(setReductionStyle);
-		
-		
-		var screenheading = $('<h3>Hit Screening<br></h3>').appendTo(filters);
-		var hitscreening = $('<div>').appendTo(filters).addClass('pharmit_hitscreening');
-		var screentable = $('<table>').appendTo(hitscreening);
-		
-		var setScreensStyle = function() { //change style of headings of filters are specified
-			var nothingset = true;
-			$('[name]',hitscreening).each( function(index, element) {
-				if(element.value !== '')
-					nothingset = false;
-			});
-			if(!nothingset)  {
-				screenheading.addClass('pharmit_filtermodified');
-			} else {
-				screenheading.removeClass('pharmit_filtermodified');
-			}
-		};
-		
-		var addScreeningRow = function(name, label, title, minval) {
-			//boilerplate for screening row
-			var row = $('<tr>').addClass('pharmit_filterrow').appendTo(screentable);
-			var cell = $('<td>').appendTo(row);
-			$('<input name="min'+name+'">').appendTo(cell).spinner({min: minval, stop: setScreensStyle}).change(setScreensStyle);
-			$('<td>').appendTo(row).append($('<label title="'+title+'" value="1" >&le;  '+label+' &le;</label>'));
-			cell = $('<td>').appendTo(row);
-			$('<input name="max'+name+'">').appendTo(cell).spinner({min: minval, stop: setScreensStyle}).change(setScreensStyle);
-
-		};
-		
-		addScreeningRow("MolWeight", "MolWeight", "Minimum/maximum molecular weight (weights are approximate)", 0);
-		addScreeningRow("rotbonds", "RotBonds", "Minimum/maximum number of rotatable bonds", 0);
-		addScreeningRow("logp", "LogP", "Minimum/maximum partition coefficient as calculated by OpenBabel");
-		addScreeningRow("psa", "PSA", "Minimum/maximum polar surface area as calculated by OpenBabel");
-		addScreeningRow("aromatics", "Aromatics", "Minimum/maximum number of smallest aromatic rings", 0);
-		addScreeningRow("hba", "HBA", "Minimum/maximum number of hydrogen bond acceptors",0);
-		addScreeningRow("hbd", "HBD", "Minimum/maximum number of hydrogen bond donors",0);
-		
-		filters.accordion({animate: true, active: false, collapsible: true, heightStyle:'content'});
+		createFilterQuery(body);
 		
 		//viewer settings
 		var vizgroup = $('<div>').appendTo(body);
@@ -4690,7 +5014,8 @@ Pharmit.Viewer = (function() {
 		var margins = {left: 0, right: 0}; 
 		
 		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xf0f0f0', 'HydrogenAcceptor': 'orange', 
-							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey'};
+							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey',
+							'InclusionSphere': 'yellow'};
 
 		
 		var modelsAndStyles = {
@@ -4838,6 +5163,7 @@ Pharmit.Viewer = (function() {
 			
 			select.change(function() {
 				rec.selectedStyle = this.value;
+				select.selectmenu("refresh");	       
 				updateStyle(name);
 			});
 			

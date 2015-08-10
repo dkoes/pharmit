@@ -181,6 +181,7 @@ class PMol
 	double getMolWeight() const;
 
 	void getCoords(vector<FloatCoord>& coords, const RMSDResult& rms);
+	void getCoords(vector<Eigen::Vector3f>& coords, const Eigen::Transform<double, 3, Eigen::Affine>& transform);
 
 	//write sdf with associated meta data
 	//rotate/translate points if requested

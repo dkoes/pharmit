@@ -228,8 +228,40 @@ body {
 	color: gray;
 }
 
+.pharmit_shapeconstraints input {
+	width: 2.5em;
+}
 
+.pharmit_shapeconstraints table {
+	border-collapse: collapse;
+}
 
+.pharmit_shapecell {
+    padding-left: 1em;    
+}
+
+.pharmit_shapedesc {
+	font-style: oblique;
+	padding-bottom: 0.5em;
+	padding-top: 0.5em;
+}
+
+.pharmit_oblique {
+	font-style: oblique;
+}
+
+#pharmit_inclusiveshape {
+    padding: 1em;
+}
+
+#pharmit_exclusiveshape {
+	padding: 1em;
+}
+
+.pharmit_pointsbuttons {
+	padding-top: 0.5em;
+	text-align: center;
+}
 
 .pharmit_togglediv {
     display: inline-block;
@@ -257,7 +289,7 @@ body {
 }
 
 .pharmit_featurebuttons {
-	padding: 0.5em;
+	padding: 0.5em 0.5em 1em 0.5em;
 	text-align: center;
 	white-space: nowrap;
 }
@@ -265,6 +297,11 @@ body {
 .pharmit_featurebuttons button {
 	   margin-left: 0.5em;
     margin-right: 0.5em;
+}
+
+.pharmit_disabledmessage {
+	font-style: oblique;
+	padding: 1em;
 }
 
 .pharmit_selectedFeature.pharmit_enabledfeature h3 {
@@ -311,7 +348,7 @@ body {
 	top: 50%;	
 }
 
-.pharmit_locationdiv {
+.ui-selectmenu-button:not([style*="display: none"]) + .pharmit_locationdiv {
 	padding-top: 0.5em;
 }
 .pharmit_coorddiv {
@@ -386,6 +423,9 @@ body {
 	width: 11em !important;
 }
 
+.pharmit_styleselectrow.pharmit_shapeselectrow td span.ui-selectmenu-button {
+	width: 15em !important;
+}
 
 .pharmit_styleselectrow td .sp-preview {
 	width: 1em;
@@ -418,6 +458,28 @@ body {
 	vertical-align: middle;
 	display: inline-block;
 	float: none;
+}
+
+.pharmit_shapemodetable {
+	border-collapse: collapse;
+}
+.pharmit_shapemodediv {
+    padding: 0.5em 0em 0.5em 1.5em;
+
+}
+
+#points-indiv .pharmit_featurediv, #points-exdiv .pharmit_featurediv {
+	margin-right: -1em;
+    margin-left: -1em;
+}
+
+#points-exdiv, #points-indiv {
+    padding-top: 0.5em;	
+} 
+
+.pharmit_shapemodetable td {
+    height: 3em;
+    padding: 0;
 }
 
 
