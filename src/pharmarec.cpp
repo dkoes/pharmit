@@ -35,12 +35,14 @@
 #include <string>
 #include "pharmarec.h"
 #include "Timer.h"
+#include "ShapeConstraints.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
+#include <eigen3/Eigen/Core>
 
 using namespace boost;
 using namespace OpenBabel;
@@ -992,9 +994,10 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
 		const string& moldata, OBFormat *format, const string& recdata,
 		OBFormat *rformat)
 {
-
+	using namespace Eigen;
 	vector<PharmaPoint> points;
 	vector<PharmaPoint> disabled;
+	vector<Vector3d> ipoints;
 
 	if (isPharmaGist(pharmas, moldata, points))
 		; //got points from the file
@@ -1023,6 +1026,7 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
 			{
 				getInteractionPoints(pharmas, rec, mol, points, disabled);
 				points.insert(points.end(), disabled.begin(), disabled.end());
+				ShapeConstraints::computeInteractionPoints(mol, rec, ipoints);
 			}
 		}
 	}
@@ -1036,6 +1040,20 @@ bool jsonPharmaQuery(const Pharmas& pharmas, Json::Value& root,
 	{
 		root["points"][i]["enabled"] = (i < cutoff);
 
+	}
+
+	//add inclusion spheres
+	for(unsigned i = 0, n = ipoints.size(); i < n; i++)
+	{
+		const Vector3d& ipt = ipoints[i];
+		unsigned indx = points.size() + i;
+		Json::Value& pt = root["points"][indx];
+		pt["name"] = "InclusionSphere";
+		pt["x"] = ipt.x();
+		pt["y"] = ipt.y();
+		pt["z"] = ipt.z();
+		pt["radius"] = 1.0; //default radius should be what?
+		pt["enabled"] = false;
 	}
 
 	return true;

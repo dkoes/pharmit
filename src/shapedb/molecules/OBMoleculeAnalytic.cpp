@@ -167,14 +167,11 @@ static void clusterPoints(const vector<AtomPoint>& points,
 	}
 }
 
-//computes a set of solitary grid points that represent the interaction between
-//this ligand and the provided receptor in some way
-void OBAMolecule::computeInteractionGridPoints(OBAMolecule& receptor,
-		MGrid& grid, double interactionDist,
-		double maxClusterDist,
-		unsigned minClusterPoints, double interactionPointRadius)
+//computes a set of "interaction points" spatial location indicative of the ligand protein interface
+void OBAMolecule::computeInteractionPoints(OBMol& rmol, vector<Eigen::Vector3d>& respoints,
+		double interactionDist, double maxClusterDist, unsigned minClusterPoints)
 {
-	grid.clear();
+	respoints.clear();
 	//first construct a bounding box for the ligand while assembling a
 	//vector of atomic coordinates
 	BoundingBox ligandBox;
@@ -190,7 +187,7 @@ void OBAMolecule::computeInteractionGridPoints(OBAMolecule& receptor,
 
 	//then identify all coordinates that are interacting
 	double idistSq = interactionDist * interactionDist;
-	OBMol& rmol = receptor.getMol();
+
 	for (OBAtomIterator aitr = rmol.BeginAtoms(); aitr != rmol.EndAtoms();
 			++aitr)
 	{
@@ -207,7 +204,7 @@ void OBAMolecule::computeInteractionGridPoints(OBAMolecule& receptor,
 		}
 	}
 
-	//prune out non-interacting poitns
+	//prune out non-interacting points
 	vector<AtomPoint> tmp;
 	tmp.reserve(points.size());
 	for (unsigned i = 0, n = points.size(); i < n; i++)
@@ -240,11 +237,30 @@ void OBAMolecule::computeInteractionGridPoints(OBAMolecule& receptor,
 			double yave = ytot / (double) npts;
 			double zave = ztot / (double) npts;
 
-			grid.setPoint(xave, yave, zave);
-			if(interactionPointRadius > 0)
-			{
-				grid.markXYZSphere(xave,yave,zave,interactionPointRadius);
-			}
+			respoints.push_back(Eigen::Vector3d(xave,yave,zave));
+		}
+	}
+}
+
+//computes a set of solitary grid points that represent the interaction between
+//this ligand and the provided receptor in some way
+void OBAMolecule::computeInteractionGridPoints(OBMol& rmol,
+		MGrid& grid, double interactionDist,
+		double maxClusterDist,
+		unsigned minClusterPoints, double interactionPointRadius)
+{
+	using namespace Eigen;
+	grid.clear();
+
+	vector<Vector3d> points;
+	computeInteractionPoints(rmol, points, interactionDist, maxClusterDist, minClusterPoints);
+
+	for(unsigned i = 0, n = points.size(); i < n; i++)
+	{
+		if(interactionPointRadius > 0)
+		{
+			Vector3d pt = points[i];
+			grid.markXYZSphere(pt.x(),pt.y(),pt.z(),interactionPointRadius);
 		}
 	}
 }

@@ -88,6 +88,8 @@ public:
 
 	void getExclusiveMesh(Json::Value& mesh);
 	void getInclusiveMesh(Json::Value& mesh);
+
+	static void computeInteractionPoints(OpenBabel::OBMol& ligand, OpenBabel::OBMol& receptor, vector<Eigen::Vector3d>& points);
 };
 
 #endif /* PHARMITSERVER_EXCLUDER_H_ */

@@ -2388,8 +2388,8 @@ Pharmit.Query = (function() {
 			
 			var shapeselect = $('<select name="'+shapemodeid+'" id="'+shapemodeid+'">').addClass('pharmit_styleselector').appendTo(shapemodediv);
 			
-			$('<option value="filter">Pharmacophore Search / Shape Filter</option>').appendTo(shapeselect);
-			$('<option value="search">Shape Search / Pharmacophore Filter</option>').appendTo(shapeselect);	
+			$('<option value="filter">Pharmacophore Search &#65515; Shape Filter</option>').appendTo(shapeselect);
+			$('<option value="search">Shape Search &#65515; Pharmacophore Filter</option>').appendTo(shapeselect);	
 			
 			shapeselect.val("filter");
 			shapeselect.selectmenu({

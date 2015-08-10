@@ -1238,7 +1238,7 @@ int main(int argc, char *argv[])
 			Molecule receptor = *exmolitr;
 
 			MGrid igrid(MaxDimension, Resolution);
-			ligand.computeInteractionGridPoints(receptor, igrid,
+			ligand.computeInteractionGridPoints(receptor.getMol(), igrid,
 					interactionDistance, interactionMaxClusterDist,
 					interactionMinCluster, interactionPointRadius);
 

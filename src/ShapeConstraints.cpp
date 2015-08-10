@@ -391,3 +391,12 @@ void ShapeConstraints::getInclusiveMesh(Json::Value& mesh)
 {
 	getMesh(includeGrid, mesh);
 }
+
+void ShapeConstraints::computeInteractionPoints(OBMol& ligand, OBMol& receptor, vector<Vector3d>& points)
+{
+	points.clear();
+	//compute steric points
+	ShapeObj::MolInfo minfo;
+	ShapeObj obj(ligand, Vector3d::Zero(), Matrix3d::Identity(), minfo, 32, 0.5);
+	obj.computeInteractionPoints(receptor, points);
+}
