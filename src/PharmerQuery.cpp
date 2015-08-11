@@ -439,15 +439,11 @@ void PharmerQuery::cancelSmina()
 	}
 }
 
-bool PharmerQuery::done()
-{
-	checkThreads();
-	return tripletMatchThread == NULL && shapeMatchThread == NULL;
-}
-
 bool PharmerQuery::finished() //okay to deallocate
 {
-	if (!done())
+	checkThreads();
+
+	if (tripletMatchThread != NULL || shapeMatchThread != NULL)
 		return false;
 	if (inUseCnt > 0)
 		return false;
@@ -542,16 +538,17 @@ void PharmerQuery::reduceResults()
 
 //copy current set of results in to vector
 //filter the vector based on query params
-void PharmerQuery::loadResults()
+//return true if there are more results expected
+bool PharmerQuery::loadResults()
 {
 	access();
 	SpinLock lock(mutex);
 	checkThreads();
-
+	bool moretoread = false;
 	for (unsigned i = 0, n = corrsQs.size(); i < n; i++)
 	{
 		vector<CorrespondenceResult*> corrs;
-		corrsQs[i].popAll(corrs);
+		moretoread |= corrsQs[i].popAll(corrs);
 
 		for (unsigned j = 0, nc = corrs.size(); j < nc; j++)
 		{
@@ -570,13 +567,16 @@ void PharmerQuery::loadResults()
 	{
 		results.resize(params.maxHits);
 	}
+
+	return moretoread;
 }
 
 //return all current results subject to data parameters
-void PharmerQuery::getResults(const DataParameters& dp,
+//return true if results are still being produced
+bool PharmerQuery::getResults(const DataParameters& dp,
 		vector<QueryResult*>& out)
 {
-	loadResults();
+	bool notdone = loadResults();
 	out.clear();
 
 	SpinLock lock(mutex);
@@ -594,6 +594,8 @@ void PharmerQuery::getResults(const DataParameters& dp,
 			setExtraInfo(*results[i]);
 		out.push_back(results[i]);
 	}
+
+	return notdone;
 }
 
 //if necessary, load extra info into r
@@ -617,13 +619,13 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 		bool jsonHeader)
 {
 	vector<QueryResult*> r;
-	getResults(dp, r);
+	bool notdone = getResults(dp, r);
 
 //json status line
 	if (jsonHeader)
 	{
 		out << "{\"status\" : 1, \"done\" : ";
-		if (done())
+		if (!notdone)
 			out << "true, ";
 		else
 			out << "false, ";
@@ -642,12 +644,12 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 {
 	vector<QueryResult*> r;
-	getResults(dp, r);
+	bool notdone = getResults(dp, r);
 
 	data["draw"] = dp.drawCode;
 	data["recordsTotal"] = (unsigned) results.size();
 	data["recordsFiltered"] = (unsigned) results.size();
-	data["finished"] = done();
+	data["finished"] = !notdone;
 	data["data"].resize(0); //make empty array
 
 	for (unsigned i = 0, n = r.size(); i < n; i++)

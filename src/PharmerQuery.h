@@ -118,7 +118,7 @@ class PharmerQuery
 
 	void generateQueryTriplets(PharmerDatabaseSearcher& pharmdb, vector<vector<
 			QueryTriplet> >& trips);
-	void loadResults();
+	bool loadResults();
 	void checkThreads();
 
 	void setExtraInfo(QueryResult& r);
@@ -158,7 +158,7 @@ public:
 
 	unsigned numResults() { loadResults(); return results.size(); }
 	//return all current results
-	void getResults(const DataParameters& dp, vector<QueryResult*>& out);
+	bool getResults(const DataParameters& dp, vector<QueryResult*>& out);
 	//output text result of query (correspondences)
 	void outputData(const DataParameters& dp, ostream& out, bool jsonHeader =
 			false);
@@ -176,7 +176,6 @@ public:
 	//attempt to cancel, non-blocking, query neest time to wrap up
 	void cancel();
 	bool finished(); //okay to deallocate, user may still care though
-	bool done(); //searching is not happening
 	bool cancelled() { return stopQuery; } //user no longer cares
 	void access()
 	{

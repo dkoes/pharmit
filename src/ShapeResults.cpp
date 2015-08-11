@@ -56,11 +56,11 @@ void ShapeResults::add(const char *data, double score)
 	res->location = loc * numdb + db;
 	res->molid = mid * numdb + db;
 	res->dbid = mid;
-	res->val = score;
+	res->val = 1.0-score;
 	res->weight = ThreePointData::unreduceWeight(minfo.weight);
 	res->nRBnds = minfo.nrot;
 	res->rmsd = defaultR;
-	res->rmsd.setValue(score); //overloading
+	res->rmsd.setValue(1.0-score); //overloading
 
 	resultQ.push(res);
 }
