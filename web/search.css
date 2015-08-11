@@ -229,6 +229,7 @@ body {
 
 .pharmit_styleselector {
 	width: 21.5em;
+  white-space: nowrap;
 }
 .pharmit_shapeconstraints input {
 	width: 2.5em;

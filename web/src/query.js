@@ -774,13 +774,14 @@ Pharmit.Query = (function() {
 		//setup select menu for choosing search mode
 		var prependModeSelect = function(header) {
 			var shapemodediv = $('<div>').prependTo(header).addClass('pharmit_shapemodediv');					
-			var shapeselect = $('<button name="'+shapemodeid+'" id="'+shapemodeid+' value="filter"">Pharmacophore Search -&gt; Shape Filter</button>').addClass('pharmit_styleselector').appendTo(shapemodediv);
+			var shapeselect = $('<button name="'+shapemodeid+'" id="'+shapemodeid+' value="filter">Pharmacophore Search -&gt; Shape Filter</button>').addClass('pharmit_styleselector').appendTo(shapemodediv);
 			
 			shapeselect.button();
+			shapeselect.val("filter");
 			
 			shapeselect.click(function() {
 				if(this.value == 'filter') {
-					this.value = 'shape';
+					this.value = 'search';
 					shapeselect.button("option","label","Shape Search -&gt; Pharmacophore Filter");
 					$('.pharmit_shapefiltertext').hide();
 					$('.pharmit_shapesearchtext').show();
