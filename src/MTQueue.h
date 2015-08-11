@@ -152,6 +152,14 @@ public:
 		return true;
 	}
 
+	//return true if nothing is in the queue nor will there be anything in the queue (unless producer added)
+	bool finished()
+	{
+		if (registeredProducers == 0 && num == 0) //nothing is producing
+			return true;
+		return false;
+	}
+
 	//return true if queue is not empty
 	//and fill out val
 	//only return false if there is no data available AND there is no chance
@@ -162,7 +170,7 @@ public:
 		SpinLock lock(mutex, false);
 		if (num == 0)
 		{
-			if (registeredProducers == 0 && num == 0) //nothing is producing
+			if (finished()) //nothing is producing
 				return false;
 			return true;
 		}
@@ -175,7 +183,7 @@ public:
 		val.insert(val.end(), data.begin(), data.end());
 		data.clear();
 		num = 0;
-		return true;
+		return !finished();
 	}
 
 };

@@ -364,12 +364,6 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		return 0;
 	}
 
-	if(qp.isshape && !excluder.isFullyDefined())
-	{
-		msg = "Shape search requires that both an inclusive and exclusive shape be defined.";
-		return 0;
-	}
-
 	dbs = searchers->stripes;
 	numslices = dbs.size(); //how many threads we should run
 	totalMols = searchers->totalMols;
