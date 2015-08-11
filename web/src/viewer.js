@@ -334,6 +334,41 @@ Pharmit.Viewer = (function() {
 			return viewer.getView();
 		};
 		
+		//add a mesh object, returns identifier
+		this.addMesh = function(mesh, style) {
+			if(style.kind == "exclusive") {
+				mesh.color = "grey";
+			} else if(style.kind == "inclusive") {
+				mesh.color = "yellow";
+			}
+			$.extend(mesh, style);
+			var ret = viewer.addCustom(mesh);
+			viewer.render();
+			return ret;
+		};
+		
+		
+		this.updateMesh = function(m, newstyle) {
+			if(m.updateStyle) m.updateStyle(newstyle);
+			viewer.render();
+		};
+		
+		//removes previously created mesh object m
+		this.removeMesh = function(m) {
+			viewer.removeShape(m);
+			viewer.render();
+		};
+		
+		//hides, but does not remove, mesh object m
+		this.hideMesh = function(m) {
+			
+		};
+		
+		//restores visibility of mesh object m
+		this.unhideMesh = function(m) {
+			
+		};
+		
 		//add a feature as specified by fobj
 		//returns an identifier for referencing the feature later (e.g., removeFeature)
 		this.addFeature = function(fobj, clickHandler) {

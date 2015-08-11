@@ -16,9 +16,10 @@ struct LoadDatabase
 {
 	unsigned totalConf;
 	unsigned totalMols;
+	bool hasShape;
 
 	LoadDatabase() :
-			totalConf(0), totalMols(0)
+			totalConf(0), totalMols(0), hasShape(true)
 	{
 
 	}
@@ -35,6 +36,7 @@ struct LoadDatabase
 		}
 		totalConf += db->numConformations();
 		totalMols += db->numMolecules();
+		hasShape &= db->hasShape();
 		database = db;
 	}
 };
@@ -64,6 +66,7 @@ void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& database
 	{
 		databases.totalConfs += ld.totalConf;
 		databases.totalMols += ld.totalMols;
+		databases.hasShape &= ld.hasShape;
 	}
 }
 

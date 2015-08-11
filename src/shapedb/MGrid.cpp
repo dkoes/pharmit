@@ -147,9 +147,11 @@ void MGrid::setPoint(float x, float y, float z)
 //given the solvent accessible surface, make an approximation to the
 //solvent excluded molecular surface by drawing spheres from the boundary
 //of the sa and noting where they don't intersect
-void MGrid::makeSurface(const MGrid& sagrid, const MGrid& lesssagrid,
-		double probe)
+void MGrid::makeSurface(const MGrid& sagrid, double probe)
 {
+	MGrid lesssagrid = sagrid;
+	lesssagrid.shrinkByOne();
+
 	bvect shell = sagrid.grid - lesssagrid.grid;
 	bvect::enumerator en = shell.first();
 	bvect::enumerator en_end = shell.end();
@@ -307,3 +309,90 @@ void MGrid::getSetPoints(vector<MGrid::Point>& points) const
 	}
 
 }
+
+//make a face a distance r from pt along which axis
+void MGrid::makeFace(Eigen::Vector3f pt, int which, double r,vector<Eigen::Vector3f>& vertices, vector<Eigen::Vector3f>& normals, vector<int>& faces)
+{
+	using namespace Eigen;
+	Vector3f neigh = pt;
+	neigh[which] += 2*r;
+	if(!test(neigh.x(), neigh.y(), neigh.z()))
+	{
+		//exposed, make verts
+		pt[which] += r;
+
+		//one dimension is only in r, the other are +/- both ways to make corners
+		Vector3f v1 = pt, v2 = pt, v3 = pt, v4 = pt;
+		v1[(which+1)%3] += r;
+		v1[(which+2)%3] += r;
+
+		v2[(which+1)%3] += r;
+		v2[(which+2)%3] -= r;
+
+		v3[(which+1)%3] -= r;
+		v3[(which+2)%3] -= r;
+
+		v4[(which+1)%3] -= r;
+		v4[(which+2)%3] += r;
+
+		int i1,i2,i3,i4;
+		i1 = vertices.size();
+		vertices.push_back(v1);
+
+		i2 = vertices.size();
+		vertices.push_back(v2);
+
+		i3 = vertices.size();
+		vertices.push_back(v3);
+
+		i4 = vertices.size();
+		vertices.push_back(v4);
+
+		//the normals are all the same - r
+		Vector3f norm(0,0,0);
+		norm[which] = -1.0; //becaue of counterclockwise winding??
+		normals.push_back(norm);
+		normals.push_back(norm);
+		normals.push_back(norm);
+		normals.push_back(norm);
+
+		//two faces [v1,v2,v3] and [v1,v3,v4]
+		faces.push_back(i1);
+		faces.push_back(i2);
+		faces.push_back(i3);
+
+		faces.push_back(i1);
+		faces.push_back(i3);
+		faces.push_back(i4);
+	}
+}
+
+//create a voxel mesh from a grid
+//does not clear vectors, instead appends info
+void MGrid::makeMesh(vector<Eigen::Vector3f>& vertices, vector<Eigen::Vector3f>& normals, vector<int>& faces)
+{
+	using namespace Eigen;
+	bvect::enumerator en = grid.first();
+	bvect::enumerator en_end = grid.end();
+	double x = 0, y = 0, z = 0;
+
+	while (en < en_end)
+	{
+		unsigned g = *en;
+		++en;
+		gridToPoint(g, x, y , z);
+
+		if(isExposedPoint(x,y,z))
+		{
+			double r = resolution/2.0;
+			Vector3f pt(x,y,z);
+			for(unsigned i = 0; i < 3; i++)
+			{
+				//doesn't make a face unless actually exposed
+				makeFace(pt, i, r, vertices, normals, faces);
+				makeFace(pt, i, -r, vertices, normals, faces);
+			}
+		}
+	}
+}
+

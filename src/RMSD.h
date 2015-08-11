@@ -40,6 +40,10 @@ typedef Eigen::Vector4d Vec4;
 typedef Eigen::Vector3d Vec3;
 typedef Eigen::Matrix3d Mat3x3;
 
+/*
+ * This class stores the transformation of a molecules with its query rmsd.
+ * The notion of rmsd is overloaded for shape searches to be the similarity
+ */
 class RMSDResult
 {
 	//floats to save space, actual computation must be done in double precision though
@@ -66,6 +70,7 @@ public:
 	}
 
 	double value() const { return val; }
+	void setValue(double v) { val = v; }
 
 	//modify points by rot/trans
 	void reorient(vector<Eigen::Vector3f>& pnts) const

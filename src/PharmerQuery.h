@@ -40,10 +40,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
 #include <json/json.h>
+#include <ShapeConstraints.h>
 #include "Triplet.h"
 #include "tripletmatching.h"
 #include "params.h"
-#include "Excluder.h"
 #include "pharmarec.h"
 #include "pharmerdb.h"
 
@@ -69,6 +69,8 @@ struct QueryResult
 };
 
 
+
+
 class PharmerQuery
 {
 	string errorStr;
@@ -78,12 +80,13 @@ class PharmerQuery
 	vector<QueryTriplet> triplets; //all n^3 triangles
 	boost::multi_array<unsigned, 3> tripIndex; //for any (i,j,k), the index of the corresponding triplet
 	QueryParameters params;
-	Excluder excluder;
+	ShapeConstraints excluder;
 
 	bool valid;
 	bool stopQuery;
 
 	boost::thread *tripletMatchThread; //performs triplet matching
+	boost::thread *shapeMatchThread; //performs shape matching
 	time_t lastAccessed;
 
 	MTQueue<unsigned> dbSearchQ;
@@ -110,6 +113,9 @@ class PharmerQuery
 	static void thread_tripletMatches(PharmerQuery *query);
 	static void thread_tripletMatch(PharmerQuery *query);
 
+	static void thread_shapeMatches(PharmerQuery *query);
+	static void thread_shapeMatch(PharmerQuery *query);
+
 	void generateQueryTriplets(PharmerDatabaseSearcher& pharmdb, vector<vector<
 			QueryTriplet> >& trips);
 	void loadResults();
@@ -121,8 +127,6 @@ class PharmerQuery
 
 	void sortResults(SortTyp srt, bool reverse);
 	void reduceResults();
-
-	bool isExcluded(QueryResult* result);
 
 	unsigned long getLocation(const QueryResult* r,boost::shared_ptr<PharmerDatabaseSearcher>& db);
 
@@ -137,7 +141,7 @@ public:
 
 	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> > & dbs,
 			const vector<PharmaPoint>& pts, const QueryParameters& qp =
-					QueryParameters(), const Excluder& ex = Excluder(), unsigned nth = 1);
+					QueryParameters(), const ShapeConstraints& ex = ShapeConstraints(), unsigned nth = 1);
 
 	virtual ~PharmerQuery();
 
@@ -172,6 +176,7 @@ public:
 	//attempt to cancel, non-blocking, query neest time to wrap up
 	void cancel();
 	bool finished(); //okay to deallocate, user may still care though
+	bool done(); //searching is not happening
 	bool cancelled() { return stopQuery; } //user no longer cares
 	void access()
 	{

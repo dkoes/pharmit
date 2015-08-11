@@ -288,6 +288,20 @@ Feature.prototype.setFeature = function(fobj) {
 	}
 };
 
+//don't show in viewer, but don't change enabled state
+Feature.prototype.hideFeature = function() {
+	this.obj.hidden = true;
+	if(this.shape !== null) this.viewer.removeFeature(this.shape);
+	this.updateViewer();
+};
+
+//undow hid
+Feature.prototype.unhideFeature = function() {
+	this.obj.hidden = false;
+	this.updateViewer();
+};
+
+
 Feature.prototype.updateViewer = function() {
 	//anything that changes the geometry requires a new shape 
 	//(position, arrow orientation, radius)
@@ -296,7 +310,7 @@ Feature.prototype.updateViewer = function() {
 		this.viewer.removeFeature(this.shape);
 		this.shape = null;
 	}
-	if(this.obj.enabled) {
+	if(this.obj.enabled && !this.obj.hidden) {
 		var F = this;
 		this.shape = this.viewer.addFeature(this.obj, function() {
 			if(F.selected) {
@@ -334,3 +348,4 @@ Feature.prototype.deleteFeature = function() {
 	this.container.feature = null;
 	this.container.remove();
 };
+

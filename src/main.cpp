@@ -47,8 +47,8 @@
 #include "PharmerServer.h"
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ShapeConstraints.h>
 #include "ReadMCMol.h"
-#include "Excluder.h"
 #include "dbloader.h"
 #include "SminaConverter.h"
 
@@ -116,19 +116,19 @@ cl::opt<string> DBInfo("dbinfo",
 cl::opt<string> Ligands("ligs", cl::desc("[dbcreateserverdir] Text file listing locations of molecules"));
 cl::opt<bool> NoIndex("noindex",cl::desc("[dbcreateserverdir] Do not create indices"), cl::init(false));
 
-typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&, Excluder& excluder);
+typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&, ShapeConstraints& excluder);
 
-static void pharmaNoOutput(ostream&, vector<PharmaPoint>&, Excluder& excluder)
+static void pharmaNoOutput(ostream&, vector<PharmaPoint>&, ShapeConstraints& excluder)
 {
 }
 
-static void pharmaTxtOutput(ostream& out, vector<PharmaPoint>& points, Excluder& excluder)
+static void pharmaTxtOutput(ostream& out, vector<PharmaPoint>& points, ShapeConstraints& excluder)
 {
 	for (unsigned i = 0, n = points.size(); i < n; i++)
 		out << points[i] << "\n";
 }
 
-static void pharmaJSONOutput(ostream& out, vector<PharmaPoint>& points, Excluder& excluder)
+static void pharmaJSONOutput(ostream& out, vector<PharmaPoint>& points, ShapeConstraints& excluder)
 {
 	Json::Value root;
 	convertPharmaJson(root, points);
@@ -137,7 +137,7 @@ static void pharmaJSONOutput(ostream& out, vector<PharmaPoint>& points, Excluder
 	writer.write(out, root);
 }
 
-static void pharmaSDFOutput(ostream& out, vector<PharmaPoint>& points, Excluder& excluder)
+static void pharmaSDFOutput(ostream& out, vector<PharmaPoint>& points, ShapeConstraints& excluder)
 {
 	OBConversion conv;
 	conv.SetOutFormat("SDF");
@@ -207,7 +207,7 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 		{
 			ifstream in(fname.c_str());
 			vector<PharmaPoint> points;
-			Excluder excluder;
+			ShapeConstraints excluder;
 
 			if (filesystem::extension(fname) == ".json"
 					|| filesystem::extension(fname) == ".query")
@@ -281,7 +281,7 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 				}
 				else
 					getPharmaPoints(pharmas, mol, points);
-				Excluder dummy;
+				ShapeConstraints dummy;
 				if (!Quiet)
 					pharmaTxtOutput(cout, points, dummy);
 				outfn(out, points, dummy);

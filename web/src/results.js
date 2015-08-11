@@ -29,6 +29,7 @@ Pharmit.Results = (function() {
 		//private variables and functions
 		var resultsdiv = this.div = $('<div>').addClass('pharmit_results pharmit_overlay').appendTo(element);
 		var phresults = null;
+		var shresults = null;
 		var minresults = null;
 		
 		
@@ -38,8 +39,22 @@ Pharmit.Results = (function() {
 		this.phquery = function(qobj) {
 			// cancel current query first
 			phresults.cancel();
+			shresults.cancel();
+			shresults.hide();
 			//start provided query
 			phresults.query(qobj);						
+			//show div
+			this.show();
+		};
+		
+		//perform a shape query
+		this.shquery = function(qobj) {
+			// cancel current query first
+			shresults.cancel();
+			phresults.cancel();
+			phresults.hide();
+			//start provided query
+			shresults.query(qobj);						
 			//show div
 			this.show();
 		};
@@ -143,7 +158,11 @@ Pharmit.Results = (function() {
 		minresults = new Pharmit.MinResults(this, viewer);
 		
 		//pharmacophore results
-		phresults = new Pharmit.PhResults(this, viewer, minresults);		
+		phresults = new Pharmit.SearchResults(this, viewer, minresults);	
+		phresults.hide();
+		//shape results
+		shresults = new Pharmit.SearchResults(this, viewer, minresults, "shape");
+		shresults.hide();
 
 		resultsdiv.hide(); //wait for query
 		if(resultsdiv.is(":visible")) {

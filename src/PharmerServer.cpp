@@ -237,6 +237,7 @@ void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 			("startquery",shared_ptr<Command>(new StartQuery(queries, LOG, logmutex, logdirpath,pharmas)))
 					("hasreceptor", shared_ptr<Command>(new HasReceptor(LOG, logmutex,logdirpath)))
 					("setreceptor", shared_ptr<Command>(new SetReceptor(LOG, logmutex,logdirpath)))
+					("getmesh", shared_ptr<Command>(new GetMesh(LOG, logmutex,logdirpath)))
 					("cancelquery",shared_ptr<Command>(new CancelQuery(LOG, logmutex, queries)))
 					("getdata",shared_ptr<Command>(new GetData(LOG, logmutex, queries)))
 					("getpharma",shared_ptr<Command>(new GetPharma(LOG, logmutex, pharmas, parsers, logdirpath)))
@@ -321,7 +322,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 
 	readPharmaPointsJSON(pharmas, data, queryPoints);
 
-	Excluder excluder;
+	ShapeConstraints excluder;
 	excluder.readJSONExclusion(data);
 
 	//check result - need at least 3 points to define a triangle
@@ -355,6 +356,18 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 			msg = "Unknown subset.";
 			return 0;
 		}
+	}
+
+	if(qp.isshape && !searchers->hasShape)
+	{
+		msg = "Missing shape information.";
+		return 0;
+	}
+
+	if(qp.isshape && !excluder.isFullyDefined())
+	{
+		msg = "Shape search requires that both an inclusive and exclusive shape be defined.";
+		return 0;
 	}
 
 	dbs = searchers->stripes;

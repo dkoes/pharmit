@@ -56,8 +56,13 @@
 #include "shapedb/GSSTreeCreator.h"
 #include "KSamplePartitioner.h"
 #include "packers/Packers.h"
+#include "shapedb/GSSTreeSearcher.h"
+#include "ShapeObj.h"
+
 using namespace std;
 
+class ShapeResults;
+class ShapeConstraints;
 class TripletMatches;
 extern cl::opt<bool> Quiet;
 
@@ -465,7 +470,7 @@ public:
 		initializeDatabases();
 
 		leveler.initialize(&topdown, &packer);
-		shapedb.initialize(dbpath / "shape", 64, 0.5, &leveler);
+		shapedb.initialize(dbpath / "shape", PHARMIT_DIMENSION, PHARMIT_RESOLUTION, &leveler);
 
 		//amount of physical mem
 #if defined(_SC_PHYS_PAGES)
@@ -607,6 +612,8 @@ class PharmerDatabaseSearcher
 	unsigned processCnt;
 	unsigned matchedCnt;
 
+	GSSTreeSearcher shapesearch;
+
 	Json::Value dbinfo;
 	public:
 	PharmerDatabaseSearcher(const boost::filesystem::path& dbp) :
@@ -667,6 +674,9 @@ class PharmerDatabaseSearcher
 	void generateTripletMatches(const vector<vector<QueryTriplet> >& triplets,
 			TripletMatches& Q, bool& stopEarly);
 
+	void generateShapeMatches(const ShapeConstraints& constraints,
+			ShapeResults& results, bool& stopEarly);
+
 	//get mol data, a single conformation, at location
 	bool getMolData(unsigned long location, MolData& mdata, PMolReader& reader)
 	{
@@ -695,6 +705,11 @@ class PharmerDatabaseSearcher
 		return valid;
 	}
 
+	bool hasShape() //has shape information
+	{
+		return shapesearch.size() > 0;
+	}
+
 };
 
 //class for holding databases that have been striped across hard drives
@@ -703,9 +718,10 @@ struct StripedSearchers
 	vector<boost::shared_ptr<PharmerDatabaseSearcher> > stripes;
 	unsigned long totalConfs;
 	unsigned long totalMols;
+	bool hasShape;
 
 	StripedSearchers() :
-			totalConfs(0), totalMols(0)
+			totalConfs(0), totalMols(0), hasShape(true)
 	{
 	}
 

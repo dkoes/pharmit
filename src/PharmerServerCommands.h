@@ -330,6 +330,81 @@ public:
 	}
 };
 
+class GetMesh: public Command
+{
+	boost::filesystem::path logdirpath;
+
+public:
+	GetMesh(FILE * l, SpinMutex& lm, const boost::filesystem::path& ldp) :
+			Command(l, lm), logdirpath(ldp)
+	{
+	}
+
+	void execute(Cgicc& CGI, FastCgiIO& IO)
+	{
+		using namespace boost;
+		if (!cgiTagExists(CGI, "json"))
+		{
+			//no query
+			sendError(IO, CGI, "Invalid syntax. No query data.");
+		}
+		else
+		{
+			Json::Value root; // will contains the root value after parsing.
+			Json::Reader reader;
+			bool parsingSuccessful = reader.parse(cgiGetString(CGI,
+					"json"), root);
+			if (!parsingSuccessful)
+			{
+				sendError(IO, CGI,
+						"Invalid query. Could not parse query data.");
+			}
+			else
+			{
+				//check for memoized receptor
+				if (root.isMember("receptorid"))
+				{
+					if (!root["receptor"].isString()
+							|| root["receptor"].asString().length() == 0)
+					{
+						string recstr;
+						filesystem::path rname = logdirpath
+								/ root["receptorid"].asString();
+						//not sure what good a mutex would do here..
+						if (filesystem::exists(rname))
+						{
+							ifstream rec(rname.string().c_str());
+							stringstream str;
+							str << rec.rdbuf();
+							root["receptor"] = str.str();
+						}
+					}
+
+					ShapeConstraints excluder;
+					excluder.readJSONExclusion(root);
+					Json::Value mesh;
+
+					if(cgiGetString(CGI, "type") == "exclusive")
+					{
+						mesh["tolerance"] = root["extolerance"];
+						excluder.getExclusiveMesh(mesh);
+					}
+					else if(cgiGetString(CGI, "type") == "inclusive")
+					{
+						mesh["tolerance"] = root["intolerance"];
+						excluder.getInclusiveMesh(mesh);
+					}
+
+					IO << HTTPPlainHeader();
+					Json::FastWriter writer;
+					IO << writer.write(mesh);
+				}
+			}
+		}
+	}
+};
+
+
 class CancelQuery: public QueryCommand
 {
 public:
@@ -468,7 +543,7 @@ public:
 				//a pharmacophore query format
 				stringstream str(filedata);
 				vector<PharmaPoint> points;
-				Excluder excluder;
+				ShapeConstraints excluder;
 				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
 					if (points.size() > 25)

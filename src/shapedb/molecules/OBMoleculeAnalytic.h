@@ -137,9 +137,14 @@ public:
 		return false;
 	}
 
-	//computes a set of solitary grid points that represent the interaction between
+	//computes a set of points that represent the interaction between
 	//this ligand and the provided receptor in some way
-	void computeInteractionGridPoints(OBAMolecule& receptor, MGrid& grid,
+	void computeInteractionPoints(OBMol& rmol, vector<Eigen::Vector3d>& points,
+			double interactionDist=6.0, double maxClusterDist=4.0,
+			unsigned minClusterPoints=3.0);
+
+	//takes interaction points and puts them in a grid
+	void computeInteractionGridPoints(OBMol& rmol, MGrid& grid,
 			double interactionDist, double maxClusterDist,
 			unsigned minClusterPoints, double interactionPointRadius);
 

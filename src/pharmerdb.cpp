@@ -41,6 +41,8 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "SminaConverter.h"
 #include "ShapeObj.h"
+#include "ShapeResults.h"
+#include "ShapeConstraints.h"
 
 using namespace boost;
 using namespace std;
@@ -456,8 +458,6 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid,
 	if (mol.NumAtoms() == 0) //skipped
 		return;
 
-	mol.Center();
-
 	if (ReduceConfs > 0)
 	{
 		while (mol.NumConformers() > (int) ReduceConfs)
@@ -477,6 +477,13 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid,
 	//calculate properties
 	MolProperties props;
 	props.calculate(mol, uniqueid);
+
+	//store conformers aligned to inertial moments
+	for(unsigned i = 0; i < nc; i++)
+	{
+		mol.SetConformer(i);
+		ShapeObj::normalizeMol(mol);
+	}
 
 	if (mol.NumConformers() != (int) nc)
 	{
@@ -993,6 +1000,9 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	//property data
 	MolProperties::initializeReader(dbpath, props);
 	valid = true;
+
+	filesystem::path shape = dbpath / "shape";
+	shapesearch.load(shape);
 }
 
 unsigned PharmerDatabaseSearcher::getBinCnt(unsigned pclass, unsigned i,
@@ -1089,7 +1099,6 @@ void PharmerDatabaseSearcher::queryProcessPoints(QueryInfo& t,
 	for (const ThreePointData *itr = start; itr != end; itr++)
 	{
 		unsigned mid = getBaseMID(itr->molID());
-//cout << " Match "; dump(cout, *itr);
 		if (t.M.add(mid, *itr, t.triplet, t.which))
 		{
 			cnt++;
@@ -1178,6 +1187,23 @@ void PharmerDatabaseSearcher::queryIndex(QueryInfo& t, const GeoKDPage *page,
 	}
 }
 
+
+void PharmerDatabaseSearcher::generateShapeMatches(const ShapeConstraints& constraints,
+		ShapeResults& results, bool& stopEarly)
+{
+	//create tree version of constraints
+	GSSTreeSearcher::ObjectTree small = shared_ptr<const MappableOctTree>(
+					MappableOctTree::createFromGrid(constraints.getInclusiveGrid()), free);
+	shared_ptr<MappableOctTree> big = shared_ptr<MappableOctTree>(
+					MappableOctTree::createFromGrid(constraints.getExclusiveGrid()), free);
+	GSSTreeSearcher::ObjectTree lig = shared_ptr<const MappableOctTree>(
+					MappableOctTree::createFromGrid(constraints.getLigandGrid()), free);
+
+	big->invert();
+
+	shapesearch.dc_search(small, big, lig, true, results);
+}
+
 //put all matching triplets into Q
 //each triplet is expanded to get all overlapping trips
 //this is intentionally not multi-threaded - performance-wise it's better to
@@ -1194,7 +1220,6 @@ void PharmerDatabaseSearcher::generateTripletMatches(const vector<vector<
 		for (unsigned t = 0, nt = triplets[i].size(); t < nt; t++)
 		{
 			const QueryTriplet& trip = triplets[i][t];
-//cout << "Searching "; trip.dump(); cout << "\n";
 			unsigned pclass = tindex(trip.getPharma(0), trip.getPharma(1),
 					trip.getPharma(2));
 			const GeoKDPage *pages = geoDataArrays[pclass].begin();

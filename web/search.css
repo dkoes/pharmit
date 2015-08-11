@@ -162,7 +162,6 @@ body {
     overflow: hidden;
 }
 .pharmit_bottomloaders button {
-
     margin-right: 0.5em;
     margin-left: 0.5em;
 }
@@ -228,6 +227,9 @@ body {
 	color: gray;
 }
 
+.pharmit_styleselector {
+	width: 21.5em;
+}
 .pharmit_shapeconstraints input {
 	width: 2.5em;
 }
@@ -460,12 +462,9 @@ body {
 	float: none;
 }
 
-.pharmit_shapemodetable {
-	border-collapse: collapse;
-}
 .pharmit_shapemodediv {
-    padding: 0.5em 0em 0.5em 1.5em;
-
+    padding: 0em 0.5em 0.5em 0.5em;
+    text-align: center;
 }
 
 #points-indiv .pharmit_featurediv, #points-exdiv .pharmit_featurediv {
@@ -482,6 +481,19 @@ body {
     padding: 0;
 }
 
+.pharmit_meshstylediv {
+	padding-top: 0.5em;
+}
+
+.pharmit_meshstylediv .ui-state-default {
+	color: #555;
+	font-weight: normal;
+}
+
+.pharmit_meshstylediv .ui-state-active {
+    color: #000;
+    font-weight: normal;
+}
 
 .pharmit_surfacetransparencydiv {
 	width: 100%;
