@@ -349,8 +349,10 @@ Pharmit.Viewer = (function() {
 		
 		
 		this.updateMesh = function(m, newstyle) {
-			if(m.updateStyle) m.updateStyle(newstyle);
-			viewer.render();
+			if(m) {
+				if(m.updateStyle) m.updateStyle(newstyle);
+				viewer.render();
+			}
 		};
 		
 		//removes previously created mesh object m

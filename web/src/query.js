@@ -327,7 +327,7 @@ Pharmit.Query = (function() {
 			ret.ligand = ligandData;
 			ret.ligandFormat = ligandName;
 			
-			if(!receptorKey) ret.receptor = receptorData; //send full receptor
+			if(!receptorKey || !trimreceptor) ret.receptor = receptorData; //send full receptor
 			ret.recname = receptorName;
 			ret.receptorid = receptorKey;
 			
@@ -779,10 +779,11 @@ Pharmit.Query = (function() {
 			shapeMode = 'filter';
 			shapeselect.button();
 			
-			shapeselect.click(function() {
+			//setup button according to itsvalue
+			shapeselect.change(function() {
+				shapeMode = this.value;
 				if(shapeMode == 'filter') {
 					shapeMode = 'search';
-					this.value = shapeMode;
 					shapeselect.button("option","label","Shape Search -&gt; Pharmacophore Filter");
 					$('.pharmit_shapefiltertext').hide();
 					$('.pharmit_shapesearchtext').show();
@@ -790,14 +791,25 @@ Pharmit.Query = (function() {
 					featurenone.show();
 				} else { //filter
 					shapeMode = 'filter';
-					this.value = shapeMode;
 					shapeselect.button("option","label","Pharmacophore Search -&gt; Shape Filter");
 					$('.pharmit_shapefiltertext').show();
 					$('.pharmit_shapesearchtext').hide();
 					featuregroup.show();
 					featurenone.hide();
 				}
-				shapeselect.button("refresh");	       
+				shapeselect.button("refresh");	 
+			});
+			shapeselect.val("filter");
+			
+			//invert value on click
+			shapeselect.click(function() {
+				
+				if(shapeMode == 'filter') {
+					this.value = shapeMode;
+				} else { //filter
+					this.value = shapeMode;
+				}
+				shapeselect.change();      
 
 			});
 			

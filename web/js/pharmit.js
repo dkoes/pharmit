@@ -1620,7 +1620,7 @@ Pharmit.Query = (function() {
 			ret.ligand = ligandData;
 			ret.ligandFormat = ligandName;
 			
-			if(!receptorKey) ret.receptor = receptorData; //send full receptor
+			if(!receptorKey || !trimreceptor) ret.receptor = receptorData; //send full receptor
 			ret.recname = receptorName;
 			ret.receptorid = receptorKey;
 			
@@ -2072,10 +2072,11 @@ Pharmit.Query = (function() {
 			shapeMode = 'filter';
 			shapeselect.button();
 			
-			shapeselect.click(function() {
+			//setup button according to itsvalue
+			shapeselect.change(function() {
+				shapeMode = this.value;
 				if(shapeMode == 'filter') {
 					shapeMode = 'search';
-					this.value = shapeMode;
 					shapeselect.button("option","label","Shape Search -&gt; Pharmacophore Filter");
 					$('.pharmit_shapefiltertext').hide();
 					$('.pharmit_shapesearchtext').show();
@@ -2083,14 +2084,25 @@ Pharmit.Query = (function() {
 					featurenone.show();
 				} else { //filter
 					shapeMode = 'filter';
-					this.value = shapeMode;
 					shapeselect.button("option","label","Pharmacophore Search -&gt; Shape Filter");
 					$('.pharmit_shapefiltertext').show();
 					$('.pharmit_shapesearchtext').hide();
 					featuregroup.show();
 					featurenone.hide();
 				}
-				shapeselect.button("refresh");	       
+				shapeselect.button("refresh");	 
+			});
+			shapeselect.val("filter");
+			
+			//invert value on click
+			shapeselect.click(function() {
+				
+				if(shapeMode == 'filter') {
+					this.value = shapeMode;
+				} else { //filter
+					this.value = shapeMode;
+				}
+				shapeselect.change();      
 
 			});
 			
@@ -2659,8 +2671,8 @@ Pharmit.SearchResults = (function() {
 						                }
 						            ],
 						 language: {
-							 emptyTable: "Searching "+numeral(ret.numMols).format('0,0')+
-							 	" molecules and "+numeral(ret.numConfs).format('0,0')+" conformers...",
+							 emptyTable: "<span class='pharmit_pulse'>Searching "+numeral(ret.numMols).format('0,0')+
+							 	" molecules and "+numeral(ret.numConfs).format('0,0')+" conformers...</span>",
 							 	infoFiltered: '',
 							 	infoEmpty: "",
 							 	info: "<span class='pharmit_pulse'>Searching...</span>"
@@ -5503,8 +5515,10 @@ Pharmit.Viewer = (function() {
 		
 		
 		this.updateMesh = function(m, newstyle) {
-			if(m.updateStyle) m.updateStyle(newstyle);
-			viewer.render();
+			if(m) {
+				if(m.updateStyle) m.updateStyle(newstyle);
+				viewer.render();
+			}
 		};
 		
 		//removes previously created mesh object m
