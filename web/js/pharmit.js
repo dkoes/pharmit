@@ -1311,7 +1311,7 @@ var Pharmit = Pharmit || {};
 
 Pharmit.Query = (function() {
 	
-	var shapemodeid = "ShapeModeSelect";
+	var shapeMode = "filter";
 	var defaultFeature = {name:"Hydrophobic",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 	var defaultInShapeFeature = {name:"InclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
 	var defaultExShapeFeature = {name:"ExclusionSphere",x:0,y:0,z:0,radius:1.0,enabled:true,vector_on:0,minsize:"",maxsize:"",svector:null,hasvec:false};
@@ -1339,7 +1339,7 @@ Pharmit.Query = (function() {
 		var doSearch = function() {
 			var qobj = getQueryObj(true);
 			
-			if($('#'+shapemodeid).val() == 'search') {
+			if(shapeMode == 'search') {
 				results.shquery(qobj);
 			} else {
 				//results manages queries
@@ -2066,22 +2066,24 @@ Pharmit.Query = (function() {
 		
 		//setup select menu for choosing search mode
 		var prependModeSelect = function(header) {
+			var shapemodeid = 'ShapeModeSelect';
 			var shapemodediv = $('<div>').prependTo(header).addClass('pharmit_shapemodediv');					
 			var shapeselect = $('<button name="'+shapemodeid+'" id="'+shapemodeid+' value="filter">Pharmacophore Search -&gt; Shape Filter</button>').addClass('pharmit_styleselector').appendTo(shapemodediv);
-			
+			shapeMode = 'filter';
 			shapeselect.button();
-			shapeselect.val("filter");
 			
 			shapeselect.click(function() {
-				if(this.value == 'filter') {
-					this.value = 'search';
+				if(shapeMode == 'filter') {
+					shapeMode = 'search';
+					this.value = shapeMode;
 					shapeselect.button("option","label","Shape Search -&gt; Pharmacophore Filter");
 					$('.pharmit_shapefiltertext').hide();
 					$('.pharmit_shapesearchtext').show();
 					featuregroup.hide();
 					featurenone.show();
 				} else { //filter
-					this.value = 'filter';
+					shapeMode = 'filter';
+					this.value = shapeMode;
 					shapeselect.button("option","label","Pharmacophore Search -&gt; Shape Filter");
 					$('.pharmit_shapefiltertext').show();
 					$('.pharmit_shapesearchtext').hide();
