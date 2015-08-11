@@ -564,7 +564,7 @@ bool PharmerQuery::loadResults()
 	}
 
 //filter
-	sortResults(params.sort, false);
+	sortResults(params.sort, params.reverseSort);
 	reduceResults();
 
 	if (params.maxHits != 0 && results.size() > params.maxHits)

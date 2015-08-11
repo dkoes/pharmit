@@ -64,6 +64,7 @@ struct QueryParameters
 	unsigned orientationsPerConf;
 	unsigned maxHits; //total returned hits
 	SortTyp sort; //for determining how to truncate
+	bool reverseSort;
 	//add support for more later
 
 	double minWeight;
@@ -81,7 +82,7 @@ struct QueryParameters
 
 	QueryParameters() :
 		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),
-		sort(SortType::Undefined), minWeight(0), maxWeight(UINT_MAX), reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX), isshape(false)
+		sort(SortType::Undefined), reverseSort(false), minWeight(0), maxWeight(UINT_MAX), reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX), isshape(false)
 	{
 
 	}
@@ -108,7 +109,7 @@ struct QueryParameters
 
 	//extract parameters from json
 	QueryParameters(Json::Value& data) :
-		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),
+		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),sort(SortType::Undefined), reverseSort(false),
 		minWeight(0), maxWeight(HUGE_VAL),reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX), isshape(false)
 	{
 		if (data["maxRMSD"].isNumeric())
@@ -144,6 +145,12 @@ struct QueryParameters
 
 		if(data["ShapeModeSelect"].isString() && data["ShapeModeSelect"].asString() == "search")
 			isshape = true; //shape search
+
+		//this sort if for truncating, do something reasonable (close to query)
+		//TODO: specify in query object
+		sort = SortType::RMSD;
+		reverseSort = isshape;
+
 
 		addPropFilter(MolProperties::LogP, "logp", data);
 		addPropFilter(MolProperties::PSA, "psa", data);
