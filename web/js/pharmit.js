@@ -1540,20 +1540,6 @@ Pharmit.Query = (function() {
  
 			setFeatures(query.points);
 			
-			//get named settings, including visualization
-			$.each(query, function(key,value) {
-				var i = $('input[name='+key+']');
-				if(i.length) {
-					i.val(value).change();
-				}
-				else {
-					i = $('select[name='+key+']');
-					if(i.length) {
-						i.val(value).change();
-					}
-				}
-			});
-			
 			loadReceptor(query.receptor, query.recname);		
 			
 			viewer.setReceptor(receptorData, receptorName);
@@ -1574,10 +1560,38 @@ Pharmit.Query = (function() {
 				ligandData = query.ligand;
 				ligandName = query.ligandFormat;
 			}
-			viewer.setLigand(ligandData, ligandName);
+			viewer.setLigand(ligandData, ligandName);		
 			
-			if(query.backgroundcolor) //this is the id of the correct radio button
-				$('#'+query.backgroundcolor).prop('checked',true).change();
+			//get named settings, including visualization
+			$.each(query, function(key,value) {
+				var i = $('input[name='+key+']');
+				if(i.length) {
+					i.val(value).change();
+				}
+				else {
+					i = $('select[name='+key+']');
+					if(i.length) {
+						i.val(value).change();
+					}
+					else {
+						i = $('button[name='+key+']');
+						if(i.length) {
+							i.val(value).change();
+						}	
+					}
+				}
+			});
+			
+			//set radiobuttons
+			$.each($('.ui-buttonset',querydiv), function(index, elem) {
+				//for every radiobutton set
+				var name = elem.id; //id of buttonset is property
+				if(query[name]) {
+					var id = '#'+query[name];
+					$(id).prop('checked',true).change();
+				}
+			});
+							
 			viewer.setView(query.view);			
 
 		};
@@ -1612,9 +1626,15 @@ Pharmit.Query = (function() {
 				}
 			});
 			
-			//radio buttons have to have the same name, so have to hack around background color
-			ret.backgroundcolor = 'whiteBackground';
-			if($('#blackBackground').prop('checked')) ret.backgroundcolor = 'blackBackground';
+			//radio buttons
+			$.each($('.ui-buttonset',querydiv), function(index, elem) {
+				//for every radiobutton set
+				var name = elem.id; //id of buttonset is property
+				if(name && name.length > 0) {
+					var val = $(':checked', elem).attr('id');
+					ret[name] = val;
+				}
+			});
 			
 			//structures
 			ret.ligand = ligandData;
@@ -1722,7 +1742,7 @@ Pharmit.Query = (function() {
 			intol.spinner({step: 0.5, stop: function() { intol.change();}});
 			intol.val(1);
 			
-			var instylediv = $('<div>').appendTo(liganddiv).addClass('pharmit_meshstylediv');
+			var instylediv = $('<div id="inshapestyle">').appendTo(liganddiv).addClass('pharmit_meshstylediv');
 			$('<input type="radio" id="inshapestyle-hide" name="inshapestyle"><label for="inshapestyle-hide">Hide</label>').appendTo(instylediv)
 				.change(function() {
 					if($(this).prop("checked")) {
@@ -1870,7 +1890,7 @@ Pharmit.Query = (function() {
 			extol.change(function() { updateShapeMesh(extol); });
 			extol.spinner({step: 0.5, stop: function() { extol.change();}});
 			
-			var exstylediv = $('<div>').appendTo(recdiv).addClass('pharmit_meshstylediv');
+			var exstylediv = $('<div id="exshapestyle">').appendTo(recdiv).addClass('pharmit_meshstylediv');
 			$('<input type="radio" id="exshapestyle-hide" name="exshapestyle"><label for="exshapestyle-hide">Hide</label>').appendTo(exstylediv)
 				.change(function() {
 					if($(this).prop("checked")) {
@@ -2072,11 +2092,10 @@ Pharmit.Query = (function() {
 			shapeMode = 'filter';
 			shapeselect.button();
 			
-			//setup button according to itsvalue
+			//setup button according to itsvalue, do not change value
 			shapeselect.change(function() {
 				shapeMode = this.value;
-				if(shapeMode == 'filter') {
-					shapeMode = 'search';
+				if(shapeMode == 'search') {
 					shapeselect.button("option","label","Shape Search -&gt; Pharmacophore Filter");
 					$('.pharmit_shapefiltertext').hide();
 					$('.pharmit_shapesearchtext').show();
@@ -2093,14 +2112,15 @@ Pharmit.Query = (function() {
 				shapeselect.button("refresh");	 
 			});
 			shapeselect.val("filter");
+			shapeselect.change();
 			
 			//invert value on click
 			shapeselect.click(function() {
 				
-				if(shapeMode == 'filter') {
-					this.value = shapeMode;
+				if(this.value == 'filter') {
+					this.value = 'search';
 				} else { //filter
-					this.value = shapeMode;
+					this.value = 'filter';
 				}
 				shapeselect.change();      
 
