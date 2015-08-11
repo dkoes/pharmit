@@ -185,8 +185,8 @@ body {
 }
 
 .pharmit_loaderdiv div {
-	padding-left: 0.75em;
-	padding-right: 0.75em;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
 	padding-bottom: 0.5em;
 }
 
@@ -227,6 +227,9 @@ body {
 	color: gray;
 }
 
+.pharmit_styleselector {
+	width: 21.5em;
+}
 .pharmit_shapeconstraints input {
 	width: 2.5em;
 }

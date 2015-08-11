@@ -83,6 +83,7 @@ public:
 	bool isExcluded(PMol *mol, const RMSDResult& res) const;
 
 	bool isDefined() const { return inclusiveKind != None || exclusiveKind != None; }
+	bool isFullyDefined() const { return inclusiveKind != None && exclusiveKind != None; }
 
 	void clear() { exspheres.clear(); inspheres.clear(); }
 

@@ -2067,42 +2067,30 @@ Pharmit.Query = (function() {
 		//setup select menu for choosing search mode
 		var prependModeSelect = function(header) {
 			var shapemodediv = $('<div>').prependTo(header).addClass('pharmit_shapemodediv');					
-			var shapeselect = $('<select name="'+shapemodeid+'" id="'+shapemodeid+'">').addClass('pharmit_styleselector').appendTo(shapemodediv);
+			var shapeselect = $('<button name="'+shapemodeid+'" id="'+shapemodeid+' value="filter"">Pharmacophore Search -&gt; Shape Filter</button>').addClass('pharmit_styleselector').appendTo(shapemodediv);
 			
-			$('<option value="filter">Pharmacophore Search-&gt;Shape Filter</option>').appendTo(shapeselect);
-			$('<option value="search">Shape Search-&gt;Pharmacophore Filter</option>').appendTo(shapeselect);	
+			shapeselect.button();
 			
-			shapeselect.val("filter");
-			shapeselect.selectmenu({
-				width: '23em', 
-				appendTo: header, 
-				change: function() {
-					shapeselect.change();
-				},
-				position: {my: "left top", at: "left bottom", collision: "flip"}
-			});
-			
-			//workaround firefox bug - remove element style so css stylesheet takes effect
-			shapeselect.selectmenu( "widget" ).css('width','');
-			
-			shapeselect.change(function() {
-				if(this.value == 'search') {
+			shapeselect.click(function() {
+				if(this.value == 'filter') {
+					this.value = 'shape';
+					shapeselect.button("option","label","Shape Search -&gt; Pharmacophore Filter");
 					$('.pharmit_shapefiltertext').hide();
 					$('.pharmit_shapesearchtext').show();
 					featuregroup.hide();
 					featurenone.show();
 				} else { //filter
+					this.value = 'filter';
+					shapeselect.button("option","label","Pharmacophore Search -&gt; Shape Filter");
 					$('.pharmit_shapefiltertext').show();
 					$('.pharmit_shapesearchtext').hide();
 					featuregroup.show();
 					featurenone.hide();
 				}
-				shapeselect.selectmenu("refresh");	       
+				shapeselect.button("refresh");	       
 
 			});
 			
-			shapeselect.change(); //set proper visibility of text after it is created
-
 		};
 		
 		//create a split button from a list of vendors and prepend it to header

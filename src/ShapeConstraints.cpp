@@ -209,6 +209,7 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 		OBMol lig;
 		if(root["ligand"].isString())
 		{
+			ligandGrid.clear();
 			//parse ligand if available and create grid
 			OBConversion conv;
 			string lname = root["ligandFormat"].asString();
@@ -234,6 +235,10 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 			MappableOctTree *tree = MappableOctTree::create(dimension, resolution, obj);
 			tree->makeGrid(ligandGrid, 0.5);
 			delete tree;
+		}
+		else
+		{
+			ligandGrid = includeGrid; //let ligand be spheres if it doesn't exist
 		}
 
 		if(inclusiveKind == Shape)
