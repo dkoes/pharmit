@@ -130,8 +130,8 @@ Pharmit.SearchResults = (function() {
 						                }
 						            ],
 						 language: {
-							 emptyTable: "Searching "+numeral(ret.numMols).format('0,0')+
-							 	" molecules and "+numeral(ret.numConfs).format('0,0')+" conformers...",
+							 emptyTable: "<span class='pharmit_pulse'>Searching "+numeral(ret.numMols).format('0,0')+
+							 	" molecules and "+numeral(ret.numConfs).format('0,0')+" conformers...</span>",
 							 	infoFiltered: '',
 							 	infoEmpty: "",
 							 	info: "<span class='pharmit_pulse'>Searching...</span>"
