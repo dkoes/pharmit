@@ -1,5 +1,5 @@
 /*
- Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Pharmit
  Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
  This program is free software; you can redistribute it and/or
@@ -43,6 +43,7 @@
 #include "ShapeObj.h"
 #include "ShapeResults.h"
 #include "ShapeConstraints.h"
+#include "pharminfo.h"
 
 using namespace boost;
 using namespace std;
@@ -102,37 +103,9 @@ unsigned MolDataCreator::maxIndex = 0;
 void MolDataCreator::processMol(OBMol& mol, MolProperties& props, unsigned mid)
 {
 	//identify pharma
-	vector<vector<PharmaPoint> > mcpoints;
+	mcpoints.size();
+	getPharmaPointsMC(pharmas, mol, mcpoints);
 
-	if (false && mol.HasData("pharmacophores")) //eh, doesn't make things faster, let's be safe and always to the reanalysis
-	{
-		//use precalculated pharmacophore data
-		//this doesn't actually save any time.. need to avoid all the openbabel analysis
-		OBVecData *data =
-				dynamic_cast<OBVecData*>(mol.GetData("pharmacophores"));
-		if (data)
-		{
-			const vector<string>& pharmtext = data->GetGenericValue();
-			if (mol.NumConformers() == (int) pharmtext.size())
-			{
-				mcpoints.resize(pharmtext.size());
-				for (unsigned i = 0, n = pharmtext.size(); i < n; i++)
-				{
-					stringstream phstrm(pharmtext[i]);
-					PharmaPoint pt;
-					while (pt.read(pharmas, phstrm))
-					{
-						mcpoints[i].push_back(pt);
-					}
-				}
-			}
-		}
-	}
-
-	if (mcpoints.size() == 0) //nothing precalculated, or something off with precalculated
-	{
-		getPharmaPointsMC(pharmas, mol, mcpoints);
-	}
 
 	if (mcpoints.size() > 0)
 		props.setHB(mcpoints[0]); //hb feature cnts are not conformer specific
@@ -365,6 +338,12 @@ void PharmerDatabaseCreator::initializeDatabases()
 	sminaData = fopen(smdpath.string().c_str(), "w+");
 	assert(sminaData);
 
+
+	filesystem::path pipath = dbpath / "pharmInfo";
+	pharmInfoData = fopen(pipath.string().c_str(), "w+");
+	assert(pharmInfoData);
+
+
 	//bincnts
 	filesystem::path binpath = dbpath;
 	binpath /= "binCnts";
@@ -525,9 +504,9 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid,
 
 		//shape data
 		minfo.molPos = pos;
+		minfo.pharmPos = writePharmacophoreInfo(pharmInfoData, mdc.getConfFeatures(i),pharmas);
 		mol.SetConformer(i);
-		ShapeObj shobj(mol, minfo, shapedb.getDimension(),
-				shapedb.getResolution());
+		ShapeObj shobj(mol, minfo, shapedb.getDimension(), shapedb.getResolution());
 		shapedb.addObject(shobj);
 	}
 
@@ -962,6 +941,14 @@ void PharmerDatabaseSearcher::initializeDatabases()
 		sminaData.map(smData.string(), true, true);
 	}
 
+	//pharmacophore info
+	filesystem::path phInfo = dbpath / "pharmInfo";
+	if (filesystem::exists(phInfo))
+	{
+		pharmInfoData.map(phInfo.string(), true, true);
+	}
+
+
 	//mids
 	filesystem::path mpath = dbpath;
 	mpath /= "mids";
@@ -1284,4 +1271,16 @@ void PharmerDatabaseSearcher::getSminaData(unsigned long molloc, ostream& out)
 	memcpy(&sz, sminaData.begin() + sminaloc, sizeof(unsigned)); //size of smina data
 	out.write(sminaData.begin() + sminaloc + sizeof(unsigned), sz);
 }
+
+//given a location in pharmInfoData and a query, check to see if the pharmacophore at phlocation
+//matches the query (which is assumed to be aligned to already match the pharmacophore)
+bool PharmerDatabaseSearcher::alignedPharmasMatch(unsigned long phlocation, const vector<PharmaPoint>& query)
+{
+	if(pharmInfoData.length() == 0) return true; //gracefully fail
+	if(phlocation >= pharmInfoData.length()) abort(); //not graceful
+
+	return pharmacophoreMatchesQuery(pharmInfoData.begin()+phlocation, query, pharmas);
+
+}
+
 

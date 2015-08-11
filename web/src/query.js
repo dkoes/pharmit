@@ -36,7 +36,6 @@ Pharmit.Query = (function() {
 		var exshapefeatures = null;
 		
 		var featuregroup = null;
-		var featurenone = null;
 		var receptorData = null;
 		var receptorName = null; //filename (need ext)
 		var receptorKey = null; //md5 key to avoid transfering full structure
@@ -806,15 +805,11 @@ Pharmit.Query = (function() {
 					shapeselect.button("option","label","Shape Search -&gt; Pharmacophore Filter");
 					$('.pharmit_shapefiltertext').hide();
 					$('.pharmit_shapesearchtext').show();
-					featuregroup.hide();
-					featurenone.show();
 				} else { //filter
 					shapeMode = 'filter';
 					shapeselect.button("option","label","Pharmacophore Search -&gt; Shape Filter");
 					$('.pharmit_shapefiltertext').show();
 					$('.pharmit_shapesearchtext').hide();
-					featuregroup.show();
-					featurenone.hide();
 				}
 				shapeselect.button("refresh");	 
 			});
@@ -980,7 +975,6 @@ Pharmit.Query = (function() {
 		var body = $('<div>').appendTo(querydiv).addClass("pharmit_querybody");
 		var featureheading = $('<div>Pharmacophore</div>').appendTo(body).addClass('pharmit_heading');
 		featuregroup = $('<div>').appendTo(body);
-		featurenone = $('<div>Pharmacophore filtering of aligned shape hits currently not implemented.</div>').addClass('pharmit_disabledmessage').appendTo(body);
 		features = $('<div>').appendTo(featuregroup);
 		features.accordion({header: "> div > h3", 
 			animate: true, 

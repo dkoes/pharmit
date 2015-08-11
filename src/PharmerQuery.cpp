@@ -1,5 +1,5 @@
 /*
- Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Pharmit
  Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
  This program is free software; you can redistribute it and/or
@@ -375,7 +375,7 @@ void PharmerQuery::thread_shapeMatch(PharmerQuery *query)
 		MTQueue<CorrespondenceResult*>& corrQ =	query->corrsQs[db];
 		corrQ.addProducer();
 
-		ShapeResults shapes(query->databases[db], corrQ, query->coralloc, query->params, query->excluder, db, query->databases.size());
+		ShapeResults shapes(query->databases[db], query->points, corrQ, query->coralloc, query->params, query->excluder, db, query->databases.size());
 		pharmdb.generateShapeMatches(query->excluder, shapes, query->stopQuery);
 		corrQ.removeProducer();
 	}

@@ -1,5 +1,5 @@
 /*
-Pharmer: Efficient and Exact 3D Pharmacophore Search
+Pharmit
 Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
 This program is free software; you can redistribute it and/or
@@ -326,7 +326,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	excluder.readJSONExclusion(data);
 
 	//check result - need at least 3 points to define a triangle
-	if (queryPoints.size() < 3)
+	if (queryPoints.size() < 3 && !qp.isshape)
 	{
 		msg = "Invalid query.  Three features are required.";
 		return 0;

@@ -23,12 +23,15 @@ class ShapeResults: public Results
 	CorAllocator& alloc;
 	const QueryParameters& qparams;
 
+	vector<PharmaPoint> points; //pharmacophore query points after alignment to grid
+
 	unsigned db;
 	unsigned numdb;
 	RMSDResult defaultR; //all molecules have same transformation
 
 public:
-	ShapeResults(boost::shared_ptr<PharmerDatabaseSearcher>& dptr, MTQueue<CorrespondenceResult*> & Q, CorAllocator& ca,
+	ShapeResults(boost::shared_ptr<PharmerDatabaseSearcher>& dptr, const vector<PharmaPoint>& querypoints,
+			MTQueue<CorrespondenceResult*> & Q, CorAllocator& ca,
 			const QueryParameters& qp, const ShapeConstraints& cons, unsigned whichdb, unsigned totaldb);
 	virtual ~ShapeResults() {}
 

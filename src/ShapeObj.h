@@ -29,21 +29,22 @@ class ShapeObj: public OBAMolecule
 	{
 
 		unsigned long molPos : TPD_MOLDATA_BITS; //40 bits
+		unsigned long pharmPos : TPD_MOLDATA_BITS; //40 bits - pharmacophore information
 		unsigned weight : WEIGHT_BITS; //10 bits
 		unsigned nrot : ROTATABLE_BITS; //4 bits
-		unsigned extra :64 - (TPD_MOLDATA_BITS + WEIGHT_BITS + ROTATABLE_BITS);
+		unsigned extra :96 - (2*TPD_MOLDATA_BITS + WEIGHT_BITS + ROTATABLE_BITS);
 
 		MolInfo() :
-				molPos(0), weight(0), nrot(0), extra(0)
+				molPos(0), pharmPos(0), weight(0), nrot(0), extra(0)
 		{
 		}
 		MolInfo(OpenBabel::OBMol& m, unsigned long mPos) :
-				molPos(mPos), extra(0)
+				molPos(mPos), pharmPos(0), extra(0)
 		{
 			weight = ThreePointData::reduceWeight(m.GetMolWt());
 			nrot = ThreePointData::reduceRotatable(countRotatableBonds(m));
 		}
-	};
+	}__attribute__((__packed__));
 
 	MolInfo minfo;
 

@@ -1,5 +1,5 @@
 /*
- Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Pharmit
  Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
  This program is free software; you can redistribute it and/or

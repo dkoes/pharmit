@@ -9,13 +9,37 @@
 #include "ShapeObj.h"
 
 ShapeResults::ShapeResults(boost::shared_ptr<PharmerDatabaseSearcher>& dptr,
+		const vector<PharmaPoint>& querypoints,
 		MTQueue<CorrespondenceResult*>& Q, CorAllocator& ca,
 		const QueryParameters& qp,
 		const ShapeConstraints& cons, unsigned whichdb, unsigned totaldb) :
 		dbptr(dptr), resultQ(Q), alloc(ca), qparams(qp), db(whichdb), numdb(totaldb)
 {
-	Affine3d transform = cons.getGridTransform().inverse();
-	defaultR = RMSDResult(0, transform.translation(), transform.rotation());
+	Affine3d transform = cons.getGridTransform();
+	Affine3d itransform = transform.inverse();
+	defaultR = RMSDResult(0, itransform.translation(), itransform.rotation());
+
+	//create query points transformed to grid space
+	points = querypoints;
+
+	for(unsigned i = 0, n = points.size(); i < n; i++)
+	{
+		PharmaPoint& pt = points[i];
+		Vector3d xyz(pt.x, pt.y, pt.z);
+		xyz = transform*xyz;
+		pt.x = xyz.x();
+		pt.y = xyz.y();
+		pt.z = xyz.z();
+
+		//also the vectors!
+		for(unsigned v = 0, nv = pt.vecs.size(); v < nv; v++)
+		{
+			vector3& orig = pt.vecs[v];
+			Vector3d vec(orig.x(), orig.y(), orig.z());
+			vec = transform.linear()*vec;
+			orig.Set(vec.x(), vec.y(), vec.z());
+		}
+	}
 }
 
 //add to queue
@@ -48,6 +72,13 @@ void ShapeResults::add(const char *data, double score)
 		{
 			return;
 		}
+	}
+
+	if(points.size() > 0)
+	{
+		//pharmacophore filter
+		if(!dbptr->alignedPharmasMatch(minfo.pharmPos, points))
+			return;
 	}
 
 	CorrespondenceResult *res = alloc.newCorResult();

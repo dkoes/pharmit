@@ -1,5 +1,5 @@
 /*
- Pharmer: Efficient and Exact 3D Pharmacophore Search
+ Pharmit
  Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
 
  This program is free software; you can redistribute it and/or
@@ -160,6 +160,8 @@ class MolDataCreator
 	vector<unsigned> confOffsets; //offset from start of mol for each conformer
 	vector<vector<ThreePointData> > pdatas; //indexed by triplet type
 
+	vector<vector<PharmaPoint> > mcpoints;
+
 	unsigned mid;
 	unsigned char *buffer; //raw data for writing
 	unsigned bufferSize;
@@ -208,6 +210,13 @@ public:
 	{
 		return confOffsets;
 	}
+
+	const vector<PharmaPoint>& getConfFeatures(unsigned c) const
+	{
+		if(c >= mcpoints.size()) abort();
+		return mcpoints[c];
+	}
+
 };
 
 //data for a single conformation, include full mol since this turns out to
@@ -390,6 +399,7 @@ private:
 	FILE *sminaIndex; //map from mol location to location in sminadata
 	FILE *sminaData; //smina formated molecule
 
+	FILE *pharmInfoData; //pharmacphore data for each molecule, indexed into by shape
 	FILE *tmpFiles[NUMTMPFILES]; //for partitioning
 
 	MolProperties::PropFiles propFiles;
@@ -451,10 +461,9 @@ public:
 	PharmerDatabaseCreator(const Pharmas& ps,
 			const boost::filesystem::path& dbp,
 			Json::Value& dbi) :
-			dbpath(dbp), info(NULL), molData(NULL), midList(NULL), pointDataArrays(
-			NULL),
-					pharmas(ps), tindex(ps.size()), molDataWorkQ(32), dbinfo(
-							dbi)
+			dbpath(dbp), info(NULL), molData(NULL), midList(NULL), sminaIndex(NULL),
+			sminaData(NULL), pharmInfoData(NULL), pointDataArrays(NULL),
+			pharmas(ps), tindex(ps.size()), molDataWorkQ(32), dbinfo(dbi)
 	{
 		memset(&stats, 0, sizeof(stats));
 
@@ -496,6 +505,11 @@ public:
 			fclose(molData);
 		if (midList)
 			fclose(midList);
+
+		if(sminaData) fclose(sminaData);
+		if(sminaIndex) fclose(sminaIndex);
+		if(pharmInfoData) fclose(pharmInfoData);
+
 		for (unsigned i = 0, n = pointDataFiles.size(); i < n; i++)
 		{
 			pointDataFiles[i].close();
@@ -588,6 +602,8 @@ class PharmerDatabaseSearcher
 
 	MMappedRegion<pair<unsigned long, unsigned long> > sminaIndex; //maps moldata location to sminadata
 	MMappedRegion<char> sminaData;
+
+	MMappedRegion<char> pharmInfoData;
 
 	MolProperties::MolPropertyReader props;
 
@@ -695,6 +711,8 @@ class PharmerDatabaseSearcher
 	{
 		return pharmas;
 	}
+
+	bool alignedPharmasMatch(unsigned long phlocation, const vector<PharmaPoint>& query);
 
 	string getName()
 	{
