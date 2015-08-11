@@ -439,11 +439,15 @@ void PharmerQuery::cancelSmina()
 	}
 }
 
-bool PharmerQuery::finished() //okay to deallocate
+bool PharmerQuery::threadsDone()
 {
 	checkThreads();
+	return tripletMatchThread == NULL && shapeMatchThread == NULL;
+}
 
-	if (tripletMatchThread != NULL || shapeMatchThread != NULL)
+bool PharmerQuery::finished() //okay to deallocate
+{
+	if (!threadsDone())
 		return false;
 	if (inUseCnt > 0)
 		return false;
@@ -544,7 +548,7 @@ bool PharmerQuery::loadResults()
 	access();
 	SpinLock lock(mutex);
 	checkThreads();
-	bool moretoread = false;
+	bool moretoread = !threadsDone();
 	for (unsigned i = 0, n = corrsQs.size(); i < n; i++)
 	{
 		vector<CorrespondenceResult*> corrs;

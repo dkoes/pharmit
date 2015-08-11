@@ -120,6 +120,7 @@ class PharmerQuery
 			QueryTriplet> >& trips);
 	bool loadResults();
 	void checkThreads();
+	bool threadsDone();
 
 	void setExtraInfo(QueryResult& r);
 
