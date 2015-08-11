@@ -109,7 +109,7 @@ struct QueryParameters
 	//extract parameters from json
 	QueryParameters(Json::Value& data) :
 		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),
-		minWeight(0), maxWeight(HUGE_VAL),reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX)
+		minWeight(0), maxWeight(HUGE_VAL),reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX), isshape(false)
 	{
 		if (data["maxRMSD"].isNumeric())
 			maxRMSD = data["maxRMSD"].asDouble();

@@ -360,7 +360,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 
 	if(qp.isshape && !searchers->hasShape)
 	{
-		msg = "Missing shape information.";
+		msg = "Database is missing shape information.";
 		return 0;
 	}
 
