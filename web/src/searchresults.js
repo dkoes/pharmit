@@ -28,11 +28,13 @@ Pharmit.SearchResults = (function() {
 		var query = null;
 		var table = null;
 		var body = null;
+		var timemsg = null;
 		var minimize = null;
 		var save = null;
 		var timeout = null;
 		var results = r;
 		var receptor = null;
+		var queryStart = new Date();
 		
 		//format that provided data (mangle the names appropriately)		
 		var processData = function(data) {
@@ -86,7 +88,7 @@ Pharmit.SearchResults = (function() {
 			};
 			
 			if(qid !== null) postData.oldqid = qid;
-			
+			queryStart = new Date();
 			$.post(Pharmit.server, postData, null, 'json').done(function(ret) {
 				if(ret.status) { //success
 					
@@ -253,10 +255,11 @@ Pharmit.SearchResults = (function() {
 		table.on('xhr.dt', function(e, settings, json) {
 			if(json.finished) {
 				var lang = table.DataTable().settings()[0].oLanguage;
+				var queryTime = (new Date() - queryStart)/1000.0;
 				if(json.recordsTotal === 0) {
 					lang.emptyTable = lang.sEmptyTable = "No results found";
 				} else {
-					lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ hits";								
+					lang.sInfo = "<span title='Query took "+queryTime+" seconds'>Showing _START_ to _END_ of _TOTAL_ hits</span>";								
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
 				}
