@@ -29,13 +29,13 @@ class GSSTreeSearcher
 	float dimension;
 	float resolution;
 
-	void findTweeners(const GSSInternalNode* node, const MappableOctTree* min,
+	unsigned findTweeners(const GSSInternalNode* node, const MappableOctTree* min,
 			const MappableOctTree* max, const MappableOctTree* orig,
-			vector<result_info>& res,
+			Results& res,
 			unsigned level, bool computeDist);
-	void findTweeners(const GSSLeaf* node, const MappableOctTree* min,
+	unsigned findTweeners(const GSSLeaf* node, const MappableOctTree* min,
 			const MappableOctTree* max, const MappableOctTree* orig,
-			vector<result_info>& res,
+			Results& res,
 			bool computeDist);
 
 	struct ObjDist
