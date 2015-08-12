@@ -730,6 +730,7 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 		//for all results
 		vector<QueryResult*> all;
 		DataParameters allparam;
+		allparam.extraInfo = true; //need names
 		getResults(allparam, all);
 		computeBenchmarkStats(all, data["benchmark"]);
 	}
