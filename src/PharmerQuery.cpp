@@ -375,8 +375,8 @@ void PharmerQuery::thread_shapeMatch(PharmerQuery *query)
 		MTQueue<CorrespondenceResult*>& corrQ =	query->corrsQs[db];
 		corrQ.addProducer();
 
-		ShapeResults shapes(query->databases[db], query->points, corrQ, query->coralloc, query->params, query->excluder, db, query->databases.size());
-		pharmdb.generateShapeMatches(query->excluder, shapes, query->stopQuery);
+		ShapeResults shapes(query->databases[db], query->points, corrQ, query->coralloc, query->params, query->excluder, db, query->databases.size(), query->stopQuery);
+		pharmdb.generateShapeMatches(query->excluder, shapes);
 		corrQ.removeProducer();
 	}
 }

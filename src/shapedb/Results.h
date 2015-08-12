@@ -26,6 +26,7 @@ public:
 	virtual void clear()
 	{
 	}
+
 	virtual void add(const char *data, double score) = 0;
 
 	virtual void reserve(unsigned n)

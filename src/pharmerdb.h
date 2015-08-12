@@ -691,7 +691,7 @@ class PharmerDatabaseSearcher
 			TripletMatches& Q, bool& stopEarly);
 
 	void generateShapeMatches(const ShapeConstraints& constraints,
-			ShapeResults& results, bool& stopEarly);
+			ShapeResults& results);
 
 	//get mol data, a single conformation, at location
 	bool getMolData(unsigned long location, MolData& mdata, PMolReader& reader)

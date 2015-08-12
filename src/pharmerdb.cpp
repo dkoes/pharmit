@@ -1176,7 +1176,7 @@ void PharmerDatabaseSearcher::queryIndex(QueryInfo& t, const GeoKDPage *page,
 
 
 void PharmerDatabaseSearcher::generateShapeMatches(const ShapeConstraints& constraints,
-		ShapeResults& results, bool& stopEarly)
+		ShapeResults& results)
 {
 	//create tree version of constraints
 	GSSTreeSearcher::ObjectTree small = shared_ptr<const MappableOctTree>(

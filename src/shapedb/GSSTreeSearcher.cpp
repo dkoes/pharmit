@@ -540,6 +540,7 @@ unsigned GSSTreeSearcher::findTweeners(const GSSInternalNode* node,
 	unsigned ret = 0;
 	for (unsigned i = 0, nc = goodchildren.size(); i < nc; i++)
 	{
+		if(res.stopEarly()) break;
 		const GSSInternalNode::Child *child = goodchildren[i];
 		if (child->isLeafPosition())
 		{

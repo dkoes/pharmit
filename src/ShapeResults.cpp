@@ -12,8 +12,8 @@ ShapeResults::ShapeResults(boost::shared_ptr<PharmerDatabaseSearcher>& dptr,
 		const vector<PharmaPoint>& querypoints,
 		MTQueue<CorrespondenceResult*>& Q, CorAllocator& ca,
 		const QueryParameters& qp,
-		const ShapeConstraints& cons, unsigned whichdb, unsigned totaldb) :
-		dbptr(dptr), resultQ(Q), alloc(ca), qparams(qp), db(whichdb), numdb(totaldb)
+		const ShapeConstraints& cons, unsigned whichdb, unsigned totaldb, bool& stopEarly) :
+		dbptr(dptr), resultQ(Q), alloc(ca), qparams(qp), db(whichdb), numdb(totaldb), stop(stopEarly)
 {
 	Affine3d transform = cons.getGridTransform();
 	Affine3d itransform = transform.inverse();
