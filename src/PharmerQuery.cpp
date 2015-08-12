@@ -721,7 +721,11 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 	if(!notdone && numactives > 0)
 	{
 		//when all done, if we are a benchmark library, compute stats
-		computeBenchmarkStats(r, data["benchmark"]);
+		//for all results
+		vector<QueryResult*> all;
+		DataParameters allparam;
+		getResults(allparam, all);
+		computeBenchmarkStats(all, data["benchmark"]);
 	}
 
 	for (unsigned i = 0, n = r.size(); i < n; i++)
