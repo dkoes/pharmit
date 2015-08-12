@@ -259,7 +259,11 @@ Pharmit.SearchResults = (function() {
 				if(json.recordsTotal === 0) {
 					lang.emptyTable = lang.sEmptyTable = "No results found";
 				} else {
-					lang.sInfo = "<span title='Query took "+queryTime+" seconds'>Showing _START_ to _END_ of _TOTAL_ hits</span>";								
+					lang.sInfo = "<span title='Query took "+queryTime+" seconds'>Showing _START_ to _END_ of _TOTAL_ hits";
+					if(json.benchmark) {
+						lang.sInfo += ". EF: "+numeral(json.benchmark.EF).format('0.00');
+					}
+					lang.sInfo +="</span>";								
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
 				}
