@@ -25,6 +25,7 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1605142182" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.677293852" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
+									<listOptionValue builtIn="false" value="/home/dkoes/git/smina/src/lib"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}/shapedb/molecules&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/rdkit"/>
@@ -75,6 +76,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.1831124545" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="/home/dkoes/git/rdkit/lib"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/rdkit"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.28295272" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -120,6 +122,7 @@
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.639190497" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1817638343" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
+									<listOptionValue builtIn="false" value="/home/dkoes/git/smina/src/lib"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}/shapedb/molecules&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/rdkit"/>
@@ -171,6 +174,7 @@
 								<option id="gnu.cpp.link.option.flags.1373031752" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="" valueType="string"/>
 								<option id="gnu.cpp.link.option.paths.739824985" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="/home/dkoes/git/rdkit/lib"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/rdkit"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1480558148" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -216,6 +220,7 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.218061725" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.452399024" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
+									<listOptionValue builtIn="false" value="/home/dkoes/git/smina/src/lib"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}/shapedb/molecules&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/rdkit"/>
@@ -268,6 +273,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.2009002714" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="/home/dkoes/git/rdkit/lib"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/rdkit"/>
 								</option>
 								<option id="gnu.cpp.link.option.debugging.prof.1255215729" name="Generate prof information (-p)" superClass="gnu.cpp.link.option.debugging.prof" value="false" valueType="boolean"/>

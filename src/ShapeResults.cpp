@@ -45,22 +45,21 @@ ShapeResults::ShapeResults(boost::shared_ptr<PharmerDatabaseSearcher>& dptr,
 //add to queue
 void ShapeResults::add(const char *data, double score)
 {
-	ShapeObj::MolInfo minfo;
-	memcpy(&minfo, data, sizeof(ShapeObj::MolInfo));
+	const ShapeObj::MolInfo *minfo = (const ShapeObj::MolInfo*)data;
 
-	unsigned long loc = minfo.molPos;
+	unsigned long loc = minfo->molPos;
 	unsigned mid = ThreePointData::unpackMolID(loc);
 
 	//filter out unsavory characters
 	//check against query params
-	if(minfo.nrot < qparams.minRot)
+	if(minfo->nrot < qparams.minRot)
 		return;
-	if(minfo.nrot > qparams.maxRot)
+	if(minfo->nrot > qparams.maxRot)
 		return;
 
-	if(minfo.weight < qparams.reducedMinWeight)
+	if(minfo->weight < qparams.reducedMinWeight)
 		return;
-	if(minfo.weight > qparams.reducedMaxWeight)
+	if(minfo->weight > qparams.reducedMaxWeight)
 		return;
 
 	for(unsigned i = 0, n = qparams.propfilters.size(); i < n; i++)
@@ -77,7 +76,7 @@ void ShapeResults::add(const char *data, double score)
 	if(points.size() > 0)
 	{
 		//pharmacophore filter
-		if(!dbptr->alignedPharmasMatch(minfo.pharmPos, points))
+		if(!dbptr->alignedPharmasMatch(minfo->pharmPos, points))
 			return;
 	}
 
@@ -88,8 +87,8 @@ void ShapeResults::add(const char *data, double score)
 	res->molid = mid * numdb + db;
 	res->dbid = mid;
 	res->val = 1.0-score;
-	res->weight = ThreePointData::unreduceWeight(minfo.weight);
-	res->nRBnds = minfo.nrot;
+	res->weight = ThreePointData::unreduceWeight(minfo->weight);
+	res->nRBnds = minfo->nrot;
 	res->rmsd = defaultR;
 	res->rmsd.setValue(1.0-score); //overloading
 
