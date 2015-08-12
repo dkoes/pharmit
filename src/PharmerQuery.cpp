@@ -709,7 +709,7 @@ void PharmerQuery::computeBenchmarkStats(const vector<QueryResult*>& r, Json::Va
 	stat["ACC"] = fixNaN((TP+TN)/(double)(T+F));
 	stat["F1"] = fixNaN(2*TP/(double)(2*TP+FP+FN));
 
-	stat["EF"] = fixNaN(( TP/(double)(TP+FP) ) / (T/(double)F));
+	stat["EF"] = fixNaN(( TP/(double)(TP+FP) ) / (T/(double)totalmols));
 }
 
 
