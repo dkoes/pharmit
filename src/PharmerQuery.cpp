@@ -109,14 +109,13 @@ PharmerQuery::PharmerQuery(
 		return;
 	}
 
-	if (points.size() < 3)
+
+	dbcnt = dbs.size();
+	if (!params.isshape && points.size() < 3)
 	{
 		errorStr = "Require at least three pharmacophore points.";
 		return;
 	}
-
-	dbcnt = dbs.size();
-
 	initializeTriplets();
 }
 
@@ -135,17 +134,14 @@ PharmerQuery::PharmerQuery(
 		return;
 	}
 
-	if (points.size() < 3)
-	{
-		errorStr = "Require at least three pharmacophore points.";
-		return;
-	}
 
 	dbcnt = dbs.size();
 
 	if(dbcnt > 0)
 	{
+		Json::FastWriter writer;
 		const Json::Value& dbinfo = dbs[0]->getJSON();
+
 		if(dbinfo["numactives"].isNumeric())
 		{ //the presence of this field indicates this is a benchmark database with compounds marked as active (in the title)
 			numactives = dbinfo["numactives"].asUInt();
@@ -157,6 +153,11 @@ PharmerQuery::PharmerQuery(
 		}
 	}
 
+	if (points.size() < 3)
+	{
+		errorStr = "Require at least three pharmacophore points.";
+		return;
+	}
 	initializeTriplets();
 }
 
