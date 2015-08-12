@@ -89,12 +89,14 @@ protected:
 public:
 
 	GSSLevelCreator() :
-			partitioner(NULL), packer(NULL), nodePack(0), leafPack(0)
+			partitioner(NULL), packer(NULL), nodePack(0), leafPack(0),
+			packingSize(0), outNodes(NULL), outTrees(NULL)
 	{
 	}
 	GSSLevelCreator(const TopDownPartitioner * part, const Packer *pack,
 			unsigned np, unsigned lp) :
-			partitioner(part), packer(pack), nodePack(np), leafPack(lp)
+			partitioner(part), packer(pack), nodePack(np), leafPack(lp),
+			packingSize(0), outNodes(NULL), outTrees(NULL)
 	{
 	}
 

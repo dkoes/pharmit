@@ -505,6 +505,7 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid,
 		//shape data
 		minfo.molPos = pos;
 		minfo.pharmPos = writePharmacophoreInfo(pharmInfoData, mdc.getConfFeatures(i),pharmas);
+
 		mol.SetConformer(i);
 		ShapeObj shobj(mol, minfo, shapedb.getDimension(), shapedb.getResolution());
 		shapedb.addObject(shobj);

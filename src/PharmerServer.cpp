@@ -332,6 +332,12 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		return 0;
 	}
 
+	if(qp.isshape && queryPoints.size() > 0 && !excluder.isMeaningful())
+	{
+		msg = "Please provide more expressive shape constraints to reduce the number of hits for pharmacophore filtering.";
+		return 0;
+	}
+
 	//identify databases to search
 	vector< boost::shared_ptr<PharmerDatabaseSearcher> > dbs;
 	unsigned numslices = 1;

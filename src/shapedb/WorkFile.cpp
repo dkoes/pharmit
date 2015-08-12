@@ -42,7 +42,9 @@ void WorkFile::switchToMap()
 //deallocate and reset
 void WorkFile::clear()
 {
-	if(file) delete file;
+	if(file) {
+		delete file;
+	}
 	if(mapping) delete mapping;
 	if(map) delete map;
 	file = NULL;

@@ -103,6 +103,20 @@ void ShapeConstraints::makeGrid(MGrid& grid, OBMol& mol, const Affine3d& transfo
 	grid.shrink(shrink);
 }
 
+//return true if the shape constraints actually specify something
+bool ShapeConstraints::isMeaningful() const
+{
+	bool ingood = inclusiveKind != None;
+	if(inclusiveKind == Spheres && inspheres.size() == 0)
+		ingood = false;
+
+	bool exgood = exclusiveKind != None;
+	if(exclusiveKind == Spheres && exspheres.size() == 0)
+		exgood = false;
+
+	return ingood || exgood;
+}
+
 
 //read exclusion sphere points from a json formatted stream
 //and add to excluder

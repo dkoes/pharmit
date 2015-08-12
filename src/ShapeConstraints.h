@@ -84,6 +84,7 @@ public:
 
 	bool isDefined() const { return inclusiveKind != None || exclusiveKind != None; }
 	bool isFullyDefined() const { return inclusiveKind != None && exclusiveKind != None; }
+	bool isMeaningful() const;
 
 	void clear() { exspheres.clear(); inspheres.clear(); }
 

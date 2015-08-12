@@ -700,9 +700,9 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	}
 
 	//portion memory between processes
-  unsigned long memsz = sysconf (_SC_PHYS_PAGES) * sysconf (_SC_PAGESIZE);
-  memsz /= directories.size();
-  memsz /= 2; //only take half of available memory
+	  unsigned long memsz = sysconf (_SC_PHYS_PAGES) * sysconf (_SC_PAGESIZE);
+	  memsz /= directories.size();
+	  memsz /= 2; //only take half of available memory
 
 	//multi-thread (fork actually, due to openbabel) across all prefixes
 	//create databases
@@ -712,55 +712,56 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	{
 		if (d == (nd-1) || fork() == 0)
 		{
-			PharmerDatabaseCreator db(pharmas, directories[d], root);
-			db.setInMemorySize(memsz);
-			OBConversion conv;
+			{ //this is an empty scope created to make sure db's destructor is called before exit
+				PharmerDatabaseCreator db(pharmas, directories[d], root);
+				db.setInMemorySize(memsz);
+				OBConversion conv;
 
-			//now read files
-			for (unsigned i = 0, n = liginfos.size(); i < n; i++)
-			{
-				if( (i%nd) == d )
-				{ //part of our slice
-					const LigandInfo info = liginfos[i];
-					string name = info.file.string();
-					//openbabel's builtin zlib reader seems to use increasing amounts
-					//of memory over time, so use boost's
-					ifstream *uncompressed_inmol = new std::ifstream(name.c_str());
-					iostreams::filtering_stream<iostreams::input> *inmol = new iostreams::filtering_stream<iostreams::input>();
+				//now read files
+				for (unsigned i = 0, n = liginfos.size(); i < n; i++)
+				{
+					if( (i%nd) == d )
+					{ //part of our slice
+						const LigandInfo info = liginfos[i];
+						string name = info.file.string();
+						//openbabel's builtin zlib reader seems to use increasing amounts
+						//of memory over time, so use boost's
+						ifstream *uncompressed_inmol = new std::ifstream(name.c_str());
+						iostreams::filtering_stream<iostreams::input> *inmol = new iostreams::filtering_stream<iostreams::input>();
 
-					std::string::size_type pos = name.rfind(".gz");
-					if (pos != std::string::npos)
-					{
-						inmol->push(iostreams::gzip_decompressor());
-					}
-					inmol->push(*uncompressed_inmol);
-
-
-					OBFormat *format = conv.FormatFromExt(info.file.c_str());
-
-					if(format != NULL)
-					{
-						ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs);
-						OBMol mol;
-
-						while (reader.read(mol))
+						std::string::size_type pos = name.rfind(".gz");
+						if (pos != std::string::npos)
 						{
-							db.addMolToDatabase(mol, info.id, info.name);
+							inmol->push(iostreams::gzip_decompressor());
 						}
+						inmol->push(*uncompressed_inmol);
+
+
+						OBFormat *format = conv.FormatFromExt(info.file.c_str());
+
+						if(format != NULL)
+						{
+							ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs);
+							OBMol mol;
+
+							while (reader.read(mol))
+							{
+								db.addMolToDatabase(mol, info.id, info.name);
+							}
+						}
+
+						delete uncompressed_inmol;
+						delete inmol;
 					}
-
-					delete uncompressed_inmol;
-					delete inmol;
 				}
-			}
 
-			liginfos = vector<LigandInfo>(); //free up memory before building indices
+				liginfos = vector<LigandInfo>(); //free up memory before building indices
 
-			if(!NoIndex)
-			{
-			  db.createSpatialIndex(); //will write stats
-			}
-
+				if(!NoIndex)
+				{
+				  db.createSpatialIndex(); //will write stats
+				}
+			} //destructors called
 			if(d != nd-1)
 				exit(0);
 		}

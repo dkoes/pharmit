@@ -694,6 +694,8 @@ void PharmerQuery::outputMols(ostream& out)
 	PMolReaderSingleAlloc pread;
 	MolData mdata;
 	vector<ASDDataItem> sddata;
+	const char* dataname = "rmsd";
+	if(params.isshape) dataname = "sim";
 
 	for (unsigned i = 0, n = myres.size(); i < n && out; i++)
 	{
@@ -703,7 +705,7 @@ void PharmerQuery::outputMols(ostream& out)
 
 		sddata.clear();
 		sddata.push_back(
-				ASDDataItem("rmsd", lexical_cast<string>(myres[i]->c->val)));
+				ASDDataItem(dataname, lexical_cast<string>(myres[i]->c->val)));
 
 		db->getMolData(loc, mdata, pread);
 		mdata.mol->writeSDF(out, sddata, myres[i]->c->rmsd);
@@ -718,8 +720,9 @@ void PharmerQuery::outputMol(const QueryResult* mol, ostream& out,
 	PMolReaderSingleAlloc pread;
 	MolData mdata;
 	vector<ASDDataItem> sddata;
-
-	sddata.push_back(ASDDataItem("rmsd", lexical_cast<string>(mol->c->val)));
+	const char* dataname = "rmsd";
+	if(params.isshape) dataname = "sim";
+	sddata.push_back(ASDDataItem(dataname, lexical_cast<string>(mol->c->val)));
 
 	shared_ptr<PharmerDatabaseSearcher> db;
 	unsigned long loc = getLocation(mol, db);
