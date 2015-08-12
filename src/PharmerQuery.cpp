@@ -659,6 +659,11 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 	}
 }
 
+//including nan is invalid json, so make sure we wrap all divisions
+static double fixNaN(double d)
+{
+	return isfinite(d) ? d : 0;
+}
 void PharmerQuery::computeBenchmarkStats(const vector<QueryResult*>& r, Json::Value& stat)
 {
 	//we only care about molecules, not conformations - count number of unique
@@ -697,13 +702,13 @@ void PharmerQuery::computeBenchmarkStats(const vector<QueryResult*>& r, Json::Va
 	stat["TN"] = TN;
 	stat["FN"] = FN;
 
-	stat["TPR"] = (double)TP/(double)T;
-	stat["FPR"] = (double)FP/(double)F;
+	stat["TPR"] = fixNaN((double)TP/(double)T);
+	stat["FPR"] = fixNaN((double)FP/(double)F);
 
-	stat["ACC"] = (TP+TN)/(double)(T+F);
-	stat["F1"] = 2*TP/(double)(2*TP+FP+FN);
+	stat["ACC"] = fixNaN((TP+TN)/(double)(T+F));
+	stat["F1"] = fixNaN(2*TP/(double)(2*TP+FP+FN));
 
-	stat["EF"] = ( TP/(double)(TP+FP) ) / (T/(double)F);
+	stat["EF"] = fixNaN(( TP/(double)(TP+FP) ) / (T/(double)F));
 }
 
 
