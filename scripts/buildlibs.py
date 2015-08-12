@@ -96,7 +96,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
         return False;
             
             
-def make_libraries(conn, dbprefixfile,row):
+def make_libraries(conn, dbprefixfile,row,numactives=0):
       #create database info - assumes current directory has ligs.in in it
     which = row['id']
     setStatus(conn, which, "MakeLib","Creating search index")
@@ -110,6 +110,8 @@ def make_libraries(conn, dbprefixfile,row):
         dbinfo['subdir'] = 'Private/%s' % which
     else:
         dbinfo['subdir'] = 'Public/%s' % which
+    if numactives > 0:
+        dbinfo['numactives'] = numactives
     jsonfile = "dbinfo.json"
     f = open(jsonfile,'w')
     f.write(json.dumps(dbinfo,indent=4))
@@ -188,6 +190,12 @@ if __name__ == '__main__':
                 elif os.path.exists(dir+"/input.smi"):
                     os.chdir(dir)
                     setStatus(conn, which, "GenConf","Generating conformers")
+                    #check for a "benchmark" set with actives marked
+                    f = open(dir+"/input.smi")
+                    numactives = 0
+                    for line in f:
+                        if "active" in line:
+                            numactives += 1
                     cmd = "%s --nonames --prefixes %s input.smi > ligs.in 2> conf.err" % (options.createconfs,cprefixfile)
                     print os.getcwd()
                     print cmd
@@ -196,7 +204,7 @@ if __name__ == '__main__':
                         setError(conn,which,"Problem generating conformers")
                         continue
                     
-                    make_libraries(conn, dbprefixfile, row)                    
+                    make_libraries(conn, dbprefixfile, row, numactives)                    
 
                 else:
                     setError(conn, row, "Problem reading input files")
