@@ -183,7 +183,11 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 						double y = jpnt["y"].asDouble();
 						double z = jpnt["z"].asDouble();
 						exspheres.push_back(Sphere(x,y,z,radius));
-						excludeGrid.markXYZSphere(x,y,z,radius);
+
+						//for grid, convert to grid space
+						Vector3d c(x,y,z);
+						c = gridtransform*c;
+						excludeGrid.markXYZSphere(c.x(),c.y(),c.z(),radius);
 					}
 				}
 				else if(inclusiveKind == Spheres && name == "InclusionSphere")
@@ -196,8 +200,11 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 						double x = jpnt["x"].asDouble();
 						double y = jpnt["y"].asDouble();
 						double z = jpnt["z"].asDouble();
+
 						inspheres.push_back(Sphere(x,y,z,radius));
-						includeGrid.markXYZSphere(x,y,z,radius);
+						Vector3d c(x,y,z);
+						c = gridtransform*c;
+						includeGrid.markXYZSphere(c.x(),c.y(),c.z(),radius);
 					}
 				}
 			}
@@ -275,7 +282,6 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 			else if(tolerance < 0)
 				includeGrid.grow(-tolerance);
 		}
-
 
 	} catch (std::exception& e)
 	{

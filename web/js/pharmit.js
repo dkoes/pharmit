@@ -2816,7 +2816,8 @@ Pharmit.SearchResults = (function() {
 				} else {
 					lang.sInfo = "<span title='Query took "+queryTime+" seconds'>Showing _START_ to _END_ of _TOTAL_ hits";
 					if(json.benchmark) {
-						lang.sInfo += ". EF: "+numeral(json.benchmark.EF).format('0.00');
+						lang.sInfo += ". EF: "+numeral(json.benchmark.EF).format('0.0');
+						lang.sInfo += ", F1: "+numeral(json.benchmark.F1).format('0.00');
 					}
 					lang.sInfo +="</span>";								
 					minimize.button( "option", "disabled", false );
