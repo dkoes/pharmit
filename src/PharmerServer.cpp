@@ -332,8 +332,8 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		return 0;
 	}
 
-	if(qp.isshape && queryPoints.size() > 0 && !excluder.isMeaningful())
-	{
+	if(false && qp.isshape && queryPoints.size() > 0 && !excluder.isMeaningful())
+	{ //is this constraint necessary?
 		msg = "Please provide more expressive shape constraints to reduce the number of hits for pharmacophore filtering.";
 		return 0;
 	}
