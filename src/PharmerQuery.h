@@ -102,7 +102,8 @@ class PharmerQuery
 
 	SpinMutex mutex; //for accessing results
 	int inUseCnt;
-
+	unsigned numactives; //for benchmark libraries
+	unsigned totalmols; //ditto
 
 	//smina data
 	unsigned sminaid; //id of smina minimization
@@ -133,6 +134,7 @@ class PharmerQuery
 
 	static void thread_sendSmina(PharmerQuery *query, stream_ptr out, unsigned max);
 
+	void computeBenchmarkStats(const vector<QueryResult*>& r, Json::Value& stat);
 public:
 	//input stream and format specified as extension
 	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> > & dbs,
@@ -170,8 +172,6 @@ public:
 	//output single mol in sdf format
 	void outputMol(const QueryResult* mol, ostream& out, bool minimize = false);
 	void outputMol(unsigned index, ostream& out, bool jsonHeader, bool minimize = false);
-
-	void getZINCIDs(vector<unsigned>& ids);
 
 	void cancelSmina(); //cancel just min
 	//attempt to cancel, non-blocking, query neest time to wrap up

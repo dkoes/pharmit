@@ -2452,7 +2452,7 @@ Pharmit.Results = (function() {
 		    else if((m = name.match(/MolPort-?(\S+)/))) {
 		        return "https://www.molport.com/shop/moleculelink/about-this-molecule/"+m[1].replace(/-/g,"");
 		    }
-		    else if((m = name.match(/CHEMBL/))) {
+		    else if((m = name.match(/^CHEMBL/))) {
 		        return "https://www.ebi.ac.uk/chembldb/index.php/compound/inspect/"+name;
 		    }
 		    else if((m = name.match(/ChemDiv-?(\S+)/))) {

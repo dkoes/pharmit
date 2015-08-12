@@ -665,6 +665,7 @@ class PharmerDatabaseSearcher
 	{
 		return dbinfo;
 	}
+
 	//translate file-offset mid to true (lowest of cmpd) mid
 	unsigned getBaseMID(unsigned lmid) const
 			{

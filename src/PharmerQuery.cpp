@@ -87,8 +87,8 @@ PharmerQuery::PharmerQuery(
 		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
 		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
 		NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
-				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0), sminaid(
-				0)
+				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0), numactives(0),
+				totalmols(0), sminaid(0)
 {
 	if (dbs.size() == 0)
 	{
@@ -127,7 +127,7 @@ PharmerQuery::PharmerQuery(
 		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
 				false), tripletMatchThread(NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
 				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
-				0), inUseCnt(0), sminaid(0)
+				0), inUseCnt(0), numactives(0), totalmols(0), sminaid(0)
 {
 	if (dbs.size() == 0)
 	{
@@ -142,6 +142,20 @@ PharmerQuery::PharmerQuery(
 	}
 
 	dbcnt = dbs.size();
+
+	if(dbcnt > 0)
+	{
+		const Json::Value& dbinfo = dbs[0]->getJSON();
+		if(dbinfo["numactives"].isNumeric())
+		{ //the presence of this field indicates this is a benchmark database with compounds marked as active (in the title)
+			numactives = dbinfo["numactives"].asUInt();
+			totalmols = 0;
+			for(unsigned i = 0; i < dbcnt; i++)
+			{
+				totalmols += dbs[i]->numMolecules();
+			}
+		}
+	}
 
 	initializeTriplets();
 }
@@ -645,6 +659,54 @@ void PharmerQuery::outputData(const DataParameters& dp, ostream& out,
 	}
 }
 
+void PharmerQuery::computeBenchmarkStats(const vector<QueryResult*>& r, Json::Value& stat)
+{
+	//we only care about molecules, not conformations - count number of unique
+	//molecules with active in the name
+	unordered_set<unsigned> seenactives;
+	unordered_set<unsigned> seendecoys;
+
+	for(unsigned i = 0, n = r.size(); i < n; i++)
+	{
+		unsigned mid = r[i]->c->molid;
+		if(!seenactives.count(mid) && !seendecoys.count(mid))
+		{
+			const string& name = r[i]->name;
+			if(name.find("active") == string::npos)
+			{
+				//not active
+				seendecoys.insert(mid);
+			}
+			else
+			{
+				//active
+				seenactives.insert(mid);
+			}
+		}
+	}
+
+	//statistics
+	int T = numactives;
+	int F = totalmols-numactives;
+	int TP = seenactives.size();
+	int FP = seendecoys.size();
+	int TN = F -seendecoys.size();
+	int FN = T-seenactives.size();
+	stat["TP"] = TP;
+	stat["FP"] = FP;
+	stat["TN"] = TN;
+	stat["FN"] = FN;
+
+	stat["TPR"] = (double)TP/(double)T;
+	stat["FPR"] = (double)FP/(double)F;
+
+	stat["ACC"] = (TP+TN)/(double)(T+F);
+	stat["F1"] = 2*TP/(double)(2*TP+FP+FN);
+
+	stat["EF"] = ( TP/(double)(TP+FP) ) / (T/(double)F);
+}
+
+
 void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 {
 	vector<QueryResult*> r;
@@ -655,6 +717,12 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 	data["recordsFiltered"] = (unsigned) results.size();
 	data["finished"] = !notdone;
 	data["data"].resize(0); //make empty array
+
+	if(!notdone && numactives > 0)
+	{
+		//when all done, if we are a benchmark library, compute stats
+		computeBenchmarkStats(r, data["benchmark"]);
+	}
 
 	for (unsigned i = 0, n = r.size(); i < n; i++)
 	{
@@ -747,33 +815,6 @@ void PharmerQuery::outputMol(unsigned index, ostream& out, bool jsonHeader,
 	if (jsonHeader)
 		out << "{\"status\": 1}\n";
 	outputMol(m, out, minimize);
-}
-
-//let ZINC know that someone is downloading all these compounds
-void PharmerQuery::getZINCIDs(vector<unsigned>& ids)
-{
-	ids.clear();
-	loadResults();
-	SpinLock lock(mutex);
-//copy so we can sort weirdly and release access to results
-	vector<QueryResult*> myres = results;
-	lock.release();
-
-	for (unsigned i = 0, n = myres.size(); i < n; i++)
-	{
-		access();
-		setExtraInfo(*myres[i]); //there is a slight race condition here..
-		if (myres[i]->name[0] == 'Z' && myres[i]->name[1] == 'I'
-				&& myres[i]->name[2] == 'N' && myres[i]->name[3] == 'C')
-		{
-			unsigned id = 0;
-			id = atoi(myres[i]->name.c_str() + 4);
-			if (id > 0)
-			{
-				ids.push_back(id);
-			}
-		}
-	}
 }
 
 void PharmerQuery::print(ostream& out) const
