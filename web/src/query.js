@@ -46,10 +46,10 @@ Pharmit.Query = (function() {
 			var qobj = getQueryObj(true);
 			
 			if(shapeMode == 'search') {
-				results.shquery(qobj);
+				results.shquery(qobj, receptorData);
 			} else {
 				//results manages queries
-				results.phquery(qobj);
+				results.phquery(qobj, receptorData);
 			}
 		};
 		

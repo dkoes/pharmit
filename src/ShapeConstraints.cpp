@@ -109,9 +109,13 @@ bool ShapeConstraints::isMeaningful() const
 	bool ingood = inclusiveKind != None;
 	if(inclusiveKind == Spheres && inspheres.size() == 0)
 		ingood = false;
+	if(inclusiveKind == Shape && includeGrid.numSet() == 0)
+		ingood = false;
 
 	bool exgood = exclusiveKind != None;
 	if(exclusiveKind == Spheres && exspheres.size() == 0)
+		exgood = false;
+	if(exclusiveKind == Shape && excludeGrid.numSet() == 0)
 		exgood = false;
 
 	return ingood || exgood;

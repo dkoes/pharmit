@@ -36,25 +36,25 @@ Pharmit.Results = (function() {
 		//public variables and functions
 		
 		//perform the query
-		this.phquery = function(qobj) {
+		this.phquery = function(qobj, rec) {
 			// cancel current query first
 			phresults.cancel();
 			shresults.cancel();
 			shresults.hide();
 			//start provided query
-			phresults.query(qobj);						
+			phresults.query(qobj, rec);						
 			//show div
 			this.show();
 		};
 		
 		//perform a shape query
-		this.shquery = function(qobj) {
+		this.shquery = function(qobj, rec) {
 			// cancel current query first
 			shresults.cancel();
 			phresults.cancel();
 			phresults.hide();
 			//start provided query
-			shresults.query(qobj);						
+			shresults.query(qobj, rec);						
 			//show div
 			this.show();
 		};

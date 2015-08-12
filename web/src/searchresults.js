@@ -79,9 +79,9 @@ Pharmit.SearchResults = (function() {
 		//public variables and functions				
 		$.fn.DataTable.ext.pager.numbers_length = 5;
 		//perform the query
-		this.query = function(qobj) {
+		this.query = function(qobj, rec) {
 			query = $.extend({}, qobj);
-			receptor = query.receptor; //save for iteration
+			receptor = rec; //save for iteration and min
 			//start provided query
 			var postData = {cmd: 'startquery',
 					json: JSON.stringify(query)

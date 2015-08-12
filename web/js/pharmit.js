@@ -1339,10 +1339,10 @@ Pharmit.Query = (function() {
 			var qobj = getQueryObj(true);
 			
 			if(shapeMode == 'search') {
-				results.shquery(qobj);
+				results.shquery(qobj, receptorData);
 			} else {
 				//results manages queries
-				results.phquery(qobj);
+				results.phquery(qobj, receptorData);
 			}
 		};
 		
@@ -2407,25 +2407,25 @@ Pharmit.Results = (function() {
 		//public variables and functions
 		
 		//perform the query
-		this.phquery = function(qobj) {
+		this.phquery = function(qobj, rec) {
 			// cancel current query first
 			phresults.cancel();
 			shresults.cancel();
 			shresults.hide();
 			//start provided query
-			phresults.query(qobj);						
+			phresults.query(qobj, rec);						
 			//show div
 			this.show();
 		};
 		
 		//perform a shape query
-		this.shquery = function(qobj) {
+		this.shquery = function(qobj, rec) {
 			// cancel current query first
 			shresults.cancel();
 			phresults.cancel();
 			phresults.hide();
 			//start provided query
-			shresults.query(qobj);						
+			shresults.query(qobj, rec);						
 			//show div
 			this.show();
 		};
@@ -2634,9 +2634,9 @@ Pharmit.SearchResults = (function() {
 		//public variables and functions				
 		$.fn.DataTable.ext.pager.numbers_length = 5;
 		//perform the query
-		this.query = function(qobj) {
+		this.query = function(qobj, rec) {
 			query = $.extend({}, qobj);
-			receptor = query.receptor; //save for iteration
+			receptor = rec; //save for iteration and min
 			//start provided query
 			var postData = {cmd: 'startquery',
 					json: JSON.stringify(query)
