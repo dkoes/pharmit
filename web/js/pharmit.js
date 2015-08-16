@@ -1166,7 +1166,7 @@ Pharmit.MinResults = (function() {
 		});	
 		
 		table.on('draw.dt', function() {
-			$('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
+			$('.pharmit_minname span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
 		});
 		
 		$('tbody',table).on( 'click', 'tr', function () {
