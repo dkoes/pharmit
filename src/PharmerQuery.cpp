@@ -1,21 +1,18 @@
 /*
- Pharmit
- Copyright (C) 2011  David Ryan Koes and the University of Pittsburgh
+Pharmit
+Copyright (c) David Ryan Koes, University of Pittsburgh and contributors.
+All rights reserved.
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
+Pharmit is licensed under both the BSD 3-clause license and the GNU
+Public License version 2. Any use of the code that retains its reliance
+on the GPL-licensed OpenBabel library is subject to the terms of the GPL2.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+Use of the Pharmit code independently of OpenBabel (or any other
+GPL2 licensed software) may choose between the BSD or GPL licenses.
 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+See the LICENSE file provided with the distribution for more information.
+
+*/
 
 /*
  * PharmerQuery.cpp
