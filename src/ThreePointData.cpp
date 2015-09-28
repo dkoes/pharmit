@@ -222,16 +222,9 @@ ThreePointData::ThreePointData(unsigned offset, double w, unsigned nr,
 
 }
 
-const char *rotBondsSMART =
-		"[!$([NH]!@C(=O))&!D1&!$(*#*)]-&!@[!$([NH]!@C(=O))&!D1&!$(*#*)]";
-
 //return number of rotatable bonds according to smarts expression above
 unsigned countRotatableBonds(OBMol& mol)
 {
 	//count number of rotatable bounds
-	OBSmartsPattern rot;
-	rot.Init(rotBondsSMART);
-	vector<vector<int> > maplist;
-	rot.Match(mol, maplist, OBSmartsPattern::AllUnique);
-	return maplist.size();
+	return mol.NumRotors();
 }
