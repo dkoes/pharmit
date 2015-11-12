@@ -78,7 +78,7 @@ struct QueryParameters
 	vector<PropFilter> propfilters;
 
 	QueryParameters() :
-		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(UINT_MAX),
+		maxRMSD(HUGE_VAL), reduceConfs(UINT_MAX), orientationsPerConf(UINT_MAX), maxHits(1000000),
 		sort(SortType::Undefined), reverseSort(false), minWeight(0), maxWeight(UINT_MAX), reducedMinWeight(0), reducedMaxWeight(UINT_MAX), minRot(0), maxRot(UINT_MAX), isshape(false)
 	{
 
