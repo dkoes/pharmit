@@ -99,7 +99,8 @@ Pharmit.MinResults = (function() {
 			var postData = {cmd: 'startsmina',
 					qid: qid,
 					receptorid: qobj.receptorid,
-					recname: qobj.recname
+					recname: qobj.recname,
+					num: 10000
 			};
 			
 			$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 0}); //don't show table and associated crust until it is setup
