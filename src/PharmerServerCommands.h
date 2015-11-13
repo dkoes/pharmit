@@ -264,6 +264,21 @@ public:
 				unsigned totalMols = 0, totalConfs = 0;
 				string msg;
 				unsigned oldqid = cgiGetInt(CGI, "oldqid");
+
+				//DEBUG code - output queries
+				if(true)
+				{
+					SpinLock lock(logmutex);
+
+					posix_time::ptime t(posix_time::second_clock::local_time());
+					fprintf(LOG, "startq %s %s %s\n",
+							posix_time::to_simple_string(t).c_str(),
+							CGI.getEnvironment().getRemoteAddr().c_str(), cgiGetString(CGI,"json").c_str());
+					fflush(LOG);
+					lock.release();
+				}
+
+
 				unsigned qid = queries.add(*pharmas, root,
 						QueryParameters(root), oldqid, totalMols, totalConfs, msg);
 				if (qid == 0) //invalid query
