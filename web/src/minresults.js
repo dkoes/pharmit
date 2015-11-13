@@ -96,11 +96,16 @@ Pharmit.MinResults = (function() {
 			onclose = closer;
 			qid = q;
 			query = qobj;
+			
+			if(startTotal > 10000) {
+				alert("Results minimization is limited to 10,000 compounds.  Your results will be truncated.");
+				startTotal = 10000;
+			}
 			var postData = {cmd: 'startsmina',
 					qid: qid,
 					receptorid: qobj.receptorid,
 					recname: qobj.recname,
-					num: 10000
+					num: startTotal
 			};
 			
 			$('.pharmit_mincontainer .pharmit_resbody').css({opacity: 0}); //don't show table and associated crust until it is setup
