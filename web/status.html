@@ -16,7 +16,7 @@ $(document).ready(function() {
 			$('#status').html(response.msg);
 		},"json");
 		
-		setTimeout(1000, updateStatus);
+		setTimeout(updateStatus,1000);
 	}
 	updateStatus();
 });
