@@ -13,11 +13,12 @@ $(document).ready(function() {
 	
 	var updateStatus = function() {
 		$.post(server,"cmd=getstatus", function(response) {
-			$('#status').html(response);
-		});
+			$('#status').html(response.msg);
+		},"json");
 		
 		setTimeout(1000, updateStatus);
 	}
+	updateStatus();
 });
 
 </script>
