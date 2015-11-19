@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pharmit Status</title>
+</head>
+
+<script src="js/jquery-2.1.3.js"></script>
+<script type="text/javascript">
+var server = "/fcgi-bin/pharmitserv.fcgi";
+
+$(document).ready(function() {
+	
+	var updateStatus = function() {
+		$.post(server,"cmd=getstatus", function(response) {
+			$('#status').html(response);
+		});
+		
+		setTimeout(1000, updateStatus);
+	}
+});
+
+</script>
+ 
+ 
+<body>
+<div id="status" style="display:inline"></div>
+
+</body>
+</html>
