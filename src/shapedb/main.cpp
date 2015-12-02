@@ -274,7 +274,7 @@ static void create_trees(GSSTreeSearcher& gss, const string& includeMol,
 	{
 		//change small tree to just be interaction points
 		MGrid igrid(dimension, resolution);
-		inMol.computeInteractionGridPoints(exMol, igrid, interactionDistance,
+		inMol.computeInteractionGridPoints(exMol.getMol(), igrid, interactionDistance,
 				interactionMaxClusterDist, interactionMinCluster,
 				interactionPointRadius);
 
@@ -1124,7 +1124,7 @@ int main(int argc, char *argv[])
 		}
 		//compute interaction points as single zero-radius points
 		MGrid igrid(dimension, resolution);
-		inMol.computeInteractionGridPoints(exMol, igrid, interactionDistance,
+		inMol.computeInteractionGridPoints(exMol.getMol(), igrid, interactionDistance,
 				interactionMaxClusterDist, interactionMinCluster, 0);
 
 		vector<MGrid::Point> ipts;

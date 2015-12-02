@@ -47,11 +47,6 @@ protected:
 	float adjustAmount;
 	float probe;
 
-	OBMol& getMol()
-	{
-		return mol;
-	}
-
 	void set(const OBMol& m, float dimension, float resolution, float prb = 1.4,
 			float adj = 0)
 	{
@@ -105,6 +100,12 @@ public:
 	~OBAMolecule()
 	{
 	}
+
+	OBMol& getMol()
+	{
+		return mol;
+	}
+
 
 	bool intersects(const Cube& cube) const
 	{
