@@ -368,7 +368,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	}
 
 	dbs = searchers->stripes;
-	numslices = dbs.size(); //how many threads we should run
+	numslices = min(thread::hardware_concurrency(),(unsigned)dbs.size()); //how many threads we should run, don't do more than available
 	totalMols = searchers->totalMols;
 	totalConfs = searchers->totalConfs;
 

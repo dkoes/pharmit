@@ -1129,6 +1129,7 @@ int main(int argc, char *argv[])
 
 		vector<MGrid::Point> ipts;
 		igrid.getSetPoints(ipts);
+
 		unsigned max = 1 << ipts.size();
 
 		//for each subset of interaction points (even empty - receptor only)
@@ -1140,6 +1141,7 @@ int main(int argc, char *argv[])
 			{
 				if ((1 << p) & i) //use it
 				{
+					cout << "(" << ipts[p].x <<","<<ipts[p].y<<","<<ipts[p].z<<") ";
 					if (interactionPointRadius == 0)
 					{
 						igrid.setPoint(ipts[p].x, ipts[p].y, ipts[p].z);
@@ -1151,6 +1153,7 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
+			cout << "\n";
 			igrid &= lgrid;
 			ObjectTree smallTree(MappableOctTree::createFromGrid(igrid), free);
 
@@ -1174,7 +1177,10 @@ int main(int argc, char *argv[])
 
 			//do a filter with DC
 			stringstream dcoutname;
-			dcoutname << Output << "_dc_" << i << ".sdf";
+			if(Output.size() > 0)
+				dcoutname << Output << "_dc_" << i << ".sdf";
+			if(Print)
+				cout << "# DCPTS " << i << "\n";
 			do_dcsearch(gss, smallTree, bigTree, dcoutname.str());
 
 		}

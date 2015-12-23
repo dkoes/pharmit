@@ -257,7 +257,7 @@ void OBAMolecule::computeInteractionGridPoints(OBMol& rmol,
 
 	for(unsigned i = 0, n = points.size(); i < n; i++)
 	{
-		if(interactionPointRadius > 0)
+		if(interactionPointRadius >= 0)
 		{
 			Vector3d pt = points[i];
 			grid.markXYZSphere(pt.x(),pt.y(),pt.z(),interactionPointRadius);

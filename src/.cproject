@@ -24,14 +24,13 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.2094769830" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1605142182" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.677293852" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gnina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
-									<listOptionValue builtIn="false" value="/home/dkoes/git/smina/src/lib"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}/shapedb/molecules&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/rdkit"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/shapedb}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/openbabel-2.0"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/smina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/jsoncpp"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr0/local/include"/>
@@ -58,8 +57,8 @@
 									<listOptionValue builtIn="false" value="ann"/>
 									<listOptionValue builtIn="false" value="GraphMol"/>
 									<listOptionValue builtIn="false" value="gomp"/>
+									<listOptionValue builtIn="false" value="gnina"/>
 									<listOptionValue builtIn="false" value="pthread"/>
-									<listOptionValue builtIn="false" value="smina"/>
 									<listOptionValue builtIn="false" value="boost_serialization"/>
 									<listOptionValue builtIn="false" value="boost_date_time"/>
 									<listOptionValue builtIn="false" value="fcgi"/>
@@ -90,7 +89,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="shapedb/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="shapedb/CommandLine2|shapedb/molecules/PMol.cpp|shapedb/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -121,14 +120,13 @@
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.193249316" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.639190497" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1817638343" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gnina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
-									<listOptionValue builtIn="false" value="/home/dkoes/git/smina/src/lib"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}/shapedb/molecules&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/rdkit"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/shapedb}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/openbabel-2.0"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/smina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/jsoncpp"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr0/local/include"/>
@@ -155,8 +153,8 @@
 									<listOptionValue builtIn="false" value="ann"/>
 									<listOptionValue builtIn="false" value="GraphMol"/>
 									<listOptionValue builtIn="false" value="gomp"/>
+									<listOptionValue builtIn="false" value="gnina"/>
 									<listOptionValue builtIn="false" value="pthread"/>
-									<listOptionValue builtIn="false" value="smina"/>
 									<listOptionValue builtIn="false" value="boost_serialization"/>
 									<listOptionValue builtIn="false" value="boost_date_time"/>
 									<listOptionValue builtIn="false" value="fcgi"/>
@@ -188,7 +186,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="shapedb/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="shapedb/molecules/PMol.cpp|shapedb/CommandLine2|shapedb/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -219,14 +217,13 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1608594640" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.218061725" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.452399024" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gnina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
-									<listOptionValue builtIn="false" value="/home/dkoes/git/smina/src/lib"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}/shapedb/molecules&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/rdkit"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/shapedb}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/openbabel-2.0"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/smina/src/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/jsoncpp"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr0/local/include"/>
@@ -255,8 +252,8 @@
 									<listOptionValue builtIn="false" value="ann"/>
 									<listOptionValue builtIn="false" value="GraphMol"/>
 									<listOptionValue builtIn="false" value="gomp"/>
+									<listOptionValue builtIn="false" value="gnina"/>
 									<listOptionValue builtIn="false" value="pthread"/>
-									<listOptionValue builtIn="false" value="smina"/>
 									<listOptionValue builtIn="false" value="boost_serialization"/>
 									<listOptionValue builtIn="false" value="boost_date_time"/>
 									<listOptionValue builtIn="false" value="fcgi"/>
@@ -289,7 +286,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="shapedb/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="shapedb/CommandLine2|shapedb/molecules/PMol.cpp|shapedb/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

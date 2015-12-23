@@ -614,7 +614,7 @@ void MappableOctTree::write(ostream& out) const
 }
 
 float MappableOctTree::relativeVolumeDistance(const MappableOctTree * rhs) const
-		{
+{
 	float ival = 0, uval = 0;
 	assert(dimension == rhs->dimension);
 

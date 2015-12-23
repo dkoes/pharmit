@@ -36,7 +36,7 @@ See the LICENSE file provided with the distribution for more information.
 #include "PMol.h"
 #include "MolProperties.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
-#include "SminaConverter.h"
+#include "GninaConverter.h"
 #include "ShapeObj.h"
 #include "ShapeResults.h"
 #include "ShapeConstraints.h"
@@ -477,7 +477,7 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid,
 	props.write(mid, propFiles);
 
 	//output smina and shape data here
-	SminaConverter::MCMolConverter mcsmina(mol);
+	GninaConverter::MCMolConverter mcsmina(mol);
 	const vector<unsigned>& confOffsets = mdc.ConfOffsets();
 	unsigned long mloc = mid;
 	mloc <<= (TPD_MOLDATA_BITS - TPD_MOLID_BITS);
@@ -864,6 +864,8 @@ void PharmerDatabaseCreator::createSpatialIndex()
 {
 	Timer t;
 	cout << "Creating spatial index..." << endl;
+	if(mids.size() == 0)
+		return;
 	//close and then mmap pointinfo file
 	initPointDataArrays();
 

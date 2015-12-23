@@ -133,7 +133,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 		}
 		string specified = json["subdir"].asString();
 
-		if(!algorithm::ends_with(specified, name.string())) //ignore prefixed subdirs like Public
+		if(!algorithm::ends_with(specified, name.string())) //ignore prefixed subdirs like Public, the specified subdir must match the actual subdir
 		{
 			cerr << "Ignoring " << name << "\n";
 			continue;
@@ -141,10 +141,26 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 		else if(olddatabases.count(specified) == 0)
 		{
 			vector<filesystem::path> dbpaths(prefixes.size());
-			for(unsigned p = 0, np = prefixes.size(); p < np; p++)
-			{
-				filesystem::path dir = prefixes[p] / name;
-				dbpaths[p] = dir;
+
+			if(json.isMember("splitdirs") && json["splitdirs"].isArray()) {
+				//we have a really large database (like pubchem) that needs to be
+				//broken up further
+				Json::Value splits = json["splitdirs"];
+				unsigned nsplits = splits.size();
+				dbpaths.resize(0);
+				dbpaths.reserve(prefixes.size() * nsplits);
+				for(unsigned p = 0, np = prefixes.size(); p < np; p++)
+				{
+					filesystem::path dir = prefixes[p] / name / splits[i].asString();
+					dbpaths.push_back(dir);
+				}
+			}
+			else {
+				for(unsigned p = 0, np = prefixes.size(); p < np; p++)
+				{
+					filesystem::path dir = prefixes[p] / name;
+					dbpaths[p] = dir;
+				}
 			}
 
 			loadDatabases(dbpaths, databases[specified]);

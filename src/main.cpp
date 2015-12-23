@@ -46,7 +46,7 @@ See the LICENSE file provided with the distribution for more information.
 #include <ShapeConstraints.h>
 #include "ReadMCMol.h"
 #include "dbloader.h"
-#include "SminaConverter.h"
+#include "GninaConverter.h"
 
 using namespace boost;
 using namespace OpenBabel;
@@ -352,7 +352,7 @@ static void handle_fixsmina_cmd()
 
       //write out updated sminaData
       stringstream data;
-      SminaConverter::MCMolConverter mconv(mol);
+      GninaConverter::MCMolConverter mconv(mol);
       mconv.convertConformer(0, data);
       unsigned long smpos = ftell(sminaData); //location in smina dta
       unsigned sz = data.str().size();
@@ -663,8 +663,20 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	key << root["subdir"].asString() << "-" << time(NULL);
 	string subset = root["subdir"].asString();
 
+	//check for splits
+	vector<string> splits;
+	if(root.isMember("splitdirs") && root["splitdirs"].isArray())
+	{
+		Json::Value sdirs = root["splitdirs"];
+		for(unsigned i = 0, n = sdirs.size(); i < n; i++)
+		{
+			splits.push_back(sdirs[i].asString());
+		}
+	}
+
 	//create directories
 	vector<filesystem::path> directories;
+	vector<filesystem::path> topdirectories; //same as directories unless there are splits
 	vector<filesystem::path> symlinks;
 	if(!prefixes) {
 		cerr << "Error with prefixes file\n";
@@ -674,17 +686,32 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	string fname;
 	while(getline(prefixes,fname))
 	{
-	  if(fname.length() > 0 && fname[0] == '#') //comment
-	  {
-	    continue;
-	  }
+		if(fname.length() > 0 && fname[0] == '#') //comment
+		{
+			continue;
+		}
 		if(filesystem::exists(fname))
 		{
 			filesystem::path dbpath(fname);
 			dbpath /= key.str();
-			filesystem::create_directories(dbpath);
-			directories.push_back(dbpath);
 
+			topdirectories.push_back(dbpath);
+			if(splits.size() > 0) //create a bunch of subdirs
+			{
+				for(unsigned i = 0, n = splits.size(); i < n; i++)
+				{
+					filesystem::path splitdb = dbpath / splits[i];
+					filesystem::create_directories(splitdb);
+					directories.push_back(splitdb);
+				}
+			}
+			else
+			{
+				filesystem::create_directories(dbpath);
+				directories.push_back(dbpath);
+			}
+
+			//single link for the whole thing
 			filesystem::path link(fname);
 			link /= subset;
 			symlinks.push_back(link);
@@ -696,10 +723,12 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	}
 
 	//portion memory between processes
-	  unsigned long memsz = sysconf (_SC_PHYS_PAGES) * sysconf (_SC_PAGESIZE);
-	  memsz /= directories.size();
-	  memsz /= 2; //only take half of available memory
+	unsigned long memsz = sysconf (_SC_PHYS_PAGES) * sysconf (_SC_PAGESIZE);
+	memsz /= directories.size();
+	memsz /= 2; //only take half of available memory
 
+	unsigned maxt = thread::hardware_concurrency();
+	unsigned numrunning = 0;
 	//multi-thread (fork actually, due to openbabel) across all prefixes
 	//create databases
 	//openbabel can't handled multithreaded reading, so we actually have to fork off a process
@@ -761,6 +790,16 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 			if(d != nd-1)
 				exit(0);
 		}
+		else //parent
+		{
+			numrunning++;
+			if(numrunning >= maxt) //using all threads
+			{
+				int status;
+				wait(&status);
+				numrunning--;
+			}
+		}
 	}
 
 	int status;
@@ -772,8 +811,8 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	}
 
 	//all done, create symlinks to non-timestamped directories
-	assert(symlinks.size() == directories.size());
-	for (unsigned d = 0, nd = directories.size(); d < nd; d++)
+	assert(symlinks.size() == topdirectories.size());
+	for (unsigned d = 0, nd = topdirectories.size(); d < nd; d++)
 	{
 		if(filesystem::exists(symlinks[d]))
 		{
@@ -788,7 +827,11 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				exit(-1);
 			}
 		}
-		filesystem::create_directory_symlink(directories[d], symlinks[d]);
+		filesystem::create_directory_symlink(topdirectories[d], symlinks[d]);
+		filesystem::path dbipath = topdirectories[d] / "dbinfo.json";
+		ofstream dbfile(dbipath.c_str());
+		Json::StyledStreamWriter jwrite;
+		jwrite.write(dbfile, root);
 	}
 }
 
