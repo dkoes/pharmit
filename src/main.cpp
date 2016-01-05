@@ -676,6 +676,7 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 
 	//create directories
 	vector<filesystem::path> directories;
+	vector< vector<filesystem::path> > unflatdirectories;
 	vector<filesystem::path> topdirectories; //same as directories unless there are splits
 	vector<filesystem::path> symlinks;
 	if(!prefixes) {
@@ -696,19 +697,20 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 			dbpath /= key.str();
 
 			topdirectories.push_back(dbpath);
+			unflatdirectories.push_back(vector<filesystem::path>()); //needs splits to be dispersed
 			if(splits.size() > 0) //create a bunch of subdirs
 			{
 				for(unsigned i = 0, n = splits.size(); i < n; i++)
 				{
 					filesystem::path splitdb = dbpath / splits[i];
 					filesystem::create_directories(splitdb);
-					directories.push_back(splitdb);
+					unflatdirectories.back().push_back(splitdb);
 				}
 			}
 			else
 			{
 				filesystem::create_directories(dbpath);
-				directories.push_back(dbpath);
+				unflatdirectories.back().push_back(dbpath);
 			}
 
 			//single link for the whole thing
@@ -720,6 +722,21 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		{
 			cerr << "Prefix " << fname << " does not exist\n";
 		}
+	}
+
+	//flatten directories
+	while(true)
+	{
+		unsigned i = 0, n = unflatdirectories.size();
+		for(; i < n; i++)
+		{
+			if(unflatdirectories[i].size() == 0)
+				break;
+			directories.push_back(unflatdirectories[i].back());
+			unflatdirectories[i].pop_back();
+		}
+		if(i != n)
+			break;
 	}
 
 	//portion memory between processes
