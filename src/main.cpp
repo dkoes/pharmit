@@ -744,7 +744,7 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	memsz /= directories.size();
 	memsz /= 2; //only take half of available memory
 
-	unsigned maxt = thread::hardware_concurrency();
+	unsigned maxt = topdirectories.size(); //single thread per i/o device
 	unsigned numrunning = 0;
 	//multi-thread (fork actually, due to openbabel) across all prefixes
 	//create databases

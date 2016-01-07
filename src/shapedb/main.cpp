@@ -1141,7 +1141,7 @@ int main(int argc, char *argv[])
 			{
 				if ((1 << p) & i) //use it
 				{
-					cout << "(" << ipts[p].x <<","<<ipts[p].y<<","<<ipts[p].z<<") ";
+//					cout << "(" << ipts[p].x <<","<<ipts[p].y<<","<<ipts[p].z<<") ";
 					if (interactionPointRadius == 0)
 					{
 						igrid.setPoint(ipts[p].x, ipts[p].y, ipts[p].z);
@@ -1153,7 +1153,7 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
-			cout << "\n";
+//	cout << "\n";
 			igrid &= lgrid;
 			ObjectTree smallTree(MappableOctTree::createFromGrid(igrid), free);
 
