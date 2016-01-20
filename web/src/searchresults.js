@@ -310,7 +310,7 @@ Pharmit.SearchResults = (function() {
         	            				viewer.setResult(ret);
         	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
         	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
-        						ibutton.tooltip({show: {delay: 500}});
+        	            				ibutton.tooltip({show: {delay: 500}});
         	            				ibutton.click(function(event) {
         	            					event.stopPropagation();
         	            					//create new window around this molecule
