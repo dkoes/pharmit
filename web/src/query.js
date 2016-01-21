@@ -897,7 +897,8 @@ Pharmit.Query = (function() {
 						var menu = ul.show().position({
 							my: "left top",
 							at: "left buttom",
-							of: this
+							of: this,
+							collision: 'flipfit'
 						});
 						$(document).one('click', function() { menu.hide(); });
 						return false;

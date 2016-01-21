@@ -2196,7 +2196,8 @@ Pharmit.Query = (function() {
 						var menu = ul.show().position({
 							my: "left top",
 							at: "left buttom",
-							of: this
+							of: this,
+							collision: 'flipfit'
 						});
 						$(document).one('click', function() { menu.hide(); });
 						return false;
@@ -2871,7 +2872,7 @@ Pharmit.SearchResults = (function() {
         	            				viewer.setResult(ret);
         	            				var ibutton = $('<div class="pharmit_iterate_button" title="Start new pharmit session around selected ligand">').appendTo($('td',r).last());
         	            				ibutton.button({ icons: {primary: "ui-icon-arrowthickstop-1-e"}, text: false});					
-        						ibutton.tooltip({show: {delay: 500}});
+        	            				ibutton.tooltip({show: {delay: 500}});
         	            				ibutton.click(function(event) {
         	            					event.stopPropagation();
         	            					//create new window around this molecule

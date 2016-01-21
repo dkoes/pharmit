@@ -215,7 +215,7 @@ else if(isset($_REQUEST["op"])) //operation
 				$stmt->store_result();
 				headerhtml();
 				echo('<div class="cont"><div class="cont-2"><span class="font-3">manage</span><br>
-					<span class="font">view the status of your submitted jobs</span><br><br>');
+					<span class="font">view the status of your libraries</span><br><br>');
 
 				if($stmt->num_rows > 0) { //have already created databases
 
