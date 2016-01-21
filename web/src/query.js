@@ -884,7 +884,12 @@ Pharmit.Query = (function() {
 						privatedialog.dialog("open");
 					});
 			
-			ul.hide().menu().on('menuselect', function(event, ui) {
+			ul.hide().menu(position:{
+				my: "left top",
+				at: "left bottom",
+				of: this,
+				collision: 'flipfit'
+			}).on('menuselect', function(event, ui) {
 				var info = subsetinfo[ui.item.val()];
 				run.button("option",'label',"Search "+info.name);
 				run.val(info.subdir);
@@ -894,12 +899,7 @@ Pharmit.Query = (function() {
 			run.click(doSearch);
 			select.click(
 					function() {
-						var menu = ul.show().position({
-							my: "left top",
-							at: "left buttom",
-							of: this,
-							collision: 'flipfit'
-						});
+						var menu = ul.show();
 						$(document).one('click', function() { menu.hide(); });
 						return false;
 					});
