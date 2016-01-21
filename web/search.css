@@ -90,6 +90,12 @@ body {
 	width: 22em;
 }
 
+.pharmit_contributed_menu {
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .pharmit_subsetmenu, .pharmit_subsetmenu.ui-state-focus {
 	font-size: 110%;
 	font-weight: bold;
