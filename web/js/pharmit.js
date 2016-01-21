@@ -2185,8 +2185,7 @@ Pharmit.Query = (function() {
 			
 			ul.hide().menu({position:{
 				my: "left top",
-				at: "left bottom",
-				of: this,
+				at: "right top",
 				collision: 'fit'
 			}}).on('menuselect', function(event, ui) {
 				var info = subsetinfo[ui.item.val()];

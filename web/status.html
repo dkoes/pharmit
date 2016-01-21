@@ -14,9 +14,10 @@ $(document).ready(function() {
 	var updateStatus = function() {
 		$.post(server,"cmd=getstatus", function(response) {
 			$('#status').html(response.msg);
+	                setTimeout(updateStatus,1000);
+
 		},"json");
 		
-		setTimeout(updateStatus,1000);
 	}
 	updateStatus();
 });
