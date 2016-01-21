@@ -66,6 +66,15 @@ function headerhtml()
 <script src="js/jquery-2.1.3.js"></script>
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 
+<script>
+function removeCheck(name, id) {
+	//query user to make sure they want to remove database
+	if(confirm("Are you sure you want to remove "+name+"?")) {
+		location.replace("create.php?op=remove&id="+id);
+	}
+}
+</script>
+
 <title>pharmit library creation</title>
 </head>
 
@@ -199,6 +208,25 @@ else if(isset($_REQUEST["op"])) //operation
 			$stmt->close();
 
 			break;
+		case "remove":
+			//get all the info for this user's databases
+			$db = new mysqli($db_host, $db_user, "", $db_name);
+			if (mysqli_connect_errno())
+				fail('MySQL connect', mysqli_connect_error());
+			
+			($stmt = $db->prepare('UPDATE `databases` SET status="REMOVE" WHERE email=? AND id=?')) ||
+			fail('Prepare databases', $db->error);
+			$stmt->bind_param('ss', $_SESSION["userid"],$_REQUEST["id"]);
+			if (!$stmt->execute()) {
+				failhtml('Unexpected error removing library. Does it really belong to you?');
+			}
+			
+			headerhtml();
+			echo('<div class="cont"><div class="cont-2"><span class="font-3">manage</span><br>
+					<span class="font">library removed</span><br><br>');
+			footerhtml();
+			
+			break;
 		case "status":
 			//get all the info for this user's databases
 			$db = new mysqli($db_host, $db_user, "", $db_name);
@@ -221,24 +249,27 @@ else if(isset($_REQUEST["op"])) //operation
 
 					$stmt->bind_result($name, $id, $isprivate, $status, $message, $submitted, $completed, $nummols, $numconfs);
 					while($stmt->fetch()) {
-						echo('<div class="librarystatus"><span class="font-4">');
-						echo("<b>$name</b>");
-						echo(": $message <br>");
-						if($isprivate) {
-							echo("<b>Private</b><br>");
-							echo("Access code: $id<br>");
+						if($status != "REMOVE") {
+							echo('<div class="librarystatus"><span class="font-4">');
+							echo("<b>$name</b>");
+							echo(": $message <br>");
+							if($isprivate) {
+								echo("<b>Private</b><br>");
+								echo("Access code: $id<br>");
+							}
+							else {
+								echo("Public<br>");
+							}
+							echo("Submitted: $submitted <br>");
+	
+							if($status == "Completed") {
+								echo("Completed: $completed<br>");
+								echo(number_format($numconfs) . " conformers of ".number_format($nummols)." compounds");
+								echo("<br><a class=\"removelink\" onclick=removeCheck(\"$name\",\"$id\")>Remove</a>");
+							}
+	
+							echo("</div></span><br>");
 						}
-						else {
-							echo("Public<br>");
-						}
-						echo("Submitted: $submitted <br>");
-
-						if($status == "Completed") {
-							echo("Completed: $completed<br>");
-							echo(number_format($numconfs) . " conformers of ".number_format($nummols)." compounds");
-						}
-
-						echo("</div></span><br>");
 					}
 				}
 				else { //no databases
@@ -301,7 +332,7 @@ else //logged in, let's create some databases
   if (mysqli_connect_errno())
   	fail('MySQL connect', mysqli_connect_error());
   
-  ($stmt = $db->prepare('SELECT COUNT(*) FROM `databases` WHERE email=? AND status != \'Error\' AND isprivate != 0')) ||
+  ($stmt = $db->prepare('SELECT COUNT(*) FROM `databases` WHERE email=? AND status != \'Error\' AND status != \'REMOVE\' AND isprivate != 0')) ||
   	fail('Prepare databases', $db->error);
   $stmt->bind_param('s', $_SESSION["userid"]);
   $stmt->execute();

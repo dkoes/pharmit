@@ -131,3 +131,19 @@ a:visited {
     position: absolute;
     left: 0px;
 }
+
+.librarystatus {
+	display: inline-block;
+	padding: 1em 1.5em;
+	width: 25em;
+	margin-bottom: 1em;
+	border-color: rgb(39,0,72);
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 1em;	
+}
+
+.removelink:hover {
+	cursor:pointer;
+	text-decoration: underline; 
+}
