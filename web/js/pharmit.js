@@ -2160,7 +2160,7 @@ Pharmit.Query = (function() {
 			ul.append(lis);
 			ul.append($('<li> </li>'));
 			var publicli = $('<li class="pharmit_contributed">Contributed Libraries</li>');
-			var publicul =  $('<ul>').appendTo(publicli);
+			var publicul =  $('<ul>').appendTo(publicli).addClass('pharmit_contributed_menu');
 			var publiclis = [];
 			var publicinfo = dbinfo.public;
 			for(i = 0, n = publicinfo.length; i < n; i++) {
