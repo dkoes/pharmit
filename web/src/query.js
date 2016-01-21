@@ -884,12 +884,12 @@ Pharmit.Query = (function() {
 						privatedialog.dialog("open");
 					});
 			
-			ul.hide().menu(position:{
+			ul.hide().menu({position:{
 				my: "left top",
 				at: "left bottom",
 				of: this,
 				collision: 'flipfit'
-			}).on('menuselect', function(event, ui) {
+			}}).on('menuselect', function(event, ui) {
 				var info = subsetinfo[ui.item.val()];
 				run.button("option",'label',"Search "+info.name);
 				run.val(info.subdir);
