@@ -267,7 +267,7 @@ else if(isset($_REQUEST["op"])) //operation
 							if($status == "Completed") {
 								echo("Completed: $completed<br>");
 								echo(number_format($numconfs) . " conformers of ".number_format($nummols)." compounds");
-								echo("<br><a class=\"removelink\" onclick=removeCheck(\"$name\",\"$id\")>Remove</a>");
+								echo("<br><a class=removelink onclick=\"removeCheck('${name}','$id')\">Remove</a>");
 							}
 	
 							echo("</div></span><br>");
