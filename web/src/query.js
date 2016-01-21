@@ -888,7 +888,7 @@ Pharmit.Query = (function() {
 				my: "left top",
 				at: "left bottom",
 				of: this,
-				collision: 'flipfit'
+				collision: 'fit'
 			}}).on('menuselect', function(event, ui) {
 				var info = subsetinfo[ui.item.val()];
 				run.button("option",'label',"Search "+info.name);
@@ -899,7 +899,12 @@ Pharmit.Query = (function() {
 			run.click(doSearch);
 			select.click(
 					function() {
-						var menu = ul.show();
+						var menu = ul.show().position({
+							my: "left top",
+							at: "left bottom",
+							of: this,
+							collision: 'flipfit'
+						});
 						$(document).one('click', function() { menu.hide(); });
 						return false;
 					});
