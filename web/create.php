@@ -224,6 +224,8 @@ else if(isset($_REQUEST["op"])) //operation
 			headerhtml();
 			echo('<div class="cont"><div class="cont-2"><span class="font-3">manage</span><br>
 					<span class="font">library removed</span><br><br>');
+			echo('<br><span class="font-2"><a href="index.php">return to pharmit</a></span><br></div></div>');
+				
 			footerhtml();
 			
 			break;
