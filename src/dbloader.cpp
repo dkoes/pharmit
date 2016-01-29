@@ -141,6 +141,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 		else if(olddatabases.count(specified) == 0)
 		{
 			vector<filesystem::path> dbpaths(prefixes.size());
+			bool badsubdir = false;
 
 			if(json.isMember("splitdirs") && json["splitdirs"].isArray()) {
 				//we have a really large database (like pubchem) that needs to be
@@ -153,6 +154,13 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				{
 					filesystem::path dir = prefixes[p] / name / splits[i].asString();
 					dbpaths.push_back(dir);
+
+					filesystem::path infofile = dir / "info";
+					if(!filesystem::exists(infofile) || filesystem::file_size(infofile) == 0)
+					{
+						badsubdir = true;
+						cerr << "Invalid subdir info: " << infofile << "\n";
+					}
 				}
 			}
 			else {
@@ -163,7 +171,8 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				}
 			}
 
-			loadDatabases(dbpaths, databases[specified]);
+			if(!badsubdir)
+				loadDatabases(dbpaths, databases[specified]);
 		}
 	}
 }
