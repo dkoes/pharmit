@@ -98,6 +98,8 @@ cl::opt<bool> SortRMSD("sort-rmsd", cl::desc("Sort results by RMSD."),
 		cl::init(false));
 cl::opt<bool> FilePartition("file-partition",
 		cl::desc("Partion database slices based on files"), cl::init(false));
+cl::opt<string> Single("singledir",cl::desc("Specify a single directory to recreate on a dbcreateserverdir command"));
+cl::opt<string> SpecificTimestamp("timestamp",cl::desc("Specify timestamp to use for server dirs (for use with single)"));
 
 cl::opt<string> MinServer("min-server",cl::desc("minimization server address"));
 cl::opt<unsigned> MinPort("min-port",cl::desc("port for minimization server"));
@@ -660,7 +662,11 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		cerr << "Database info needs subdir field.";
 	}
 	stringstream key;
-	key << root["subdir"].asString() << "-" << time(NULL);
+	key << root["subdir"].asString();
+	if(SpecificTimestamp.size() > 0)
+		key << "-" << SpecificTimestamp;
+	else
+		key << "-" << time(NULL);
 	string subset = root["subdir"].asString();
 
 	//check for splits
@@ -754,7 +760,9 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	{
 		if (d == (nd-1) || fork() == 0)
 		{
-			{ //this is an empty scope created to make sure db's destructor is called before exit
+			if(Single.size() == 0 || filesystem::equivalent(directories[d],Single))
+			{ //for single, do everything as if we were doing a full build, but only actual build the specified directory
+				cerr << "Building " << directories[d] << "\n";
 				PharmerDatabaseCreator db(pharmas, directories[d], root);
 				db.setInMemorySize(memsz);
 				OBConversion conv;

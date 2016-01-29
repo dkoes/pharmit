@@ -152,14 +152,17 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				dbpaths.reserve(prefixes.size() * nsplits);
 				for(unsigned p = 0, np = prefixes.size(); p < np; p++)
 				{
-					filesystem::path dir = prefixes[p] / name / splits[i].asString();
-					dbpaths.push_back(dir);
-
-					filesystem::path infofile = dir / "info";
-					if(!filesystem::exists(infofile) || filesystem::file_size(infofile) == 0)
+					for(unsigned s = 0; s < nsplits; s++)
 					{
-						badsubdir = true;
-						cerr << "Invalid subdir info: " << infofile << "\n";
+						filesystem::path dir = prefixes[p] / name / splits[s].asString();
+						dbpaths.push_back(dir);
+
+						filesystem::path infofile = dir / "info";
+						if(!filesystem::exists(infofile) || filesystem::file_size(infofile) == 0)
+						{
+							badsubdir = true;
+							cerr << "Invalid subdir info: " << infofile << "\n";
+						}
 					}
 				}
 			}
