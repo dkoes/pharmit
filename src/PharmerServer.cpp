@@ -187,7 +187,7 @@ static void signalhandler(int sig)
 
 
 
-//start up a server, assumes databases are segregrated by molweight
+//start up a server
 void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 		boost::unordered_map<string, StripedSearchers >& databases,
 		const string& logdir, const string& minServer, unsigned minPort)

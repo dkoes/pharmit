@@ -150,9 +150,9 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				unsigned nsplits = splits.size();
 				dbpaths.resize(0);
 				dbpaths.reserve(prefixes.size() * nsplits);
-				for(unsigned p = 0, np = prefixes.size(); p < np; p++)
-				{
-					for(unsigned s = 0; s < nsplits; s++)
+				for(unsigned s = 0; s < nsplits; s++)
+				{ //need to stripe across drives, so do all of one split first
+					for(unsigned p = 0, np = prefixes.size(); p < np; p++)
 					{
 						filesystem::path dir = prefixes[p] / name / splits[s].asString();
 						dbpaths.push_back(dir);
