@@ -6,12 +6,16 @@
 		<title>pharmit: interactive exploration of chemical space</title>
 		<link rel="stylesheet" type="text/css" href="index.css">
 		<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-		<script src="js/jquery-2.1.3.js" defer ></script>
+		<script src="js/jquery-2.1.3.js"  ></script>
 		<script src="js/numeral.js" async></script>
 		<script type="text/javascript" src="js/index.js" defer></script>
 		<script type="text/javascript" src="js/msg.js" defer></script>
 	</head>
 	<body id="body">
+		<div id="notice">
+		Find pharmit useful? Please <a href="mailto:dkoes+pharmit@pitt.edu">let us know</a>.
+		We are in need of letters of support. <div class=closebutton></div>
+		</div>
 		<div class="cont">
 			<div class="section">
 				<div class="cont-2">
@@ -216,6 +220,10 @@ else
   ga('create', 'UA-73085320-1', 'auto');
   ga('send', 'pageview');
 
+  $(document).ready(function() {
+	  $('#notice').slideDown();
+	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
+  });
 </script>		
 	</body>
 </html>

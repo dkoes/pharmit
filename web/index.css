@@ -26,6 +26,33 @@ a {
 #body {
 	background-color: rgb(39,0,72);
 }
+
+#notice {
+	float: left;
+	position: absolute;
+	top: 0;
+	box-shadow: 2px 2px 5px #888888;
+	padding: 0.5em;
+	margin: 1px;
+	font-size: 1.2em;
+	background-color: white;
+	display: none;
+}
+
+#notice a {
+	text-decoration: underline;
+	color: initial;
+}
+
+#notice .closebutton {
+	background-image: url("images/ui-icons_222222_256x240.png");
+	width: 16px;
+	height: 16px;
+	font-size: 1em;
+	background-position:  -96px -128px;
+	display: inline-block;
+}
+
 .cont {
 	vertical-align: top;
 	margin-left: auto;
