@@ -558,6 +558,12 @@ public:
 	{
 		return stats[NumConfs];
 	}
+
+	const Json::Value& getJSON() const
+	{
+		return dbinfo;
+	}
+
 };
 
 //stuff that doesn't change through the recursive search of the

@@ -811,6 +811,8 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				{
 				  db.createSpatialIndex(); //will write stats
 				}
+
+				root = db.getJSON(); //update with date
 			} //destructors called
 			if(d != nd-1)
 				exit(0);
