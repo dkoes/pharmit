@@ -10,6 +10,9 @@
 		<script src="js/numeral.js" async></script>
 		<script type="text/javascript" src="js/index.js" defer></script>
 		<script type="text/javascript" src="js/msg.js" defer></script>
+		<meta name="description" content="Interactive virtual screening of billions of structures using pharmacophore search molecular shapes.">
+		<meta name="keywords" content="pharmacophores,pharmacophore search,virtual screening,molecular shape,energy minimization">
+
 	</head>
 	<body id="body">
 		<div id="notice">
