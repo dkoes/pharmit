@@ -864,8 +864,10 @@ void PharmerDatabaseCreator::createSpatialIndex()
 {
 	Timer t;
 	cout << "Creating spatial index..." << endl;
-	if(mids.size() == 0)
+    if(mids.size() == 0) {
+        writeStats(); //not writing stats will cause crashes when loading empty dir
 		return;
+    }
 	//close and then mmap pointinfo file
 	initPointDataArrays();
 
