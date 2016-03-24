@@ -864,10 +864,10 @@ void PharmerDatabaseCreator::createSpatialIndex()
 {
 	Timer t;
 	cout << "Creating spatial index..." << endl;
-    if(mids.size() == 0) {
-        writeStats(); //not writing stats will cause crashes when loading empty dir
+	if(mids.size() == 0) {
+		writeStats(); //not writing stats will cause crashes when loading empty dir
 		return;
-    }
+	}
 	//close and then mmap pointinfo file
 	initPointDataArrays();
 
@@ -957,10 +957,16 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	if (filesystem::exists(mpath)) //back-wards compat
 		midList.map(mpath.string(), true, true, true);
 
+	if(numMolecules() == 0) //don't bother loading anything else
+	{
+		valid = true; //but still treat as valid
+		return;
+	}
+		
 	//length histogram
 	filesystem::path binpath = dbpath / "binCnts";
 	binnedCnts.map(binpath.string(), true, false);
-	if (binnedCnts.length() == 0)
+	if (binnedCnts.length() == 0 && tindex.size() > 0)
 	{
 		cerr << "Missing binnedCnts " << binpath << "\n";
 		return;
@@ -997,6 +1003,8 @@ void PharmerDatabaseSearcher::initializeDatabases()
 unsigned PharmerDatabaseSearcher::getBinCnt(unsigned pclass, unsigned i,
 		unsigned j, unsigned k)
 {
+	if(binnedCnts.length() == 0) 
+		return 0;
 	unsigned index = pclass;
 	index *= LENGTH_BINS;
 	index += i;
@@ -1180,6 +1188,8 @@ void PharmerDatabaseSearcher::queryIndex(QueryInfo& t, const GeoKDPage *page,
 void PharmerDatabaseSearcher::generateShapeMatches(const ShapeConstraints& constraints,
 		ShapeResults& results)
 {
+	if(numMolecules() == 0)
+		return;
 	//create tree version of constraints
 	GSSTreeSearcher::ObjectTree small = shared_ptr<const MappableOctTree>(
 					MappableOctTree::createFromGrid(constraints.getInclusiveGrid()), free);
@@ -1204,6 +1214,9 @@ void PharmerDatabaseSearcher::generateTripletMatches(const vector<vector<
 	emptyCnt = 0;
 	processCnt = 0;
 	matchedCnt = 0;
+	if(numMolecules() == 0)
+		return;
+		
 	for (unsigned i = 0, n = triplets.size(); i < n; i++)
 	{
 		for (unsigned t = 0, nt = triplets[i].size(); t < nt; t++)
