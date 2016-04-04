@@ -726,7 +726,7 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 		//when all done, if we are a benchmark library, compute stats
 		//for all results
 		vector<QueryResult*> all;
-		DataParameters allparam;
+		DataParameters allparam(dp); //need to retain original sort
 		allparam.extraInfo = true; //need names
 		getResults(allparam, all);
 		computeBenchmarkStats(all, data["benchmark"]);
