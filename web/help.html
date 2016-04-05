@@ -110,26 +110,40 @@
 				  protein receptor or enzyme). The search can take as input either a
 				  small molecule, a set of pharmacophore features (which will be
 				  subsequently described in greater detail), or both a protein and a
-				  small molecule for which a putative binding pose is known. These
-				  may be obtained from the Protein Data Bank (PDB) or uploaded by the
-				  user directly, using one of the two options provided on the main
-				  page. This help follows 
+				  pharmacophore or a small molecule for which a putative binding pose is known. These
+				  may be obtained by pharmit from the Protein Data Bank (PDB) if the
+				  user provides the PDB accession code in the "start from PDB" entry
+				  box on the main page (ligands associated with that PDB entry will 
+				  be returned in the rightmost dropdown box, and the user may choose
+				  from any of them) or uploaded by the user directly by choosing
+				  "enter pharmit search" on the main page, then choosing "Load Receptor"
+				  and "Load Features" in the viewer.
+				  This help follows <u>
 				  <a href="search.html?SESSION=examples/4pps.json">
-					  the 4pps example</a>, which the user may choose to follow simultaneously 
-				  by clicking the link. Alternatively, <a href="examples/LIG.pdb">ligand</a> 
-				  and <a href="examples/receptor.pdb">receptor</a> files obtained directly
+					  the 4pps example</a></u>, which the user may choose to follow simultaneously 
+				  by clicking the link. Alternatively, the user may enter "4pps" in the "start
+				  from PDB" box on the main page and choose the other options as shown in the figure
+				  below. As a second alternative, <u><a href="examples/LIG.pdb">ligand</a></u> 
+				  and <u><a href="examples/receptor.pdb">receptor</a></u> files obtained directly
 				  from the 4PPS PDB entry are provided as an example of possible input
 				  file formats. These can be used to initiate a search by choosing 
 				  "Enter Pharmit Search" on the main page, then uploading the receptor file
-				  by clicking "Load receptor" and the ligand file by clicking "Load
-				  features."</span></p>
+				  by clicking "Load Receptor" and the ligand file by clicking "Load
+				  Features."</span></p>
 				  <br class="newline">
 				  <img src="images/main.png" class="centeredimg" alt="Getting started"  align="middle"><br>
 		<span class="font-21" id="initiate-search">Initiating a Search</span>
 			  <p class="noindent">
-			  	<span class="font-23">
+			  <span class="font-23">
+				  There are three ways to initiate a search with pharmit: from
+				  a PDB accession code, from receptor/ligand files (including
+				  both a receptor and ligand as well as a ligand by itself), or by using
+				  a pharmacophore generated from an external source and uploaded to
+				  pharmit. Each method is described in detail below.</span><br>
+			  <span class="font-16">From PDB</span><br>
+				  <span class="font-23">
 				  A structure can be obtained directly from the PDB by entering its four-character PDB
-				  identifier in the first text box after "start from PDB". A list of
+				  identifier in the first text box after "start from PDB" as shown above. A list of
 				  possible small molecules will be generated automatically in the
 				  second box, from which the user may choose a ligand of interest.
 				  Binding site waters may be excluded entirely, used as part of the
@@ -137,27 +151,43 @@
 				  similarity search, or used as part of the receptor to identify
 				  which pharmacophore features of the ligand are relevant to binding.
 				  To proceed with the search, the user should next choose
-				  "submit".
-				  <br class="newline">
+				  "submit".</span><br>
+			  <span class="font-16">From receptor/ligand files</span><br>
+				  <span class="font-23">
 				  Alternatively the user may first choose "enter pharmit search" in
 				  order to upload structural files. After being redirected to the
-				  search page, choose "Load Features..." to upload a small molecule
-				  structure in sdf, pdb, mol2, or xyz format or a pharmacophore query
-				  file in MOE, LigBuilder, LigandScout, or Pharmer format. If a
-				  receptor is provided, it should be one for which the binding pose
-				  of the provided ligand is known, or to which the ligand was
-				  previously docked.
+				  search page, choose "Load Features" to upload a small molecule
+				  structure in sdf, pdb, mol2, or xyz format. If a
+				  receptor is provided via the "Load Receptor" option, it should be 
+				  one for which the binding pose of the provided ligand is known, 
+				  or to which the ligand was previously docked.
 				  <em>pharmit</em> will not dock the two
 				  compounds, and since the receptor is used to identify which
 				  pharmacophore features of the ligand are relevant to binding,
 				  providing a pair of structures that are oriented arbitrarily will
-          fail to identify a relevant pharmacophore. The receptor may be provided in sdf,
-				  pdb, mol2, or xyz format.</span></p>
+				  fail to identify a relevant pharmacophore. The receptor may be provided in sdf,
+				  pdb, mol2, or xyz format. If a ligand structure is provided without a receptor,
+				  the user will not be able to energy minimize the results of queries. The second
+			      image below shows an example of uploading a ligand structure without a receptor.</span>
 				  <br class="newline">
 				  <img src="images/load.png" alt="Loading structures"  class="centeredimg" 
 					    align="middle">
 				  <br class=
-					  "newline">
+				  "newline">
+				  <br class="newline">
+				  <img src="images/lonesomeligand.png" alt="Using a ligand by itself to generate queries"  class="centeredimg" 
+					    align="middle">
+				  <br class=
+				  "newline"><br>
+				  <span class="font-16">From external sources</span><br><br>
+				  <span class="font-23">
+				  The user may also use an external program such as MOE, LigBuilder,
+				  LigandScout, or Pharmer to generate a pharmacophore query file and
+				  then upload that file to pharmit directly. It is provided in the same
+				  manner as a ligand structure file; that is, the user should click "enter
+				  pharmit search" on the main page, than click "Load Features" to upload a 
+				  query file in MOE, LigBuilder, LigandScout, or Pharmer format. A receptor
+				  file may optionally also be uploaded via the "Load Receptor" button.</span></p>
 		<span class="font-21" id="visualization">Visualization</span><br>
 			<p class="noindent">
 				<span class="font-23">
@@ -293,7 +323,7 @@
 				  
 				  There are seven options given for hit screening. These
 				  include constraints on molecular weight, the number of rotatable
-				  bonds, LogP (a measure of lipophilicity), polar surface area
+				  bonds, logP (a measure of lipophilicity), polar surface area
 				  (indicative of ability to permeate cell membranes), the number of
 				  aromatic groups, the number of hydrogen bond acceptors, and the
 				  number of hydrogen bond donors. Properties are computing using OpenBabel. 
