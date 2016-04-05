@@ -1166,6 +1166,16 @@ a {
 	line-height: 26pt;
 	letter-spacing: normal;
 }
+.subheader {
+	font-family: "Open Sans", sans-serif;
+	font-size: 16pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 34pt;
+	letter-spacing: normal;
+}
 .para-21 {
 	text-indent: 0;
 	padding-top: 4pt;

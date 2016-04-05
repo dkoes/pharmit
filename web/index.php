@@ -16,7 +16,7 @@
 	</head>
 	<body id="body">
 		<div id="notice">
-		Find pharmit useful? Please <a href="mailto:dkoes+pharmit@pitt.edu">let us know</a>.
+		Find pharmit useful? Please <a href="mailto:dkoes@pitt.edu">let us know</a>.
 		We are in need of letters of support. <div class=closebutton></div>
 		</div>
 		<div class="cont">
