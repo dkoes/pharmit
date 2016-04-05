@@ -830,7 +830,7 @@ var Pharmit = Pharmit ||  {};
 $(document).ready(function() {
 	
 	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
-	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	Pharmit.email = 'dkoes@pitt.edu';
 	
 	//global variable checking - we should add nothing but Pharmit
 	var globalsBefore = {};
@@ -2195,6 +2195,22 @@ Pharmit.Query = (function() {
 			
 			//handlers
 			run.click(doSearch);
+			
+			run.change(function() {
+				//update button name
+				var subdir = run.val();
+				var i, n;
+				for(i = 0, n = subsetinfo.length; i < n; i++) {
+					info = subsetinfo[i];
+					if(info.subdir == subdir) {
+						run.button("option",'label',"Search "+info.name);
+						break;
+					}
+				}
+				if(i == n) {
+					run.button("option",'label',"Unknown Subset");
+				}				
+			});
 			select.click(
 					function() {
 						var menu = ul.show().position({

@@ -17,7 +17,7 @@ var Pharmit = Pharmit ||  {};
 $(document).ready(function() {
 	
 	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
-	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	Pharmit.email = 'dkoes@pitt.edu';
 	
 	//global variable checking - we should add nothing but Pharmit
 	var globalsBefore = {};
