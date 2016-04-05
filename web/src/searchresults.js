@@ -169,6 +169,7 @@ Pharmit.SearchResults = (function() {
 		
 		this.show = function() {
 			phdiv.show();
+			table.DataTable().ajax.reload();
 		};
 		
 		//cancel any query. clear out the table, and hide the div
@@ -211,7 +212,8 @@ Pharmit.SearchResults = (function() {
 			var qobj = $.extend({}, query);
 			qobj.receptor = receptor;
 			minresults.minimize(qid, qobj, cnt, function() {
-				phdiv.show();				
+				phdiv.show();			
+				table.DataTable().ajax.reload();
 			});
 		};
 		

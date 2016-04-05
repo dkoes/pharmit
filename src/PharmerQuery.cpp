@@ -561,6 +561,7 @@ bool PharmerQuery::loadResults()
 	SpinLock lock(mutex);
 	checkThreads();
 	bool moretoread = !threadsDone();
+	unsigned newcnt = 0; //number added to results
 	for (unsigned i = 0, n = corrsQs.size(); i < n; i++)
 	{
 		vector<CorrespondenceResult*> corrs;
@@ -572,18 +573,20 @@ bool PharmerQuery::loadResults()
 			currsort = SortType::Undefined;
 			results.push_back(
 					new (resalloc.alloc(sizeof(QueryResult))) QueryResult(c));
+			newcnt++;
 		}
 	}
 
-//filter
-	sortResults(params.sort, params.reverseSort);
-	reduceResults();
+	//filter and sort if we've seen something new
+	if(newcnt > 0) {
+		sortResults(params.sort, params.reverseSort);
+		reduceResults();
 
-	if (params.maxHits != 0 && results.size() > params.maxHits)
-	{
-		results.resize(params.maxHits);
+		if (params.maxHits != 0 && results.size() > params.maxHits)
+		{
+			results.resize(params.maxHits);
+		}
 	}
-
 	return moretoread;
 }
 
