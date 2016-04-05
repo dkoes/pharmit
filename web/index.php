@@ -224,8 +224,8 @@ else
   ga('send', 'pageview');
 
   $(document).ready(function() {
-	  $('#notice').slideDown();
-	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
+	 // $('#notice').slideDown();
+	 // $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
   });
 </script>		
 	</body>
