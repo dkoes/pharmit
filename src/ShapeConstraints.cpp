@@ -240,6 +240,9 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 			OBConversion conv;
 			string rname = root["recname"].asString();
 			conv.SetInFormat(OBConversion::FormatFromExt(rname.c_str()));
+			//ignore bonds since we don't need them and openbabel likes to crash perceiving them
+			conv.AddOption("b",OBConversion::INOPTIONS);
+
 			OBMol rec;
 			conv.ReadString(&rec, root["receptor"].asString());
 
