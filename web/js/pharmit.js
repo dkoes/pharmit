@@ -896,13 +896,16 @@ $(document).ready(function() {
 		else if(event.data.type && event.data.type == "init") {
 			//actually have no idea where this event comes from, but it pops up in chrome
 		}
+		else if(event.contexts) {
+			//same here
+		}
 		else {
 			try {
 				var obj = $.parseJSON(event.data);
 				query.setLigandAndReceptor(obj.ligand, obj.ligandFormat, obj.receptor, obj.recname);
 			}
 			catch(e) {
-				alert("Communication error: "+e);
+				console.log("Communication error: "+e);
 			}
 		}
 	};
