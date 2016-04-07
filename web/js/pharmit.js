@@ -893,6 +893,9 @@ $(document).ready(function() {
 		else if(event.data == "ack2") {
 			//ignore, message should handle these
 		}
+		else if(event.data.type && event.data.type == "init") {
+			//actually have no idea where this event comes from, but it pops up in chrome
+		}
 		else {
 			try {
 				var obj = $.parseJSON(event.data);
