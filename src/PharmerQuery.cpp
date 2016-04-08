@@ -84,7 +84,7 @@ PharmerQuery::PharmerQuery(
 		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
 		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
 		NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
-				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0), numactives(0),
+				SortType::Undefined), currrev(false), nthreads(nth), dbcnt(0), inUseCnt(0), numactives(0),
 				totalmols(0), sminaid(0)
 {
 	if (dbs.size() == 0)
@@ -122,7 +122,7 @@ PharmerQuery::PharmerQuery(
 		const ShapeConstraints& ex, unsigned nth) :
 		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
 				false), tripletMatchThread(NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
-				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
+				dbs.size()), currsort(SortType::Undefined), currrev(false), nthreads(nth), dbcnt(
 				0), inUseCnt(0), numactives(0), totalmols(0), sminaid(0)
 {
 	if (dbs.size() == 0)
@@ -502,7 +502,7 @@ class ReverseSort
 //do stable sorts, which require an explicit reverse sort
 void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 {
-	if (currsort == srt)
+	if (currsort == srt && currrev == reverse)
 		return;
 	QRCompare cmp = NULL;
 	switch (srt)
@@ -520,6 +520,7 @@ void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 			break;
 	}
 	currsort = srt;
+	currrev = reverse;
 	if (cmp != NULL)
 	{
 		if (reverse)
@@ -578,15 +579,14 @@ bool PharmerQuery::loadResults()
 	}
 
 	//filter and sort if we've seen something new
-	if(newcnt > 0) {
-		sortResults(params.sort, params.reverseSort);
-		reduceResults();
+	sortResults(params.sort, params.reverseSort);
+	reduceResults();
 
-		if (params.maxHits != 0 && results.size() > params.maxHits)
-		{
-			results.resize(params.maxHits);
-		}
+	if (params.maxHits != 0 && results.size() > params.maxHits)
+	{
+		results.resize(params.maxHits);
 	}
+
 	return moretoread;
 }
 
@@ -736,6 +736,7 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 		allparam.extraInfo = true; //need names
 		getResults(allparam, all);
 		computeBenchmarkStats(all, data["benchmark"]);
+		getResults(dp, r); //resort
 	}
 
 	for (unsigned i = 0, n = r.size(); i < n; i++)

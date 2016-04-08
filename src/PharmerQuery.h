@@ -93,6 +93,7 @@ class PharmerQuery
 	BumpAllocator<1024*1024> resalloc;
 	vector<QueryResult*> results;
 	SortTyp currsort;
+	bool currrev;
 
 	unsigned nthreads;
 	unsigned dbcnt;
