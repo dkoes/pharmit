@@ -129,7 +129,6 @@ static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Co
 {
 	FCGX_Request request;
 	FCGX_InitRequest(&request, listenfd, 0);
-	OpenBabel::OBPlugin::LoadAllPlugins();
 
 	while (FCGX_Accept_r(&request) == 0)
 	{
@@ -196,6 +195,8 @@ void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 	filesystem::path logdirpath;
 	SpinMutex logmutex;
 	SpinMutex recmutex;
+
+	OpenBabel::OBPlugin::LoadAllPlugins();
 
 	if (databases.size() == 0)
 	{
