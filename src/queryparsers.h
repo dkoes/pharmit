@@ -320,7 +320,10 @@ public:
 				in >> r;
 
 				if (in)
+				{
 					excluder.addExclusionSphere(x, y, z, r);
+					excluder.enableExclusionSpheres();
+				}
 			}
 		}
 		return true;
@@ -541,6 +544,7 @@ public:
 						pos->Attribute("z3", &z);
 						pos->Attribute("tolerance", &r);
 						excluder.addExclusionSphere(x, y, z, r);
+						excluder.enableExclusionSpheres();
 					}
 				}
 			}

@@ -103,11 +103,13 @@ public:
 
 	void clear() { exspheres.clear(); inspheres.clear(); }
 
+	void enableExclusionSpheres() { exclusiveKind = Spheres; }
 	void addExclusionSphere(float x, float y, float z, float r)
 	{
 		exspheres.push_back(Sphere(x,y,z,r));
 	}
 
+	void enableInclusionSpheres() { inclusiveKind = Spheres; }
 	void addInclusionSphere(float x, float y, float z, float r)
 	{
 		inspheres.push_back(Sphere(x,y,z,r));

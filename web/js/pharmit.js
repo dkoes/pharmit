@@ -1423,6 +1423,7 @@ Pharmit.Query = (function() {
 			setFeaturesHelper(phfeatures, features);
 			setFeaturesHelper(inspheres, inshapefeatures, Feature.INCLUSIVESHAPE);
 			setFeaturesHelper(exspheres, exshapefeatures, Feature.EXCLUSIVESHAPE);
+			$('#exselect').change();
 			
 			viewer.enableRendering();
 			var end = new Date().getTime();

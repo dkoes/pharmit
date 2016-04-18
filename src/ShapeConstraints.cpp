@@ -398,6 +398,7 @@ void ShapeConstraints::addToJSON(Json::Value& root) const
 		pt["y"] = exspheres[i].y;
 		pt["z"] = exspheres[i].z;
 		pt["radius"] = sqrt(exspheres[i].rSq);
+		pt["enabled"] = (exclusiveKind == Spheres);
 	}
 	start = jpoints.size();
 	for(unsigned i = 0, n = inspheres.size(); i < n; i++)
@@ -408,6 +409,7 @@ void ShapeConstraints::addToJSON(Json::Value& root) const
 		pt["y"] = inspheres[i].y;
 		pt["z"] = inspheres[i].z;
 		pt["radius"] = sqrt(inspheres[i].rSq);
+		pt["enabled"] = (inclusiveKind == Spheres);
 	}
 }
 
