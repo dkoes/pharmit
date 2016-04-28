@@ -87,6 +87,9 @@ Pharmit.Results = (function() {
 		    else if((m = name.match(/ChemDiv-?(\S+)/))) {
 		        return "http://chemistryondemand.com:8080/eShop/search_results.jsp?idnumber="+m[1];
 		    }
+		    else if((m = name.match(/ZINC(\d+)/))) {
+		    	return "http://zinc15.docking.org/substances/"+m[1];
+		    }
 		    
 		    return null;
 		};
