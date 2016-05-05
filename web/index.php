@@ -35,7 +35,7 @@
 							<div class="cont-7"><p class="para-2"><span class="font-2"><a href="help.html">help</a></span></p></div>
 						</div>
 						<div class="cont-8">
-							<div class="cont-9"><p class="para-3"><span class="font-3"><a href="mailto:dkoes+pharmit@pitt.edu">contact</a></span></p></div>
+							<div class="cont-9"><p class="para-3"><span class="font-3"><a href="mailto:dkoes@pitt.edu">contact</a></span></p></div>
 						</div>
 					</div>
 				</div>
