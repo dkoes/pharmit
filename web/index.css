@@ -1569,6 +1569,18 @@ a {
 	line-height: 26pt;
 	letter-spacing: normal;
 }
+
+.pharmitlink {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: italic;
+	text-decoration: underline;
+	color: rgb(108,113,196);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+
 .cont-65 {
 	overflow: hidden;
 }

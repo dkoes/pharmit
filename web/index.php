@@ -194,7 +194,9 @@ else
 		<div class="cont-57">
 			<div class="section-6">
 				<div class="cont-58">
-					<div class="cont-59"><p class="para-27"><span class="font-36">acknowledgements</span></p><p class="para-28"><span class="font-37">pharmit is funded through R01GM108340 from the National Institute of General Medical Sciences. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institute of General Medical Sciences or the National Institutes of Health.</span></p></div>
+					<div class="cont-59"><p class="para-27"><span class="font-36">acknowledgements</span></p>
+					<p class="para-28"><span class="font-37">If you find this site useful please cite <span class="pharmitlink"><a href='http://nar.oxfordjournals.org/content/early/2016/04/19/nar.gkw287.long'>Pharmit: interactive exploration of chemical space</a><span></span>.</span></p></div>
+					<p class="para-28"><span class="font-37">Pharmit is funded through R01GM108340 from the National Institute of General Medical Sciences. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institute of General Medical Sciences or the National Institutes of Health.</span></p></div>
 				</div>
 			</div>
 		</div>
