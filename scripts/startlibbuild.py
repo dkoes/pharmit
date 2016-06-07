@@ -49,7 +49,7 @@ def application(environ, start_response):
         if infile:
             numconfs = 0
             if infile.endswith('sdf.gz'):
-                numconfs = mols.count('$$$$\n')
+                numconfs = mols.count('$$$$')
             else:
                 numconfs = mols.count('\n')*10 #magic number alert, estimate of average confs per mol
             
