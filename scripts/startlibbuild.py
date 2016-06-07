@@ -6,7 +6,7 @@
 #another script will poll the database looking for databases that need to be
 #built (this way only one is done at a time); this script just sets up the input directory
 
-import sys, flup, MySQLdb, gzip, cgi, os,random,string
+import sys, flup, MySQLdb, gzip, cgi, os,random,string,re
 
 
 def application(environ, start_response):
@@ -47,9 +47,10 @@ def application(environ, start_response):
             output = "Error\nUnsupported file format in file %s"%file.filename
         
         if infile:
+            mols = mols.replace('\r\n','\n') #remove dos line endings
             numconfs = 0
             if infile.endswith('sdf.gz'):
-                numconfs = mols.count('$$$$')
+                numconfs = mols.count('$$$$\n')
             else:
                 numconfs = mols.count('\n')*10 #magic number alert, estimate of average confs per mol
             
