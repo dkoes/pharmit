@@ -142,7 +142,7 @@ else if(isset($_REQUEST["op"])) //operation
 			$_SESSION['userid']  = "guest";
 			$_SESSION['maxprivatedbs'] = 0;
 			$_SESSION['maxprivateconfs'] = 0;
-			$_SESSION['maxconfs'] = 10000;
+			$_SESSION['maxconfs'] = 25000;
 			header("location:create.php"); //reload now that session is set with no op
 			exit();
 			break;

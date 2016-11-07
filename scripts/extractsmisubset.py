@@ -13,13 +13,15 @@ def sortNames(prefix, names):
     unprefixed = set()
     for n in names:
         n = n.strip();
+        if n.startswith('MolPort') and '_' in n: #workaround for bad molport names
+            n = n.split('_')[0]
         if n.startswith(prefix):
             prefixed.add(n)
         else:
             unprefixed.add(n)
             
-    prefixed = list(prefixed)
-    unprefixed = list(unprefixed)
+    prefixed = list(set(prefixed))
+    unprefixed = list(set(unprefixed))
     prefixed.sort()
     unprefixed.sort()
     

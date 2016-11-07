@@ -16,7 +16,6 @@ if len(sys.argv) == 3:
     nscf = open(sys.argv[1])
     nscout = open(sys.argv[2],'w')
     for line in nscf:
-        print line.strip().split()
         (cid,name) = line.strip().split()
         nscids[cid] = name
         
@@ -48,7 +47,7 @@ for f in files:
             print '%s\tPubChem-%s'% (smile,cid) 
             if cid in nscids:
                 nscout.write('%s\t%s' % (smile,nscids[cid]))
-                sys.stderr.write('%s\t%s',(smile,nscids[cid]))
+                sys.stderr.write('%s\t%s' % (smile,nscids[cid]))
             smile = None
             cid = None
         line = data.readline()

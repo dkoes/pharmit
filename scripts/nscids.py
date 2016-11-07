@@ -16,12 +16,19 @@ files = ftp.nlst()
 for f in files:
     if not f.endswith('.sdf.gz'):
         continue
-
+    sys.stderr.write("%s\n"%f)
     #it would be nice to be fancy and stream download and parsing,
     #but for simplicity we will download each file whole and then parse
     #which requires sufficient disk space in /tmp
     temp = tempfile.TemporaryFile(mode='r+b')
-    ftp.retrbinary('RETR %s' % f, temp.write)
+    try:
+       ftp = ftplib.FTP('ftp.ncbi.nih.gov')
+       ftp.login()
+       ftp.cwd('pubchem/Substance/CURRENT-Full/SDF')
+       ftp.retrbinary('RETR %s' % f, temp.write)
+    except:
+      sys.stderr.write("Failure with %s\n" % f)
+      continue
     temp.seek(0)
     data = gzip.GzipFile(fileobj=temp)
     cid = None
@@ -44,8 +51,11 @@ for f in files:
                     break
         elif line.startswith('$$$$'):
             if cid != None and name != None:
-                if nscavail.nscavail(name):
-                    print cid,name
+                try:
+                    if nscavail.nscavail(name):
+                        print cid,name
+                except:
+                    sys.stderr.write("avail fail %s,%s\n" % (cid,name))
             name = None
             cid = None
         line = data.readline()

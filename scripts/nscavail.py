@@ -15,11 +15,11 @@ def nscavail(id):  #id should be a string
     browser.set_handle_robots(False)
     browser.open(url)
     browser.select_form('orderForm')
-    browser.submit('orderForm:j_idt13')
+    browser.submit('orderForm:j_idt11')
     browser.select_form('orderForm')
     browser['orderForm:nsc'] = id
     browser['orderForm:amt'] = '1'
-    browser.submit('orderForm:j_idt32')
+    browser.submit('orderForm:j_idt30')
     soup = bs(browser.response().read(),"html5lib")
     
     msgs = soup.find_all(class_='ui-messages-info-summary') + soup.find_all(class_='ui-messages-error-summary')

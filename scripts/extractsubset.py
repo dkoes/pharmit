@@ -11,6 +11,8 @@ def sortNames(prefix, names):
     prefixed = []
     unprefixed = []
     for n in names:
+        if n.startswith('MolPort') and '_' in n:
+            n = n.split('_')[0] #remove meta data accidentally included in name
         if n.startswith(prefix):
             prefixed.append(n)
         else:

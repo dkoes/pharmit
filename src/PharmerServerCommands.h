@@ -266,7 +266,7 @@ public:
 				unsigned oldqid = cgiGetInt(CGI, "oldqid");
 
 				//DEBUG code - output queries
-				if(true)
+				if(false)
 				{
 					SpinLock lock(logmutex);
 
