@@ -13,7 +13,7 @@ def nscavail(id):  #id should be a string
     url = 'https://dtp.cancer.gov/RequestCompounds/forms/order.xhtml'
     browser = mechanize.Browser()
     browser.set_handle_robots(False)
-    browser.open(url)
+    browser.open(url,timeout=30)
     browser.select_form('orderForm')
     browser.submit('orderForm:j_idt11')
     browser.select_form('orderForm')
