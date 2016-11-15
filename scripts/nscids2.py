@@ -8,6 +8,8 @@
 import json,sys,tempfile,gzip,re,urllib2
 import nscavail
 from Bio import Entrez
+from rdkit.Chem import AllChem as Chem
+import StringIO
 
 Entrez.email = "dkoes@pitt.edu"
 records = Entrez.read(Entrez.esearch(db='pcsubstance',term="NSC"))
@@ -24,28 +26,22 @@ for start in xrange(0,total,batchsize):
 for sid in sids:
     try:
         #query each one individually! hopefully more robust..
-        record = urllib2.urlopen('https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/sid/%d/json' % sid).read()
-        record = json.loads(record)
-        record = record['PC_Substances'][0]
+        sdf = urllib2.urlopen('https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/sid/%d/sdf' % sid).read()        
+        mol = Chem.ForwardSDMolSupplier(StringIO.StringIO(sdf)).next()
+        if mol.GetNumAtoms() == 0:
+            continue
         name = ''
-        for syn in record['synonyms']:
+        for syn in mol.GetProp('PUBCHEM_SUBSTANCE_SYNONYM').split():
             if syn.startswith('NSC'):
                 name = syn
                 break
-        #standardize on NSC-[num]
-        if re.match(r'NSC\d+',name):
-            name = re.sub(r'NSC','NSC-',name)  
+        #standardize on NSC[num]
+        if re.match(r'NSC-\d+',name):
+            name = re.sub(r'NSC-','NSC',name)  
         if re.match(r'NSC\s+\d+',name):
-            name = re.sub(r'NSC\s+','NSC-',name)  
-        if name != '' and 'compound' in record:
-            #get cmpd id
-            cid = 0
-            for rec in record['compound']:
-                if 'id' in rec and rec['id']['type'] == 1 and 'id' in rec['id'] and 'cid' in rec['id']['id']:
-                    cid = rec['id']['id']['cid']
-                    break
-        if cid != 0 and nscavail.nscavail(name):
-            print cid,name
+            name = re.sub(r'NSC\s+','NSC',name)  
+        if nscavail.nscavail(name):
+            print Chem.MolToSmiles(mol),name
     except (KeyboardInterrupt, SystemExit):
         raise
     except Exception as e:
