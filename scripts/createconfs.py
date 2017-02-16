@@ -170,16 +170,19 @@ if __name__ == '__main__':
             #to be sure, canonicalize smile (with iso)
             can = Chem.MolToSmiles(mol,isomericSmiles=True)
             if len(can) > 250: #way too big
-				sys.stderr.write('%s is too large. Omitted.\n' % name)
-				continue
+                sys.stderr.write('%s is too large. Omitted.\n' % name)
+                continue
             cursor = conn.cursor()
             cursor.execute('SELECT sdfloc FROM structures WHERE smile = %s', (can,))
             #if smile is not in structures
             row = cursor.fetchone()
-            isnew = (row == None) or row[0] == None
+            isnew = (row == None) or (row[0] == None) or (not os.path.exists(row[0]))
+            sdfloc = None
             if row == None:
                 #insert without sdfs to get unique id 
                 cursor.execute('INSERT INTO structures (smile,weight) VALUES(%s,%s) ', (can, Chem.CalcExactMolWt(mol)))
+            elif row[0] and not os.path.exists(row[0]):
+                sdfloc = row[0] #previously generated, but lost!
                 
             #get unique id
             cursor.execute('SELECT id FROM structures WHERE smile = %s', (can,))
@@ -207,6 +210,10 @@ if __name__ == '__main__':
                             pass
                             
                 fname = '%s/%d.sdf.gz' % (dirpath,uniqueid)
+                if sdfloc:
+                    fname = sdfloc #put back in original location
+                    whichprefix -= 1 #backup
+                    
                 #create conformers and insert them
                 queue.put((uniqueid, can, mol, fname, options))
                 #update prefix to next dir
