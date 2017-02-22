@@ -16,8 +16,7 @@
 	</head>
 	<body id="body">
 		<div id="notice">
-		Find pharmit useful? Please <a href="mailto:dkoes@pitt.edu">let us know</a>.
-		We are in need of letters of support. <div class=closebutton></div>
+		<font color="red"><b>On Feb 6, 2017 pharmit experienced a drive failure.  It is currently operating at a reduced capacity.  <br>If possible, please wait until this issue is fixed to get the best experience.</b></font>  <div class=closebutton style="float:right"></div>
 		</div>
 		<div class="cont">
 			<div class="section">
@@ -226,8 +225,8 @@ else
   ga('send', 'pageview');
 
   $(document).ready(function() {
-	 // $('#notice').slideDown();
-	 // $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
+	  $('#notice').slideDown();
+	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
   });
 </script>		
 	</body>
