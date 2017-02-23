@@ -61,7 +61,7 @@ void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& database
 {
 	databases.totalConfs = 0;
 	databases.totalMols = 0;
-	databases.stripes.resize(dbpaths.size());
+	databases.stripes.reserve(dbpaths.size());
 	vector<LoadDatabase> loaders(dbpaths.size());
 	thread_group loading_threads;
 	for (unsigned i = 0, n = dbpaths.size(); i < n; i++)
@@ -69,11 +69,12 @@ void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& database
 		if (!filesystem::is_directory(dbpaths[i]))
 		{
 			cerr << "Invalid database directory path: " << dbpaths[i] << "\n";
-			exit(-1);
+			continue; //be tolerant of missing slices exit(-1);
 		}
 
+		databases.stripes.push_back(boost::shared_ptr<PharmerDatabaseSearcher>());
 		loading_threads.add_thread(
-				new thread(ref(loaders[i]), ref(databases.stripes[i]), i, dbpaths[i]));
+				new thread(ref(loaders[i]), ref(databases.stripes.back()), i, dbpaths[i]));
 	}
 	loading_threads.join_all();
 
