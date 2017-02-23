@@ -22,7 +22,7 @@ def setStatus(conn, which, status, msg):
 #send a signal to any running pharmitserver processes indicating that they should reload database info
 def reset_server():
     for proc in psutil.process_iter():
-        if proc.name == 'pharmitserver' or proc.name == 'pharmit':
+        if proc.name() == 'pharmitserver' or proc.name() == 'pharmit':
             proc.send_signal(signal.SIGUSR1)
             
 def create_sdf_ligs(conn, libraryid, cprefixes):

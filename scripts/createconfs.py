@@ -181,7 +181,7 @@ if __name__ == '__main__':
             if row == None:
                 #insert without sdfs to get unique id 
                 cursor.execute('INSERT INTO structures (smile,weight) VALUES(%s,%s) ', (can, Chem.CalcExactMolWt(mol)))
-            elif row[0] and not os.path.exists(row[0]):
+            elif row[0] and not os.path.exists(row[0]) and 'conformer' in row[0]: #hacky workaround for mistake I made w/prefixes
                 sdfloc = row[0] #previously generated, but lost!
                 
             #get unique id
@@ -191,7 +191,10 @@ if __name__ == '__main__':
             
             #we always update the name unless otherwise specified
             if not missingname and not options.nonames:
-                cursor.execute('INSERT IGNORE INTO names (smile,name) VALUES(%s,%s)', (can,name))
+                cursor.execute('SELECT * FROM names WHERE smile = %s and name = %s', (can,name))
+                row = cursor.fetchone()
+                if row == None: 
+                     cursor.execute('INSERT IGNORE INTO names (smile,name) VALUES(%s,%s)', (can,name))
             conn.commit()
             
                             
@@ -211,6 +214,12 @@ if __name__ == '__main__':
                             
                 fname = '%s/%d.sdf.gz' % (dirpath,uniqueid)
                 if sdfloc:
+                    dirpath = os.path.dirname(sdfloc)
+                    if not os.path.exists(dirpath):
+                        try:
+                            os.makedirs(dirpath)
+                        except OSError as e:
+                            pass 
                     fname = sdfloc #put back in original location
                     whichprefix -= 1 #backup
                     
