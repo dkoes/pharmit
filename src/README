@@ -43,33 +43,43 @@ USING
 
 The --help option will provide the following:
 
-USAGE: pharmer [options] --cmd command [pharma, dbcreate, dbsearch, server]
+USAGE: pharmitserver [options] --cmd command [pharma, dbcreate, dbcreateserverdir, dbsearch, server]
 
 OPTIONS:
-  -bloom-large=<uint>  - Number of bits for coarse discretization fingerprint.
-  -bloom-small=<uint>  - Number of bits for fine discretization fingerprint.
-  -cmd=<string>        - command [pharma, dbcreate, dbsearch, server]
+  -cmd=<string>        - command [pharma, dbcreate, dbcreateserverdir, dbsearch, server]
   -dbdir=<string>      - database directory(s)
+  -dbinfo=<string>     - [dbcreateserverdir] JSON file describing database subset
   -extra-info          - Output additional molecular properties.  Slower.
   -file-partition      - Partion database slices based on files
   -help                - Display available options (--help-hidden for more)
   -in=<string>         - input file(s)
+  -ligs=<string>       - [dbcreateserverdir] Text file listing locations of molecules
   -logdir=<string>     - log directory for server
   -max-hits=<n>        - return at most n results
+  -max-nrot=<uint>     - maximum allowed rotatable bonds
   -max-orient=<n>      - return at most n orientations of each conformation
   -max-rmsd=<number>   - maximum allowed RMSD; default max allowed by query
   -max-weight=<uint>   - maximum allowed molecular weight
+  -min-nrot=<uint>     - minimum allowed rotatable bonds
+  -min-port=<uint>     - port for minimization server
+  -min-server=<string> - minimization server address
+  -min-weight=<uint>   - minimum allowed molecular weight
+  -noindex             - [dbcreateserverdir] Do not create indices
   -nthreads=<n>        - utilize n threads; default 1
-  -out=<string>        - output file
+  -out=<string>        - output file(s)
   -pharmaspec=<string> - pharmacophore specification
   -port=<uint>         - port for server to listen on
+  -prefixes=<string>   - [dbcreateserverdir,server] File of directory prefixes to use for striping.
   -print               - print results
   -q                   - quiet; suppress informational messages
+  -receptor=<string>   - Receptor file for interaction pharmacophroes
   -reduceconfs=<n>     - return at most n conformations for each molecule
-  -separate-weight     - Segregate database based on molecular weight
   -show-query          - print query points
+  -singledir=<string>  - Specify a single directory to recreate on a dbcreateserverdir command
   -sort-rmsd           - Sort results by RMSD.
+  -timestamp=<string>  - Specify timestamp to use for server dirs (for use with single)
   -unweighted-rmsd     - Compute minimal RMSD without radius weights
+
 
 To IDENTIFY the pharmacophore features of a molecule ex.pdb:
  pharmitserver pharma -in ex.pdb
