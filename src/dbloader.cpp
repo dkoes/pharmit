@@ -156,13 +156,16 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 					for(unsigned p = 0, np = prefixes.size(); p < np; p++)
 					{
 						filesystem::path dir = prefixes[p] / name / splits[s].asString();
-						dbpaths.push_back(dir);
 
 						filesystem::path infofile = dir / "info";
 						if(!filesystem::exists(infofile) || filesystem::file_size(infofile) == 0)
 						{
 							badsubdir = true;
 							cerr << "Invalid subdir info: " << infofile << "\n";
+						}
+						else
+						{
+							dbpaths.push_back(dir);
 						}
 					}
 				}
@@ -175,7 +178,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				}
 			}
 
-			if(!badsubdir)
+			if(true || !badsubdir) //lets try to be fault taulorant
 				loadDatabases(dbpaths, databases[specified]);
 		}
 	}

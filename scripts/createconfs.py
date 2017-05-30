@@ -165,6 +165,10 @@ if __name__ == '__main__':
         smile = max(cmpds, key=len) #take largest component by smiles length
     
         try: #catch any rdkit problems
+            
+            if len(smile) > 275:
+                sys.stderr.write('%s is too large. Omitted.\n' % name) #rdkit has problems with some large macrocycles
+                continue
             mol = Chem.MolFromSmiles(smile)
             Chem.SanitizeMol(mol)
             #to be sure, canonicalize smile (with iso)

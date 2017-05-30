@@ -7,17 +7,20 @@ import sys,subprocess, re, MySQLdb, os, collections
 import itertools
 
 def sortNames(prefix, names):
-    #sort alphabetically, but with prefixed names first
-    prefixed = []
-    unprefixed = []
+    #sort alphabetically, but with prefixed names first, make sure there are no duplicates
+    prefixed = set()
+    unprefixed = set()
     for n in names:
-        if n.startswith('MolPort') and '_' in n:
-            n = n.split('_')[0] #remove meta data accidentally included in name
+        n = n.strip();
+        if n.startswith('MolPort') and '_' in n: #workaround for bad molport names
+            n = n.split('_')[0]
         if n.startswith(prefix):
-            prefixed.append(n)
+            prefixed.add(n)
         else:
-            unprefixed.append(n)
+            unprefixed.add(n)
             
+    prefixed = list(set(prefixed))
+    unprefixed = list(set(unprefixed))
     prefixed.sort()
     unprefixed.sort()
     
