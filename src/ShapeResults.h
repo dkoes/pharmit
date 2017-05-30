@@ -33,7 +33,7 @@ See the LICENSE file provided with the distribution for more information.
 
 class ShapeResults: public Results
 {
-	boost::shared_ptr<PharmerDatabaseSearcher> dbptr;
+	std::shared_ptr<PharmerDatabaseSearcher> dbptr;
 	MTQueue<CorrespondenceResult*>& resultQ;
 	CorAllocator& alloc;
 	const QueryParameters& qparams;
@@ -45,7 +45,7 @@ class ShapeResults: public Results
 	bool& stop;
 
 public:
-	ShapeResults(boost::shared_ptr<PharmerDatabaseSearcher>& dptr, const vector<PharmaPoint>& querypoints,
+	ShapeResults(std::shared_ptr<PharmerDatabaseSearcher>& dptr, const vector<PharmaPoint>& querypoints,
 			MTQueue<CorrespondenceResult*> & Q, CorAllocator& ca,
 			const QueryParameters& qp, const ShapeConstraints& cons, unsigned whichdb, unsigned totaldb, bool& stopEarly);
 	virtual ~ShapeResults() {}

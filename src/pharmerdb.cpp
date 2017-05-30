@@ -42,7 +42,6 @@ See the LICENSE file provided with the distribution for more information.
 #include "ShapeConstraints.h"
 #include "pharminfo.h"
 
-using namespace boost;
 using namespace std;
 using namespace OpenBabel;
 
@@ -1191,11 +1190,11 @@ void PharmerDatabaseSearcher::generateShapeMatches(const ShapeConstraints& const
 	if(numMolecules() == 0)
 		return;
 	//create tree version of constraints
-	GSSTreeSearcher::ObjectTree small = shared_ptr<const MappableOctTree>(
+	GSSTreeSearcher::ObjectTree small = std::shared_ptr<const MappableOctTree>(
 					MappableOctTree::createFromGrid(constraints.getInclusiveGrid()), free);
-	shared_ptr<MappableOctTree> big = shared_ptr<MappableOctTree>(
+	std::shared_ptr<MappableOctTree> big = std::shared_ptr<MappableOctTree>(
 					MappableOctTree::createFromGrid(constraints.getExclusiveGrid()), free);
-	GSSTreeSearcher::ObjectTree lig = shared_ptr<const MappableOctTree>(
+	GSSTreeSearcher::ObjectTree lig = std::shared_ptr<const MappableOctTree>(
 					MappableOctTree::createFromGrid(constraints.getLigandGrid()), free);
 
 	big->invert();

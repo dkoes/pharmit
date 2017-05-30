@@ -124,7 +124,7 @@ class GSSTreeSearcher
 			const MappableOctTree *min, const MappableOctTree *max);
 
 public:
-	typedef shared_ptr<const MappableOctTree> ObjectTree;
+	typedef std::shared_ptr<const MappableOctTree> ObjectTree;
 
 	GSSTreeSearcher(bool v = false) :
 			verbose(v), total(0)
@@ -196,7 +196,7 @@ public:
 		if (invert) //treat as excluded vol
 			objTree->invert();
 
-		return shared_ptr<const MappableOctTree>(objTree, free);
+		return std::shared_ptr<const MappableOctTree>(objTree, free);
 	}
 
 	float getDimension() const

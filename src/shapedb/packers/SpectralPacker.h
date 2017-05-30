@@ -39,7 +39,7 @@ private:
 		bool operator<(const EigenInd& rhs) const;
 		void computeNextDistance(const EigenInd& next);
 	};
-	typedef shared_ptr< SelfAdjointEigenSolver<MatrixXd> > SolverPtr;
+	typedef std::shared_ptr< SelfAdjointEigenSolver<MatrixXd> > SolverPtr;
 
 	bool useNormalizedLaplacian;
 	SpectralAlgEnum algo;

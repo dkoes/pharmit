@@ -68,17 +68,17 @@ public:
 		unsigned cnt = math::binomial_coefficient<double>(n+2, 3U);
 		reverse.resize(cnt);
 
-		unordered_map< array<unsigned,3>, unsigned > counter; //somewhat inefficient
+		boost::unordered_map< boost::array<unsigned,3>, unsigned > counter; //somewhat inefficient
 		for(unsigned i = 0; i < n; i++)
 		{
 			for(unsigned j = 0; j < n; j++)
 			{
 				for(unsigned k = 0; k < n; k++)
 				{
-					array<unsigned,3> ijk = assign::list_of(i)(j)(k);
+					boost::array<unsigned,3> ijk = assign::list_of(i)(j)(k);
 					sort(ijk.begin(), ijk.end());
 
-					unordered_map< array<unsigned,3>, unsigned >::iterator pos = counter.find(ijk);
+					boost::unordered_map< boost::array<unsigned,3>, unsigned >::iterator pos = counter.find(ijk);
 					if(pos != counter.end()) //already has index
 					{
 						lookup[i][j][k] = pos->second;
