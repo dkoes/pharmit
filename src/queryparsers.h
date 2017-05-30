@@ -233,7 +233,7 @@ public:
 				//support different feature formats by parsing this line -
 				//still assume that x y z r are all in order
 				vector<string> tokens;
-				boost::algorithm::split(tokens, line, isblank);
+				boost::algorithm::split(tokens, line, boost::is_any_of("\t "));
 				unsigned start = 0, end = 0;
 				for(unsigned i = 0, n = tokens.size()-1; i < n; i++)
 				{

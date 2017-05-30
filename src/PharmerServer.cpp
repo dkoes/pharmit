@@ -68,7 +68,6 @@ See the LICENSE file provided with the distribution for more information.
 
 using namespace std;
 using namespace cgicc;
-using namespace boost;
 using namespace OpenBabel;
 
 typedef struct sockaddr SA;
@@ -81,7 +80,7 @@ static JSonQueryParser jsonParser;
 static PH4Parser ph4Parser;
 static PMLParser pmlParser;
 
-static unordered_map<string, QueryParser*> parsers = assign::map_list_of
+static boost::unordered_map<string, QueryParser*> parsers = assign::map_list_of
 		("",(QueryParser*) &textParser)
 		(".txt", (QueryParser*) &textParser)
 		(".json", (QueryParser*) &jsonParser)
@@ -125,7 +124,7 @@ int open_listenfd(int port)
 }
 
 
-static void server_thread(unsigned listenfd, unordered_map<string, shared_ptr<Command> >& commands)
+static void server_thread(unsigned listenfd, boost::unordered_map<string, std::shared_ptr<Command> >& commands)
 {
 	FCGX_Request request;
 	FCGX_InitRequest(&request, listenfd, 0);
@@ -231,32 +230,32 @@ void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 	}
 	cout << "Listening on port " << port << "\n";
 
-	unordered_map<string, shared_ptr<Command> > commands = assign::map_list_of
-			("startquery",shared_ptr<Command>(new StartQuery(queries, LOG, logmutex, logdirpath,pharmas)))
-					("hasreceptor", shared_ptr<Command>(new HasReceptor(LOG, logmutex,logdirpath)))
-					("setreceptor", shared_ptr<Command>(new SetReceptor(LOG, logmutex,logdirpath)))
-					("getmesh", shared_ptr<Command>(new GetMesh(LOG, logmutex,logdirpath)))
-					("cancelquery",shared_ptr<Command>(new CancelQuery(LOG, logmutex, queries)))
-					("getdata",shared_ptr<Command>(new GetData(LOG, logmutex, queries)))
-					("getpharma",shared_ptr<Command>(new GetPharma(LOG, logmutex, pharmas, parsers, logdirpath)))
-					("getsubsets",shared_ptr<Command>(new GetSubsets(queries, LOG, logmutex)))
-					("getmol",shared_ptr<Command>(new GetMol(LOG, logmutex, queries)))
-					("saveres",shared_ptr<Command>(new SaveRes(LOG, logmutex, queries)))
-					("ping", shared_ptr<Command>(new Ping(LOG, logmutex)))
-					("receptor",shared_ptr<Command>(new Receptor(LOG, logmutex)))
-					("echo",shared_ptr<Command>(new Echo(LOG, logmutex)))
-					("savedata",shared_ptr<Command>(new SaveData(LOG, logmutex)))
-					("getstatus",shared_ptr<Command>(new GetStatus(LOG, logmutex, queries)))
-					("startsmina",shared_ptr<Command>(new StartSmina(LOG, logmutex, queries, logdirpath, minServer, minPort)))
-					("cancelsmina",shared_ptr<Command>(new CancelSmina(LOG, logmutex, queries)))
-					("getsminadata",shared_ptr<Command>(new GetSminaData(LOG, logmutex, queries, minServer, minPort)))
-					("getsminamol", shared_ptr<Command>(new GetSminaMol(LOG, logmutex, queries, minServer, minPort)))
-					("savesmina", shared_ptr<Command>(new SaveSmina(LOG, logmutex, queries, minServer, minPort)));
+	boost::unordered_map<string, std::shared_ptr<Command> > commands = assign::map_list_of
+			("startquery",std::shared_ptr<Command>(new StartQuery(queries, LOG, logmutex, logdirpath,pharmas)))
+					("hasreceptor", std::shared_ptr<Command>(new HasReceptor(LOG, logmutex,logdirpath)))
+					("setreceptor", std::shared_ptr<Command>(new SetReceptor(LOG, logmutex,logdirpath)))
+					("getmesh", std::shared_ptr<Command>(new GetMesh(LOG, logmutex,logdirpath)))
+					("cancelquery",std::shared_ptr<Command>(new CancelQuery(LOG, logmutex, queries)))
+					("getdata",std::shared_ptr<Command>(new GetData(LOG, logmutex, queries)))
+					("getpharma",std::shared_ptr<Command>(new GetPharma(LOG, logmutex, pharmas, parsers, logdirpath)))
+					("getsubsets",std::shared_ptr<Command>(new GetSubsets(queries, LOG, logmutex)))
+					("getmol",std::shared_ptr<Command>(new GetMol(LOG, logmutex, queries)))
+					("saveres",std::shared_ptr<Command>(new SaveRes(LOG, logmutex, queries)))
+					("ping", std::shared_ptr<Command>(new Ping(LOG, logmutex)))
+					("receptor",std::shared_ptr<Command>(new Receptor(LOG, logmutex)))
+					("echo",std::shared_ptr<Command>(new Echo(LOG, logmutex)))
+					("savedata",std::shared_ptr<Command>(new SaveData(LOG, logmutex)))
+					("getstatus",std::shared_ptr<Command>(new GetStatus(LOG, logmutex, queries)))
+					("startsmina",std::shared_ptr<Command>(new StartSmina(LOG, logmutex, queries, logdirpath, minServer, minPort)))
+					("cancelsmina",std::shared_ptr<Command>(new CancelSmina(LOG, logmutex, queries)))
+					("getsminadata",std::shared_ptr<Command>(new GetSminaData(LOG, logmutex, queries, minServer, minPort)))
+					("getsminamol", std::shared_ptr<Command>(new GetSminaMol(LOG, logmutex, queries, minServer, minPort)))
+					("savesmina", std::shared_ptr<Command>(new SaveSmina(LOG, logmutex, queries, minServer, minPort)));
 
 
 	for (unsigned i = 0; i < SERVERTHREADS; i++)
 	{
-		thread server(server_thread, listenfd, ref(commands));
+		thread server(server_thread, listenfd, boost::ref(commands));
 	}
 
 	{
@@ -337,7 +336,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	}
 
 	//identify databases to search
-	vector< boost::shared_ptr<PharmerDatabaseSearcher> > dbs;
+	vector< std::shared_ptr<PharmerDatabaseSearcher> > dbs;
 	unsigned numslices = 1;
 	StripedSearchers *searchers = NULL;
 	if(databases.count(qp.subset))

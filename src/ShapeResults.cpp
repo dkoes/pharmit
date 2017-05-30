@@ -23,7 +23,7 @@ See the LICENSE file provided with the distribution for more information.
 #include <ShapeResults.h>
 #include "ShapeObj.h"
 
-ShapeResults::ShapeResults(boost::shared_ptr<PharmerDatabaseSearcher>& dptr,
+ShapeResults::ShapeResults(std::shared_ptr<PharmerDatabaseSearcher>& dptr,
 		const vector<PharmaPoint>& querypoints,
 		MTQueue<CorrespondenceResult*>& Q, CorAllocator& ca,
 		const QueryParameters& qp,

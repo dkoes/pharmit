@@ -26,7 +26,6 @@ See the LICENSE file provided with the distribution for more information.
 #include "basis.h"
 #include "SphereGrid.h"
 
-using namespace boost;
 using namespace OpenBabel;
 
 //multplier for float values in reduction
@@ -165,8 +164,8 @@ ThreePointData::ThreePointData(unsigned offset, double w, unsigned nr,
 {
 	//points are always ordered by pharma kind first
 	Triplet tri(points, i, j, k);
-	array<PharmaIndex, 3> PIs = tri.getPoints();
-	array<TripletRange, 3> ranges = tri.getRanges();
+	boost::array<PharmaIndex, 3> PIs = tri.getPoints();
+	boost::array<TripletRange, 3> ranges = tri.getRanges();
 
 	fingerprint.set(PIs[0].index, PIs[1].index, PIs[2].index, points);
 

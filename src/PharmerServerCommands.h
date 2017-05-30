@@ -33,7 +33,7 @@ See the LICENSE file provided with the distribution for more information.
 #include "pharmarec.h"
 #include <string>
 #include <cstdio>
-#include <google/malloc_extension.h>
+#include <gperftools/malloc_extension.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/unordered_map.hpp>
 

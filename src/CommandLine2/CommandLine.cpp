@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <cstring>
 #include <boost/filesystem.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
