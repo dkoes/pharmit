@@ -16,7 +16,7 @@
 	</head>
 	<body id="body">
 		<div id="notice">
-		<font color="red"><b>On Feb 6, 2017 pharmit experienced a drive failure.  It is currently operating at a reduced capacity.  <br>If possible, please wait until this issue is fixed to get the best experience.</b></font>  <div class=closebutton style="float:right"></div>
+		<font color="#000066"><b>After a cascade of hard drive failures, Pharmit is now fully operational with the exception of the PubChem library, which will be rebuilt after a final hardware upgrade sometime in <strike>March</strike> April.</b></font>  <div class=closebutton style="float:right"></div>
 		</div>
 		<div class="cont">
 			<div class="section">
@@ -225,8 +225,8 @@ else
   ga('send', 'pageview');
 
   $(document).ready(function() {
-	  $('#notice').slideDown();
-	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
+//	  $('#notice').slideDown();
+//	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
   });
 </script>		
 	</body>
