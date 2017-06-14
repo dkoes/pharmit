@@ -1161,8 +1161,8 @@ Pharmit.MinResults = (function() {
 				ga('send','event','query','minimize',query.subset,json.recordsTotal);
 
 				save.button( "option", "disabled", false );			
-				save.off('submit','analytics');
-				save.on('submit','analytics', function() {
+				save.off('click','analytics');
+				save.on('click','analytics', function() {
 					ga('send','event','save','minimized',query.subset,json.recordsTotal);
 				});
 				
@@ -2871,8 +2871,8 @@ Pharmit.SearchResults = (function() {
 					lang.sInfo +="</span>";								
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
-					save.off('submit','analytics');
-					save.on('submit','analytics', function() {
+					save.off('click','analytics');
+					save.on('click','analytics', function() {
 						ga('send','event','save','pharmacophore',query.subset,json.recordsTotal);
 					});
 				}
