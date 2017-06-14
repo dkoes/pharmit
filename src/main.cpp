@@ -30,7 +30,6 @@ See the LICENSE file provided with the distribution for more information.
 #include "pharmerdb.h"
 #include "PharmerQuery.h"
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
@@ -668,6 +667,18 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	else
 		key << "-" << time(NULL);
 	string subset = root["subdir"].asString();
+
+	if(root.isMember("maxconfs") && root["maxconfs"].isNumeric())
+	{
+		if(ReduceConfs == 0)
+		{
+			ReduceConfs = root["maxconfs"].asInt();
+		}
+		else
+		{
+			cerr << "Warning: -reduceconfs overriding dbinfo\n";
+		}
+	}
 
 	//check for splits
 	vector<string> splits;

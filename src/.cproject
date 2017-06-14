@@ -122,7 +122,7 @@
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.193249316" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.639190497" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1817638343" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gnina/gninasrc/lib}&quot;"/>
+									<listOptionValue builtIn="false" value="/home/dkoes/git/gnina/gninasrc/lib"/>
 									<listOptionValue builtIn="false" value="/usr/local/cuda/include"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/openbabel-2.0"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}/shapedb/molecules&quot;"/>
@@ -139,6 +139,7 @@
 									<listOptionValue builtIn="false" value=" EIGEN_STACK_ALLOCATION_LIMIT=0"/>
 									<listOptionValue builtIn="false" value="EIGEN_DISABLE_STACK_SIZE_ASSERT"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.dialect.std.17969329" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.c++11" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1957531942" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool command="gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1450417390" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release">

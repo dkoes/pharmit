@@ -34,7 +34,6 @@ See the LICENSE file provided with the distribution for more information.
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
 #include <json/json.h>
 #include <ShapeConstraints.h>
@@ -44,7 +43,7 @@ See the LICENSE file provided with the distribution for more information.
 #include "pharmarec.h"
 #include "pharmerdb.h"
 
-typedef boost::shared_ptr<boost::asio::ip::tcp::iostream> stream_ptr;
+typedef std::shared_ptr<boost::asio::ip::tcp::iostream> stream_ptr;
 
 using namespace std;
 
@@ -71,7 +70,7 @@ struct QueryResult
 class PharmerQuery
 {
 	string errorStr;
-	vector< boost::shared_ptr<PharmerDatabaseSearcher> > databases;
+	vector< std::shared_ptr<PharmerDatabaseSearcher> > databases;
 
 	vector<PharmaPoint> points;
 	vector<QueryTriplet> triplets; //all n^3 triangles
@@ -128,19 +127,19 @@ class PharmerQuery
 	void sortResults(SortTyp srt, bool reverse);
 	void reduceResults();
 
-	unsigned long getLocation(const QueryResult* r,boost::shared_ptr<PharmerDatabaseSearcher>& db);
+	unsigned long getLocation(const QueryResult* r,std::shared_ptr<PharmerDatabaseSearcher>& db);
 
 	static void thread_sendSmina(PharmerQuery *query, stream_ptr out, unsigned max);
 
 	void computeBenchmarkStats(const vector<QueryResult*>& r, Json::Value& stat);
 public:
 	//input stream and format specified as extension
-	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> > & dbs,
+	PharmerQuery(const vector< std::shared_ptr<PharmerDatabaseSearcher> > & dbs,
 			istream& in, const string& ext, const QueryParameters& qp =
 					QueryParameters(), unsigned nth =
 					boost::thread::hardware_concurrency());
 
-	PharmerQuery(const vector< boost::shared_ptr<PharmerDatabaseSearcher> > & dbs,
+	PharmerQuery(const vector< std::shared_ptr<PharmerDatabaseSearcher> > & dbs,
 			const vector<PharmaPoint>& pts, const QueryParameters& qp =
 					QueryParameters(), const ShapeConstraints& ex = ShapeConstraints(), unsigned nth = 1);
 

@@ -49,6 +49,8 @@ for line in f:
     smile = max(cmpds, key=len) #take largest component by smiles length
 
     try: #catch any rdkit problems
+        if len(smile) > 275:
+            continue #conveniently skips molecule that hangs rdkit
         mol = Chem.MolFromSmiles(smile)
         Chem.SanitizeMol(mol)
         #to be sure, canonicalize smile (with iso)
