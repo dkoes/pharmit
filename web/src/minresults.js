@@ -246,8 +246,8 @@ Pharmit.MinResults = (function() {
 				ga('send','event','query','minimize',query.subset,json.recordsTotal);
 
 				save.button( "option", "disabled", false );			
-				save.off('click','analytics');
-				save.on('click','analytics', function() {
+				save.off('submit','analytics');
+				save.on('submit','analytics', function() {
 					ga('send','event','save','minimized',query.subset,json.recordsTotal);
 				});
 				
