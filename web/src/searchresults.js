@@ -269,6 +269,9 @@ Pharmit.SearchResults = (function() {
 					lang.sInfo +="</span>";								
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
+					save.one('click', function() {
+						ga('send','event','save','pharmacophore',query.subset,json.recordsTotal);
+					});
 				}
 				
 			} 

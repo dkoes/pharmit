@@ -46,9 +46,11 @@ Pharmit.Query = (function() {
 			var qobj = getQueryObj(true);
 			
 			if(shapeMode == 'search') {
+				ga('send','event','query','shape',qobj.subset);
 				results.shquery(qobj, receptorData);
 			} else {
 				//results manages queries
+				ga('send','event','query','pharmacophore',qobj.subset);
 				results.phquery(qobj, receptorData);
 			}
 		};

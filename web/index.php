@@ -16,8 +16,7 @@
 	</head>
 	<body id="body">
 		<div id="notice">
-		Find pharmit useful? Please <a href="mailto:dkoes@pitt.edu">let us know</a>.
-		We are in need of letters of support. <div class=closebutton></div>
+		<font color="#000066"><b>After a cascade of hard drive failures, Pharmit is now fully operational with the exception of the PubChem library, which will be rebuilt after a final hardware upgrade sometime in <strike>March</strike> April.</b></font>  <div class=closebutton style="float:right"></div>
 		</div>
 		<div class="cont">
 			<div class="section">
@@ -226,8 +225,8 @@ else
   ga('send', 'pageview');
 
   $(document).ready(function() {
-	 // $('#notice').slideDown();
-	 // $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
+//	  $('#notice').slideDown();
+//	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
   });
 </script>		
 	</body>

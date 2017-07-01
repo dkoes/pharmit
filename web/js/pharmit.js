@@ -1158,8 +1158,14 @@ Pharmit.MinResults = (function() {
 			var lang = table.DataTable().settings()[0].oLanguage;
 
 			if(json.finished) {
+				ga('send','event','query','minimize',query.subset,json.recordsTotal);
+
 				save.button( "option", "disabled", false );			
-				lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";
+				save.one('click', function() {
+					ga('send','event','save','minimized',query.subset,json.recordsTotal);
+				});
+				
+				lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";				
 			} 
 	        else if(json.status === 0) {
 	        	alert(json.msg);
@@ -1352,9 +1358,11 @@ Pharmit.Query = (function() {
 			var qobj = getQueryObj(true);
 			
 			if(shapeMode == 'search') {
+				ga('send','event','query','shape',qobj.subset);
 				results.shquery(qobj, receptorData);
 			} else {
 				//results manages queries
+				ga('send','event','query','pharmacophore',qobj.subset);
 				results.phquery(qobj, receptorData);
 			}
 		};
@@ -2862,6 +2870,9 @@ Pharmit.SearchResults = (function() {
 					lang.sInfo +="</span>";								
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
+					save.one('click', function() {
+						ga('send','event','save','pharmacophore',query.subset,json.recordsTotal);
+					});
 				}
 				
 			} 
