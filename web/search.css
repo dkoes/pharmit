@@ -539,6 +539,27 @@ body {
 	font-weight: normal;
 }
 
+.pharmit_backbonediv  {
+    padding-top: 1em;
+}
+
+.pharmit_backbonediv   .ui-buttonset {
+    padding-top: 0.5em;
+    padding-left: 0.25em;
+    display: inline-block;
+}
+
+.pharmit_backbonediv  .ui-state-default {
+    color: #555555;
+    font-weight: normal;
+
+}
+
+.pharmit_backbonediv  .ui-state-active {
+    color: black;
+    font-weight: normal;
+}
+
 .pharmit_filtermodified {
 	font-style: italic;
 }
