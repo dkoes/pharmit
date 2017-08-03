@@ -346,7 +346,7 @@ public:
 
 			virtual bool VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* at)
 			{
-				ph = elem.FirstChildElement("pharmacophore");
+				if(ph == NULL) ph = elem.FirstChildElement("pharmacophore");
 				return ph == NULL; //keep going if haven't found it
 			}
 		};
