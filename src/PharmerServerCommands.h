@@ -580,7 +580,7 @@ public:
 				else
 				{
 					sendError(IO, CGI,
-							"Error parsing query format file. Note that third party file formats (e.g. pml, ph4) are reverse engineered. Please submit any examples that do not work in the forums so we can improve the parser.");
+							"Error parsing query format file. Note that third party file formats (e.g. pml, ph4) are reverse engineered. Please submit any examples that do not work so we can improve the parser.");
 				}
 			}
 			else //molecular data
@@ -590,8 +590,7 @@ public:
 					stringstream err;
 					err << "Could not understand molecular data in " << filename
 							<<
-							" (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format."
-							<< " Please request support for new formats in the ZINCPharmer forum.";
+							" (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format.";
 					sendError(IO, CGI, err.str().c_str());
 					return;
 				}
