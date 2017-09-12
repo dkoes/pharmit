@@ -311,8 +311,9 @@ Pharmit.Viewer = (function() {
 				
 				//surface
 				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
-				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
+				var surfacepromise = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, {model:receptor, bonds: 0, invert:true});
+				surface = surfacepromise.surfid;
 				viewer.zoomTo({});
 			}
 			else
