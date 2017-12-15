@@ -275,8 +275,8 @@ body {
 
 .pharmit_togglediv {
     display: inline-block;
-    height: 22px;
-    width: 60px;
+    height: 20px;
+    width: 50px;
     text-align: center;
     vertical-align: middle;
 }
