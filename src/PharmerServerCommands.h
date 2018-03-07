@@ -558,12 +558,12 @@ public:
 				ShapeConstraints excluder;
 				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
-					if (points.size() > 25)
+					if (points.size() > 50)
 					{
 						//this many points is a pointless query and at some point
 						//you just generate too many triplets
 						sendError(IO, CGI,
-								"I'm sorry, your query has too many points (more than 25!).");
+								"I'm sorry, your query has too many points (more than 50!).");
 					}
 					else
 					{

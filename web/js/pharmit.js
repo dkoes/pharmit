@@ -1405,6 +1405,8 @@ Pharmit.Query = (function() {
 		//take an array of pharmacophore features (query.points) and
 		//put them in the query view
 		var setFeatures = function(featurearray) {
+			
+			if(!featurearray) return;
 			var start = new Date().getTime();
 			
 			viewer.disableRendering();
