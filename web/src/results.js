@@ -90,6 +90,9 @@ Pharmit.Results = (function() {
 		    else if((m = name.match(/ZINC(\d+)/))) {
 		    	return "http://zinc15.docking.org/substances/"+m[1];
 		    }
+		    else if((m = name.match(/CSC(\d+)/))) {
+		    	return "https://chem-space.com/"+name;
+		    }
 		    
 		    return null;
 		};
