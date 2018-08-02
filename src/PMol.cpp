@@ -25,6 +25,7 @@ See the LICENSE file provided with the distribution for more information.
 
 #include <openbabel/data.h>
 #include <openbabel/mol.h>
+#include <openbabel/elements.h>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <iomanip>
@@ -89,8 +90,7 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 		unsigned isoi = atom->GetIsotope();
 		if (isoi != 0)
 		{
-			int dmass = round(
-					isotab.GetExactMass(isoi) - isotab.GetExactMass(0));
+			int dmass = round(OBElements::GetExactMass(atom->GetAtomicNum(),isoi) - OBElements::GetExactMass(atom->GetAtomicNum(),0));
 			if (dmass != 0)
 			{
 				iso.push_back(Property(ai, dmass));
@@ -152,7 +152,6 @@ void PMolCreator::copyFrom(RDKit::ROMol& mol, bool deleteH)
 {
 	using namespace RDKit;
 
-	static OBIsotopeTable isotable;
 	const Conformer& conf = mol.getConformer();
 
 	mol.getProp("_Name", name);
@@ -457,7 +456,7 @@ double PMol::getMolWeight() const
 	double ret = 0;
 	for (unsigned i = 0, n = header.nAtomTypes; i < n; i++)
 	{
-		ret += etab.GetMass(atomtypes[i].atomic_number)
+		ret += OBElements::GetMass(atomtypes[i].atomic_number)
 				* atomtypes[i].cnt;
 	}
 
@@ -531,7 +530,7 @@ void PMol::writeSDF(ostream& out, const vector<ASDDataItem>& sddata,
 	for (unsigned ai = 0; ai < header.nAtoms; ai++)
 	{
 		snprintf(buff, BUFFSIZE, "%10.4f%10.4f%10.4f %-3s%2d%3d%3d%3d%3d\n",
-				coords[ai].x, coords[ai].y, coords[ai].z, etab.GetSymbol(
+				coords[ai].x, coords[ai].y, coords[ai].z, OBElements::GetSymbol(
 						atomtypes[curType].atomic_number), 0, 0, 0, 0, 0);
 		out << buff;
 		typecnt++;

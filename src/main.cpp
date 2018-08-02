@@ -98,6 +98,8 @@ cl::opt<bool> SortRMSD("sort-rmsd", cl::desc("Sort results by RMSD."),
 cl::opt<bool> FilePartition("file-partition",
 		cl::desc("Partion database slices based on files"), cl::init(false));
 cl::opt<string> Single("singledir",cl::desc("Specify a single directory to recreate on a dbcreateserverdir command"));
+cl::opt<string> SingleSplit("singlesplit",cl::desc("Specify a single directory split to recreate on a dbcreateserverdir command"));
+
 cl::opt<string> SpecificTimestamp("timestamp",cl::desc("Specify timestamp to use for server dirs (for use with single)"));
 
 cl::opt<string> MinServer("min-server",cl::desc("minimization server address"));
@@ -702,6 +704,8 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	}
 
 	string fname;
+	unordered_set<filesystem::path> singlesplits;
+
 	while(getline(prefixes,fname))
 	{
 		if(fname.length() > 0 && fname[0] == '#') //comment
@@ -720,6 +724,11 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				for(unsigned i = 0, n = splits.size(); i < n; i++)
 				{
 					filesystem::path splitdb = dbpath / splits[i];
+					if(SingleSplit.size() > 0 && splits[i] == SingleSplit)
+					{
+						singlesplits.insert(splitdb);
+					}
+
 					filesystem::create_directories(splitdb);
 					unflatdirectories.back().push_back(splitdb);
 				}
@@ -771,8 +780,13 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	{
 		if (d == (nd-1) || fork() == 0)
 		{
-			if(Single.size() == 0 || filesystem::equivalent(directories[d],Single))
-			{ //for single, do everything as if we were doing a full build, but only actual build the specified directory
+			//for singles, do everything as if we were doing a full build, but only actual build the specified directory
+			if(singlesplits.size() > 0 && singlesplits.count(directories[d]) == 0)
+				cerr << "Skipping " << directories[d] << "\n"; //skip
+			else if(Single.size() > 0 && !filesystem::equivalent(directories[d],Single))
+				cerr << "Skipping " << directories[d] << "\n"; //skip
+			else
+			{
 				cerr << "Building " << directories[d] << "\n";
 				PharmerDatabaseCreator db(pharmas, directories[d], root);
 				db.setInMemorySize(memsz);
@@ -1022,8 +1036,6 @@ int main(int argc, char *argv[])
 {
 	cl::ParseCommandLineOptions(argc, argv);
 	obErrorLog.StopLogging(); //just slows us down, possibly buggy?
-	isotab.Init(); //avoid race conditions! stupid openbabel
-	etab.Init();
 	ttab.Init();
 	resdat.Init();
 

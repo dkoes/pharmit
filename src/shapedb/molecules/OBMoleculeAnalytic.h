@@ -19,6 +19,7 @@
 #include <openbabel/obconversion.h>
 #include <openbabel/obiter.h>
 #include <openbabel/atom.h>
+#include <openbabel/elements.h>
 #include <cmath>
 #include "MolSphere.h"
 #include "Cube.h"
@@ -61,7 +62,7 @@ protected:
 				++aitr)
 		{
 			OBAtom* atom = *aitr;
-			float r = etab.GetVdwRad(atom->GetAtomicNum())
+			float r = OBElements::GetVdwRad(atom->GetAtomicNum())
 											- adjustAmount;
 			float x = atom->x();
 			float y = atom->y();
