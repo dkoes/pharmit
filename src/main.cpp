@@ -45,7 +45,7 @@ See the LICENSE file provided with the distribution for more information.
 #include <ShapeConstraints.h>
 #include "ReadMCMol.h"
 #include "dbloader.h"
-#include "GninaConverter.h"
+#include "MinimizationSupport.h"
 
 using namespace boost;
 using namespace OpenBabel;
@@ -355,7 +355,7 @@ static void handle_fixsmina_cmd()
 
       //write out updated sminaData
       stringstream data;
-      GninaConverter::MCMolConverter mconv(mol);
+      MinimizeConverter::MCMolConverter mconv(mol);
       mconv.convertConformer(0, data);
       unsigned long smpos = ftell(sminaData); //location in smina dta
       unsigned sz = data.str().size();

@@ -142,6 +142,8 @@ cp -r src/ ~/pharmit/src/bm
 git clone http://git.code.sf.net/p/pharmit/code pharmit
 cd pharmit/src
 mkdir build
+cmake .. -DCMAKE_CXX_FLAGS="-std=c++0x"
+#lots of warnings about missing directory which can be ignored for now
 
 
 USING
