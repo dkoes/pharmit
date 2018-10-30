@@ -47,9 +47,12 @@ https://lemon.cs.elte.hu/trac/lemon
 LibANN
 https://www.cs.umd.edu/~mount/ANN/
 
+bitmagic
+https://github.com/tlk00/BitMagic
+
 CENTOS
 yum groupinstall 'Development Tools'
-yum install git boost-devel autoconf automake libtool make cmake gperftools-libs gperftools-devel ghostscript 
+yum install git boost-devel autoconf automake libtool make cmake gperftools-libs gperftools-devel ghostscript libcurl-devel
 
 yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum install glpk-devel eigen3-devel fcgi jsoncpp-devel coin-or-*
@@ -124,8 +127,16 @@ tar xvfz ann_1.1.2.tar.gz
 cd ann_1.1.2
 make linux-g++
 cp -r include/ANN /usr/include/
-cp lib/libANN.a /usr/lib/
+cp lib/libANN.a /usr/lib/libann.a
 cd ..
+
+#bitmagic
+git clone https://github.com/tlk00/BitMagic.git 
+cd BitMagic
+#ubuntu version is actualy 3.7
+git checkout v3.8.0
+#include as part of pharmit - can also install if you wish, but that's not what cmake is expecting
+cp -r src/ ~/pharmit/src/bm
 
 #pharmit
 git clone http://git.code.sf.net/p/pharmit/code pharmit

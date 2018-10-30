@@ -60,6 +60,8 @@ include_directories( ${ANN_INCLUDE_DIR} )
 include_directories( ${CURL_INCLUDE_DIR} )
 include_directories( ${FCGI_INCLUDE_DIR} )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/shapedb)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/shapedb/molecules)
 
 add_subdirectory (CommandLine2)
 add_subdirectory (bm)
