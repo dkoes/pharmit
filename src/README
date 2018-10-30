@@ -24,10 +24,10 @@ Boost (currently building against version 1.45)
 http://www.boost.org/
 
 JsonCpp
-http://jsoncpp.sourceforge.net/
+https://github.com/open-source-parsers/jsoncpp
 
 FastCGI
-http://www.fastcgi.com
+https://fastcgi-archives.github.io/
 
 cgicc
 http://www.gnu.org/software/cgicc/
@@ -37,6 +37,52 @@ http://code.google.com/p/google-perftools/
 
 OpenBabel
 http://openbabel.org/
+
+
+CENTOS
+yum groupinstall 'Development Tools'
+yum install git boost-devel autoconf automake libtool make cmake gperftools-libs
+
+#fastcgi
+git clone https://github.com/FastCGI-Archives/fcgi2.git
+cd fcgi2
+autoreconf -i
+./configure
+make
+make install
+cd ..
+
+#jsoncpp
+git clone https://github.com/open-source-parsers/jsoncpp.git
+cd jsoncpp
+#using the older version mostly to avoid having to upgrade cmake wget
+git checkout 1.7.7
+mkdir build
+cd build
+make
+make install
+cd ../..
+
+#cgicc
+wget http://ftp.gnu.org/gnu/cgicc/cgicc-3.2.19.tar.gz
+tar xvfz cgicc-3.2.19.tar.gz
+cd cgicc-3.2.19
+./configure
+make 
+make install
+cd ..
+
+#openbabel
+#I'm getting the development version since it fixes some serious bugs with aromaticity detection,
+#but older versions should work
+git clone https://github.com/openbabel/openbabel.git
+cd openbabel
+mkdir build
+cd build
+cmake ..
+make
+make install
+cd ../..
 
 
 USING
