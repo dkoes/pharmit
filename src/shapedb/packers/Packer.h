@@ -12,6 +12,7 @@
 #include "ShapeDistance.h"
 #include <boost/multi_array.hpp>
 #include <lemon/smart_graph.h>
+#include <memory>
 
 //distances between i and j
 struct IntraClusterDist

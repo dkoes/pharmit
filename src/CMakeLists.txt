@@ -63,6 +63,8 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/shapedb)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/shapedb/molecules)
 
+add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
+
 add_subdirectory (CommandLine2)
 add_subdirectory (bm)
 add_subdirectory (shapedb)
