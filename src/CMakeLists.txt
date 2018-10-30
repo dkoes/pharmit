@@ -35,7 +35,7 @@ set( MAIN_SOURCES
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread" )
 
 # add external libraries
-find_package( Boost 1.58 COMPONENTS system regex filesystem program_options iostreams thread REQUIRED )
+find_package( Boost 1.53 COMPONENTS system regex filesystem program_options iostreams thread REQUIRED )
 find_package( OpenBabel2 REQUIRED )
 #find_package( JSONCPP REQUIRED )
 find_package( Eigen3 REQUIRED )

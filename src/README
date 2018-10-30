@@ -38,10 +38,21 @@ http://code.google.com/p/google-perftools/
 OpenBabel
 http://openbabel.org/
 
+Eigen
+http://eigen.tuxfamily.org
+
+Lemon Graph Library
+https://lemon.cs.elte.hu/trac/lemon
+
+LibANN
+https://www.cs.umd.edu/~mount/ANN/
 
 CENTOS
 yum groupinstall 'Development Tools'
-yum install git boost-devel autoconf automake libtool make cmake gperftools-libs
+yum install git boost-devel autoconf automake libtool make cmake gperftools-libs gperftools-devel ghostscript 
+
+yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+yum install glpk-devel eigen3-devel fcgi jsoncpp-devel coin-or-*
 
 #fastcgi
 git clone https://github.com/FastCGI-Archives/fcgi2.git
@@ -74,7 +85,7 @@ cd ..
 
 #openbabel
 #I'm getting the development version since it fixes some serious bugs with aromaticity detection,
-#but older versions should work
+#but the version in the epel repository is probably fine
 git clone https://github.com/openbabel/openbabel.git
 cd openbabel
 mkdir build
@@ -83,6 +94,43 @@ cmake ..
 make
 make install
 cd ../..
+
+#eigen
+wget http://bitbucket.org/eigen/eigen/get/3.3.5.tar.gz
+tar xvfz 3.3.5.tar.g
+cd eigen-eigen-b3f3d4950030/
+mkdir build
+cd build
+cmake ..
+make install
+cd ../..
+
+#lemon
+wget http://lemon.cs.elte.hu/pub/sources/lemon-1.3.1.tar.gz
+tar xvfz lemon-1.3.1.tar.gz 
+cd lemon-1.3.1
+mkdir build
+#remove incompatible cmake policy
+sed -i '/POLICY/d' CMakeLists.txt 
+cd build
+cmake ..
+make
+make install
+cd ../..
+
+#libann
+wget https://www.cs.umd.edu/~mount/ANN/Files/1.1.2/ann_1.1.2.tar.gz
+tar xvfz ann_1.1.2.tar.gz
+cd ann_1.1.2
+make linux-g++
+cp -r include/ANN /usr/include/
+cp lib/libANN.a /usr/lib/
+cd ..
+
+#pharmit
+git clone http://git.code.sf.net/p/pharmit/code pharmit
+cd pharmit/src
+mkdir build
 
 
 USING
