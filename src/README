@@ -138,11 +138,17 @@ git checkout v3.8.0
 #include as part of pharmit - can also install if you wish, but that's not what cmake is expecting
 cp -r src/ ~/pharmit/src/bm
 
+#smina
+git clone http://git.code.sf.net/p/smina/code smina
+cd smina/build/linux/release/
+make
+cp libsmina.a /usr/local/lib/
+ 
 #pharmit
 git clone http://git.code.sf.net/p/pharmit/code pharmit
 cd pharmit/src
 mkdir build
-cmake .. -DCMAKE_CXX_FLAGS="-std=c++0x"
+cmake .. -DCMAKE_CXX_FLAGS=-std=c++0x -DSMINA_DIR=$HOME/smina
 #lots of warnings about missing directory which can be ignored for now
 
 

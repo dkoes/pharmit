@@ -13,6 +13,7 @@ set( OpenBabel2_DIR "/path-to/openbabel-2.4.1/build" )
 set( JSONCPP_DIR "/path-to/jsoncpp" )
 set( Eigen3_DIR "/path-to/eigen3/build")
 set( LEMON_DIR "/path-to/lemon-1.3.1/build")
+
 set( MAIN_SOURCES
      basis.cpp MMappedRegion.h PharmerQuery.cpp QueryTripletFingerprint.cpp ShapeObj.h ThreePointData.h
      basis.h MolFilter.h PharmerQuery.h QueryTripletFingerprint.h ShapeResults.cpp Timer.h
@@ -30,6 +31,28 @@ set( MAIN_SOURCES
      cgi.h
      pharmerdb.cpp PMol.h ThreadCounter.h tripletmatching.cpp
      main.cpp pharmerdb.h queryparsers.h ShapeObj.cpp ThreePointData.cpp tripletmatching.h
+    tinyxml/tinystr.cpp 
+    tinyxml/tinyxml.cpp 
+    tinyxml/tinyxmlerror.cpp 
+    tinyxml/tinyxmlparser.cpp 
+    shapedb/GSSTreeCreator.cpp 
+    shapedb/GSSTreeSearcher.cpp 
+    shapedb/GSSTreeStructures.cpp 
+    shapedb/KSamplePartitioner.cpp 
+    shapedb/MGrid.cpp 
+    shapedb/MappableOctTree.cpp 
+    shapedb/MemMapped.cpp 
+    shapedb/ShapeDistance.cpp 
+    shapedb/WorkFile.cpp
+    shapedb/molecules/MolSphere.cpp 
+    shapedb/molecules/OBMoleculeAnalytic.cpp 
+    shapedb/molecules/RDMoleculeAnalytic.cpp
+    shapedb/packers/FullMergePacker.cpp 
+    shapedb/packers/GreedyPacker.cpp 
+    shapedb/packers/MatcherPacker.cpp 
+    shapedb/packers/Packer.cpp 
+    shapedb/packers/SpectralPacker.cpp
+    CommandLine2/CommandLine.cpp
    )
 
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread" )
@@ -62,17 +85,14 @@ include_directories( ${FCGI_INCLUDE_DIR} )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/shapedb)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/shapedb/molecules)
+include_directories( ${SMINA_DIR}/src/lib)
 
 add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 
-add_subdirectory (CommandLine2)
-add_subdirectory (bm)
-add_subdirectory (shapedb)
-add_subdirectory (tinyxml)
 
 # add the executable
 add_executable(pharmit ${MAIN_SOURCES})
-target_link_libraries(pharmit CommandLine2 bm shapedb packers molecules tinyxml ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
+target_link_libraries(pharmit ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
                       openbabel ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARIES} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
 
 # add the install targets
