@@ -220,7 +220,7 @@ BUGS (Not Really)
 
 When working with large datasets spread across multiple hard drives,
 you will likely run into a number of limits that will result in 
-segmentation faults (type 6 or 11).  These changes need to be in place
+segmentation faults (type 6 or 11).  The following changes need to be in place
 before building the database, or it will silently create incomplete 
 databases that crash when you search them.
 
