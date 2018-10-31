@@ -241,6 +241,26 @@ The dbinfo.json file describes the library. e.g.:
 To run a SERVER:
 pharmitserver server -port 16000 -prefixes /home/dkoes/vendors/dbprefixes  -logdir /home/dkoes/log -min-server localhost -min-port 18000
 
+To run a MINIMIZATION server:
+~/git/smina/build/linux/release/server -port 18000 -logfile /home/dkoes/log/minlog
+
+To HOST a server, add a fastcgi rule connecting the webserver hosting /web to the storage server running the backend.  e.g. (apache):
+<IfModule mod_fastcgi.c>
+  AddHandler fastcgi-script .fcgi
+  FastCgiIpcDir /var/lib/apache2/fastcgi
+
+Alias /fcgi-bin/ /var/www/fcgi-bin/
+
+<Directory /var/www/fcgi-bin/>
+ SetHandler fastcgi-script
+ Options +ExecCGI
+</Directory>
+
+FastCgiExternalServer /var/www/fcgi-bin/pharmitserv.fcgi -host 192.168.6.4:16000 -idle-timeout 300
+FastCgiConfig -autoUpdate -maxClassProcesses 1
+
+</IfModule>
+
 
 BUGS (Not Really)
 
