@@ -216,6 +216,32 @@ To SEARCH a database:
  pharmitserver dbsearch -dbdir DB -in query.sdf
  pharmitserver dbsearch -dbdir DB -in query.ph4
 
+When setting up a SERVER you create separate directories for each database to search:
+ pharmitserver dbcreateserverdir  -ligs molport.ligs -prefixes ../dbprefixes -dbinfo dbinfo.json 
+The ligs files provides the files to add with unique ids and names (see extractsmisubset.py).  e.g.:
+/data22/conformers/541/5416265.sdf.gz 5416265 MolPort-020-216-564 MCULE-1493214818 PubChem-56905170 ZINC000072151660
+/data17/conformers/53/534584.sdf.gz 534584 MolPort-000-887-730 MolPort-035-708-781 MCULE-2607511133 MCULE-2857980910 PubChem-19618431 PubChem-90484256 ZINC
+000002535004 ZINC02535004
+/data08/conformers/18890/188901458.sdf.gz 188901458 MolPort-007-641-322 MCULE-8587443370
+
+The prefixes file specifies the directories (on different drives) to partition the database across. e.g.:
+/data00/databases
+/data01/databases
+/data02/databases
+
+The dbinfo.json file describes the library. e.g.:
+{
+"name" : "MolPort",
+"html" : "MolPort<span><a target=\"_blank\" href=\"https://www.molport.com\" class=\"ui-icon-info ui-icon\"></a></span>",
+"subdir" : "molport",
+"prefix" : "MolPort"
+}
+
+
+To run a SERVER:
+pharmitserver server -port 16000 -prefixes /home/dkoes/vendors/dbprefixes  -logdir /home/dkoes/log -min-server localhost -min-port 18000
+
+
 BUGS (Not Really)
 
 When working with large datasets spread across multiple hard drives,
