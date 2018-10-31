@@ -14,6 +14,8 @@ set( JSONCPP_DIR "/path-to/jsoncpp" )
 set( Eigen3_DIR "/path-to/eigen3/build")
 set( LEMON_DIR "/path-to/lemon-1.3.1/build")
 
+set( SMINALIB "${SMINA_DIR}/build/linux/release/libsmina.a" CACHE FILEPATH "Location of libsmina.a")
+
 set( MAIN_SOURCES
      basis.cpp MMappedRegion.h PharmerQuery.cpp QueryTripletFingerprint.cpp ShapeObj.h ThreePointData.h
      basis.h MolFilter.h PharmerQuery.h QueryTripletFingerprint.h ShapeResults.cpp Timer.h
@@ -58,7 +60,7 @@ set( MAIN_SOURCES
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread" )
 
 # add external libraries
-find_package( Boost 1.53 COMPONENTS system regex filesystem program_options iostreams thread REQUIRED )
+find_package( Boost 1.53 COMPONENTS system regex filesystem program_options iostreams thread serialization date_time REQUIRED )
 find_package( OpenBabel2 REQUIRED )
 #find_package( JSONCPP REQUIRED )
 find_package( Eigen3 REQUIRED )
@@ -92,7 +94,7 @@ add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 
 # add the executable
 add_executable(pharmit ${MAIN_SOURCES})
-target_link_libraries(pharmit ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
+target_link_libraries(pharmit jsoncpp ${SMINALIB} ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
                       openbabel ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARIES} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
 
 # add the install targets

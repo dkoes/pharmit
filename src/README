@@ -55,7 +55,7 @@ yum groupinstall 'Development Tools'
 yum install git boost-devel autoconf automake libtool make cmake gperftools-libs gperftools-devel ghostscript libcurl-devel
 
 yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-yum install glpk-devel eigen3-devel fcgi jsoncpp-devel coin-or-*
+yum install glpk-devel eigen3-devel fcgi  coin-or-*
 
 #fastcgi
 git clone https://github.com/FastCGI-Archives/fcgi2.git
@@ -73,6 +73,7 @@ cd jsoncpp
 git checkout 1.7.7
 mkdir build
 cd build
+cmake -DBUILD_SHARED_LIBS=1 ..
 make
 make install
 cd ../..
