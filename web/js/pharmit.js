@@ -2161,56 +2161,100 @@ Pharmit.Query = (function() {
 			var lis = [];
 			var i, info, display;
 			for(i = 0, n = subsetinfo.length; i < n; i++) {
-				info = subsetinfo[i];
-				display = escHTML(info.name);
-				if(info.html) display = info.html; //optionally can provide html, but not from users
-				lis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
-				lis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
-				lis[i] += '<span class="pharmit_subsettime">Updated: '+info.updated+'</span>';
-				lis[i] += '</li>';
-				
-				//default to molport for now
-				if(info.subdir == 'molport') {
-					run.button("option",'label',"Search "+info.name);
-					run.val(info.subdir);
-				}
+					info = subsetinfo[i];
+					display = escHTML(info.name);
+					if(info.html) display = info.html; //optionally can provide html, but not from users
+					lis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
+					lis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
+					lis[i] += '<span class="pharmit_subsettime">Updated: '+info.updated+'</span>';
+					lis[i] += '</li>';
+					
+					//default to molport for now
+					if(info.subdir == 'molport') {
+							run.button("option",'label',"Search "+info.name);
+							run.val(info.subdir);
+					}
 			}
 			ul.append(lis);
 			ul.append($('<li> </li>'));
 			var publicli = $('<li class="pharmit_contributed">Contributed Libraries</li>');
 			var publicul =  $('<ul>').appendTo(publicli).addClass('pharmit_contributed_menu');
 			var publiclis = [];
+			var tosearch = [];
 			var publicinfo = dbinfo.public;
 			for(i = 0, n = publicinfo.length; i < n; i++) {
 				info = publicinfo[i];
+				if(info.numConfs === 0) continue;
 				display = escHTML(info.name);
 				var titlestr = "";
-				if(info.description) titlestr = " title='"+escHTML(info.description)+"' ";
+				tosearch[i] = display + info.updated; //can search by date
+				if(info.description) {
+					titlestr = " title='"+escHTML(info.description)+"' ";
+					tosearch[i] += " " + escHTML(info.description);
+				}
+				tosearch[i] = tosearch[i].toLowerCase();
 				publiclis[i] = '<li value='+subsetinfo.length+titlestr+' class="pharmit_subsetmenu">'+display+'<br>';
 				subsetinfo.push(info);
-				publiclis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
-				publiclis[i] += '<span class="pharmit_subsettime">Created: '+info.updated+'</span>';
+				publiclis[i] += '<span class="pharmit_contrib_subsettime">Created: '+info.updated+'</span>';
+				publiclis[i] += '<span class="pharmit_contrib_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
 				publiclis[i] += '</li>';
+				publiclis[i] = $(publiclis[i]);
 			}
 			publicul.append(publiclis);
-			ul.append(publicli);
-			ul.append($('<li> </li>'));
-
-			$('<li class="pharmit_private">Access Private Library</li>').appendTo(ul).click(
-					function() {
-						privatedialog.dialog("open");
-					});
+			publicdialog = $('<div class="pharmit_public_dialog" title="Contributed Libraries"> </div>');
+			publicsearch = $('<input type="text" id="input" class="pharmit_contrib_search">');
+			$('<div class="pharmit_search_div"><b>Search: </b></div>').append(publicsearch).appendTo(publicdialog);
+			publicsearch.keyup(function (){
+				var a, txtValue, filter;
+				filter = publicsearch.val().toLowerCase();
+				for(i in publiclis) {
+					if(tosearch[i].indexOf(filter) > -1) {
+						publiclis[i].css('display', "");
+					} else {
+						publiclis[i].css('display', "none");
+					}
+				}
+			});
+			publicdialog.append(publicul);
+			publicdialog.appendTo(body);
+			publicdialog.dialog({
+					autoOpen: false,
+					height: 525,
+					width: 600,
+					modal: true,                
+					});         
+			$('<li class="pharmit_private">Contributed Libraries...</li>').appendTo(ul).click(
+				function() {
+						publicdialog.dialog("open");
+				});
 			
-			ul.hide().menu({position:{
-				my: "left top",
-				at: "right top",
-				collision: 'fit'
+			
+			ul.append($('<li> </li>'));
+			$('<li class="pharmit_private">Access Private Library...</li>').appendTo(ul).click(
+							function() {
+									privatedialog.dialog("open");
+							});
+		 publicul.menu({position:{
+					my: "left top",
+					at: "right top",
+					collision: 'fit'
 			}}).on('menuselect', function(event, ui) {
-				var info = subsetinfo[ui.item.val()];
-				run.button("option",'label',"Search "+info.name);
-				run.val(info.subdir);
+					var info = subsetinfo[ui.item.val()];
+					run.button("option",'label',"Search "+info.name);
+					run.val(info.subdir);
+					publicdialog.dialog("close");
 			});
 			
+			ul.hide().menu({position:{
+					my: "left top",
+					at: "right top",
+					collision: 'fit'
+			}}).on('menuselect', function(event, ui) {
+					var info = subsetinfo[ui.item.val()];
+					run.button("option",'label',"Search "+info.name);
+					run.val(info.subdir);
+			});
+
 			//handlers
 			run.click(doSearch);
 			

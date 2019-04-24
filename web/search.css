@@ -91,10 +91,20 @@ body {
 	width: 22em;
 }
 
+.pharmit_contrib_search {
+  width: 25em;
+}
+
+.pharmit_search_div {
+ height: 2em; /* adjust contributed menu appropriately */
+ line-height: 2em;
+ padding: 0.5em;
+}
 .pharmit_contributed_menu {
   max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
+  height: calc(100% - calc(3em + 2px) ); /* subtract search and border */
 }
 
 .pharmit_subsetmenu, .pharmit_subsetmenu.ui-state-focus {
@@ -106,6 +116,18 @@ body {
 	display: block;
 	font-weight: normal;
 	font-size: 80%;
+}
+
+.ui-dialog  .pharmit_public_dialog.ui-dialog-content {
+  padding: 0;
+  height: 525px;
+  width: 600px;
+  overflow-y: hidden;
+}
+.pharmit_contrib_subsetcnts,.pharmit_contrib_subsettime {
+	font-weight: normal;
+	font-size: 80%;
+	padding-right: 1em;
 }
 
 .pharmit_subsetmenu span a.ui-icon {
