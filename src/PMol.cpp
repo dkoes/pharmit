@@ -119,7 +119,7 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 			continue;
 
 		nDsts++; //basically nubmer of bonds
-		if (a2->GetValence() > a1->GetValence())
+		if (a2->GetExplicitDegree() > a1->GetExplicitDegree())
 		{
 			//a2 goes first
 			if (bonds[btype][atomindex[a2->GetIdx()]].size() == 0)

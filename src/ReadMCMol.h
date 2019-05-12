@@ -24,7 +24,7 @@ See the LICENSE file provided with the distribution for more information.
 #ifndef PHARMITSERVER_READMCMOL_H_
 #define PHARMITSERVER_READMCMOL_H_
 #include <openbabel/mol.h>
-
+#include <openbabel/generic.h>
 
 typedef OpenBabel::OBPairTemplate< vector<string> > OBVecData;
 

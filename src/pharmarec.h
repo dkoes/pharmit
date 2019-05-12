@@ -32,6 +32,7 @@ See the LICENSE file provided with the distribution for more information.
 #include <float.h>
 #include <json/json.h>
 #include <openbabel/mol.h>
+#include <openbabel/parsmart.h>
 #include <openbabel/math/vector3.h>
 #include <openbabel/obconversion.h>
 #include "CommandLine2/CommandLine.h"

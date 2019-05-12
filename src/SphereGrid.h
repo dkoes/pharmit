@@ -26,6 +26,7 @@ See the LICENSE file provided with the distribution for more information.
 #define PHARMITSERVER_SPHEREGRID_H_
 
 #include <vector>
+#include <openbabel/mol.h>
 #include <openbabel/math/vector3.h>
 
 using namespace std;

@@ -198,7 +198,7 @@ public:
 		}
 
 		if(files.size() > 0) {
-			ifstream in(files[0].c_str());
+			std::ifstream in(files[0].c_str());
 			current.read(in, files[0]);
 		}
 	}

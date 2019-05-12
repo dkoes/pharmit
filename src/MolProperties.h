@@ -25,6 +25,7 @@ See the LICENSE file provided with the distribution for more information.
 
 #include <vector>
 #include <openbabel/mol.h>
+#include <openbabel/ring.h>
 #include "MMappedRegion.h"
 #include "pharmarec.h"
 

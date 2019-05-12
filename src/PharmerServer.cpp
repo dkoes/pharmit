@@ -300,7 +300,7 @@ void WebQueryManager::addUserDirectories()
 	if(newpublic.size() > 0 || newprivate.size() > 0)
 	{
 		//maps aren't thread-safe so protect
-		unique_lock<mutex>(lock);
+		boost::unique_lock<boost::mutex>(lock);
 
 		publicDatabases.insert(newpublic.begin(), newpublic.end());
 		privateDatabases.insert(newprivate.begin(), newprivate.end());
@@ -345,7 +345,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	}
 	else
 	{
-		unique_lock<mutex> L(lock); //public/private database may change underneath us
+		boost::unique_lock<boost::mutex> L(lock); //public/private database may change underneath us
 		if(publicDatabases.count(qp.subset))
 		{
 			searchers = &publicDatabases[qp.subset];
@@ -372,7 +372,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	totalMols = searchers->totalMols;
 	totalConfs = searchers->totalConfs;
 
-	unique_lock<mutex> L(lock);
+	boost::unique_lock<boost::mutex> L(lock);
 
 	if (oldqid > 0 && queries.count(oldqid) > 0)
 	{
@@ -470,7 +470,7 @@ Json::Value WebQueryManager::getSingleJSON(const string& id)
 
 WebQueryHandle WebQueryManager::get(unsigned qid)
 {
-	unique_lock<mutex>(lock);
+	boost::unique_lock<boost::mutex>(lock);
 
 	if (queries.count(qid) == 0)
 		return WebQueryHandle(NULL);
@@ -486,7 +486,7 @@ WebQueryHandle WebQueryManager::get(unsigned qid)
 //delete any queries that are older than a timeout
 unsigned WebQueryManager::purgeOldQueries()
 {
-	unique_lock<mutex>(lock);
+	boost::unique_lock<boost::mutex>(lock);
 	vector<unsigned> toErase;
 	for (QueryMap::iterator itr = queries.begin(), end = queries.end(); itr
 			!= end; itr++)
@@ -521,7 +521,7 @@ void WebQueryManager::getCounts(unsigned& active, unsigned& inactive,
 		unsigned& defunct)
 {
 	active = inactive = defunct = 0;
-	unique_lock<mutex> L(lock);
+	boost::unique_lock<boost::mutex> L(lock);
 
 	for (QueryMap::iterator itr = queries.begin(), end = queries.end(); itr
 			!= end; itr++)

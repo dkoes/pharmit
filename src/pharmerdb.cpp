@@ -786,7 +786,7 @@ unsigned long PharmerDatabaseCreator::doSplitNewPage(unsigned pharma,
 	GeoKDPage page;
 
 	//reserve space
-	unique_lock<shared_mutex> lock(fileAccessLock);
+	boost::unique_lock<boost::shared_mutex> lock(fileAccessLock);
 	fseek(geoFile, 0, SEEK_END);
 	unsigned long location = ftell(geoFile);
 	assert(location % sizeof(GeoKDPage) == 0);

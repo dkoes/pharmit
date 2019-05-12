@@ -29,6 +29,8 @@ See the LICENSE file provided with the distribution for more information.
 
 #include <boost/unordered_map.hpp>
 #include <openbabel/mol.h>
+#include <openbabel/atom.h>
+#include <openbabel/bond.h>
 #include "FloatCoord.h"
 #include "RMSD.h"
 #include "BumpAllocator.h"

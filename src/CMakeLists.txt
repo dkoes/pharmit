@@ -1,18 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project (pharmit)
 # set the path to the library folder
-set( Gperftools_ROOT_DIR "/path-to/gperftools-2.5.93" )
-set( Cgicc_ROOT_DIR "/path-to/cgicc")
-set( ANN_ROOT_DIR "/path-to/ann_1.1.2" )
-set( BOOST_ROOT "/path-to/boost")
-set( CURL_ROOT "/path-to/curl")
-set( FCGI_ROOT "/path-to/fcgi")
 # set the module path
 set( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules )
-set( OpenBabel2_DIR "/path-to/openbabel-2.4.1/build" )
-set( JSONCPP_DIR "/path-to/jsoncpp" )
-set( Eigen3_DIR "/path-to/eigen3/build")
-set( LEMON_DIR "/path-to/lemon-1.3.1/build")
 
 set( SMINALIB "${SMINA_DIR}/build/linux/release/libsmina.a" CACHE FILEPATH "Location of libsmina.a")
 
@@ -62,7 +52,7 @@ SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread" )
 # add external libraries
 find_package( Boost 1.53 COMPONENTS system regex filesystem program_options iostreams thread serialization date_time REQUIRED )
 find_package( OpenBabel2 REQUIRED )
-#find_package( JSONCPP REQUIRED )
+find_package( jsoncpp REQUIRED )
 find_package( Eigen3 REQUIRED )
 find_package( LEMON REQUIRED )
 find_package( Gperftools REQUIRED )
@@ -74,6 +64,7 @@ find_package( CURL REQUIRED )
 include_directories("${PROJECT_BINARY_DIR}")
 include_directories( ${Boost_INCLUDE_DIR} )
 include_directories( ${OpenBabel2_INCLUDE_DIRS} )
+include_directories( $<TARGET_PROPERTY:jsoncpp_lib,INTERFACE_INCLUDE_DIRECTORIES> )
 include_directories( ${jsoncpp_INCLUDE_DIRS} )
 include_directories( "${EIGEN3_ROOT_DIR}/include" )
 include_directories( ${LEMON_INCLUDE_DIRS} )
@@ -95,7 +86,7 @@ add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 # add the executable
 add_executable(pharmit ${MAIN_SOURCES})
 target_link_libraries(pharmit jsoncpp ${SMINALIB} ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
-                      openbabel ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARIES} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
+                      openbabel ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} lemon ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
 
 # add the install targets
 install (TARGETS pharmit DESTINATION bin)
