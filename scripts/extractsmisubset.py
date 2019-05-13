@@ -29,7 +29,7 @@ def sortNames(prefix, names):
     
 
 if len(sys.argv) < 3:
-    print "Need smiles and prefix"
+    print("Need smiles and prefix")
     sys.exit(-1)
 
 smilesf = sys.argv[1]
@@ -80,4 +80,4 @@ for smile in smiles:
         names = list(itertools.chain.from_iterable(names)) 
         bigname =' '.join(sortNames(prefix,names))
         bigname = bigname.replace('\n','')
-        print sdfloc,i,bigname
+        print(sdfloc,i,bigname)

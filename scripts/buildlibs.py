@@ -84,7 +84,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
                 
                         
             except: #catch rdkit issues
-                print sys.exc_info()
+                print(sys.exc_info())
                 continue
         
         if fname:
@@ -92,7 +92,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
             out.close()
         return True
     except:
-        print sys.exc_info()
+        print(sys.exc_info())
         return False;
             
             
@@ -103,7 +103,7 @@ def make_libraries(conn, dbprefixfile,row,numactives=0):
 
     #make dbinfo from database row
     dbinfo = dict()
-    for (k,v) in row.iteritems():
+    for (k,v) in row.items():
         dbinfo[k] = str(v)
     dbinfo['fromuser'] = True #indicate this is a contributed library
     if int(row['isprivate']):
@@ -117,9 +117,9 @@ def make_libraries(conn, dbprefixfile,row,numactives=0):
     f.write(json.dumps(dbinfo,indent=4))
     f.close()
     #build libraries
-    print os.getcwd()
+    print(os.getcwd())
     cmd = "%s dbcreateserverdir -ligs %s -prefixes %s -dbinfo %s > pharmit.out" %(options.pharmit, "ligs.in", dbprefixfile, jsonfile)
-    print cmd
+    print(cmd)
     ret = subprocess.call(cmd,shell=True)
     if ret != 0:
         setError(conn,which, "Problem generating databases")
@@ -158,13 +158,13 @@ if __name__ == '__main__':
 
     cprefixfile = os.path.abspath(options.confprefixfile)
     if not cprefixfile or not os.path.isfile(cprefixfile):
-        print "Require prefix file for storing structures"
+        print("Require prefix file for storing structures")
         sys.exit(-1)
     cprefixes = open(cprefixfile).read().splitlines()
         
     dbprefixfile = os.path.abspath(options.dbprefixfile)
     if not dbprefixfile or not os.path.isfile(dbprefixfile):
-        print "Require prefix file for storing databases"
+        print("Require prefix file for storing databases")
         sys.exit(-1)        
     
     #look for pending libraries
@@ -197,8 +197,8 @@ if __name__ == '__main__':
                         if "active" in line:
                             numactives += 1
                     cmd = "%s --nonames --prefixes %s input.smi > ligs.in 2> conf.err" % (options.createconfs,cprefixfile)
-                    print os.getcwd()
-                    print cmd
+                    print(os.getcwd())
+                    print(cmd)
                     ret = subprocess.call(cmd,shell=True)
                     if ret != 0:
                         setError(conn,which,"Problem generating conformers")
@@ -214,5 +214,5 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             raise
         except:
-            print sys.exc_info()
+            print(sys.exc_info())
             time.sleep(1)

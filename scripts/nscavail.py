@@ -4,7 +4,7 @@
 #interestingly, the NCI people don't seem to be interested in provided a more
 #efficient interface for extracting this information
 
-import sys,urllib2,urllib,re
+import sys,urllib.request,urllib.error,urllib.parse,urllib.request,urllib.parse,urllib.error,re
 import mechanize
 from bs4 import BeautifulSoup as bs
 
@@ -27,7 +27,7 @@ def nscavail(id):  #id should be a string
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print "Need NSC id as argument"
+        print("Need NSC id as argument")
     else:
         id = sys.argv[1]
-        print nscavail(id)
+        print(nscavail(id))

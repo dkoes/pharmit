@@ -35,7 +35,7 @@ for f in files:
             continue
         smiles = Chem.MolToSmiles(mol,isomericSmiles=True)
         name = mol.GetProp("_Name")
-        print smiles,name
+        print(smiles,name)
     temp.close()
     
 ftp.close()

@@ -16,7 +16,7 @@ for row in rows:
     smile = row[0]
     name = row[1]
     newname = name.strip()
-    print smile,newname, name 
+    print(smile,newname, name) 
     if newname != name: #should be redundant
         c = conn.cursor()
         c.execute("UPDATE names SET name = %s WHERE smile = %s AND name = %s", (newname,smile,name))

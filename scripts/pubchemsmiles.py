@@ -44,7 +44,7 @@ for f in files:
         elif re.search(r'PUBCHEM_OPENEYE_ISO_SMILES',line):
             smile = data.readline().strip()
         elif line.startswith('$$$$'):
-            print '%s\tPubChem-%s'% (smile,cid) 
+            print('%s\tPubChem-%s'% (smile,cid)) 
             if cid in nscids:
                 nscout.write('%s\t%s' % (smile,nscids[cid]))
                 sys.stderr.write('%s\t%s' % (smile,nscids[cid]))
