@@ -242,7 +242,6 @@ if __name__ == '__main__':
             raise
         except Exception as e:
             sys.stderr.write("%s %s %s %d\n\n%s" %(e,smile,name, len(smile),traceback.print_exc()))
-            sys.exit(-1)
     
     #clear out queues
     for _ in range(numt):

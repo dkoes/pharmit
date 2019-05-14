@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #get cids and names of nsc compounds
 #since this is a large set and I can't do the necessary query

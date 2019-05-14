@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #figure out of an NSC id is actually available by scraping the answer
 #interestingly, the NCI people don't seem to be interested in provided a more

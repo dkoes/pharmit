@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #extract smiles from PubChem (not sure why this isn't easier)
 #defaults to getting everything, will eventually support getting

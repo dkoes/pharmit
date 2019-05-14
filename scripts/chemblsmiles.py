@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #why does everyone make it so hard to get smiles
 #defaults to getting everything, will eventually support getting

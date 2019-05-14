@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # A continually running loop that builds libraries from user submitted information.
 #It is assumed only one instance of buildlibs is running (if not, need to fix race condition getting pending submission).
 

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #I forgot to strip the newline from compound names, so now have to go through
 #the whole database and fix it

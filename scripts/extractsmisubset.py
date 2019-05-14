@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #Given a smiles file and prefix, extract a ligand file from the database of all the compounds
 #with those smiles that have a name that starts with the prefix.

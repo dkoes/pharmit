@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''Take a smi file with NSC compounds and call nscavail on each one.
 For some reason every so often the connection hangs and mechanize's timeout

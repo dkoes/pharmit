@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 # extract smiles for DTP/NCI compounds from PubChem with NSC identifiers
 # if you are extracting all of pubchem anyway, it might be more efficient

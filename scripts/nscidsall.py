@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #get names a smi of putative NSC compounds
 #this doesn't query nsc, since that kept getting stuck
