@@ -1,10 +1,19 @@
-cmake_minimum_required(VERSION 2.6)
-project (pharmit)
+cmake_minimum_required(VERSION 3.10)
+project (pharmit LANGUAGES C CXX)
 # set the path to the library folder
 # set the module path
 set( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules )
 
 set( SMINALIB "${SMINA_DIR}/build/linux/release/libsmina.a" CACHE FILEPATH "Location of libsmina.a")
+
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread" )
+set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+	SET(CMAKE_BUILD_TYPE Release)
+endif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 
 set( MAIN_SOURCES
      basis.cpp MMappedRegion.h PharmerQuery.cpp QueryTripletFingerprint.cpp ShapeObj.h ThreePointData.h
@@ -47,7 +56,9 @@ set( MAIN_SOURCES
     CommandLine2/CommandLine.cpp
    )
 
-SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread" )
+if (NOT LEMON_DIR)
+  set(LEMON_DIR "/usr/lib/cmake/") #this is where ubuntu puts the cmake config file
+endif()
 
 # add external libraries
 find_package( Boost 1.53 COMPONENTS system regex filesystem program_options iostreams thread serialization date_time REQUIRED )
