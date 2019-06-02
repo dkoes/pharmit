@@ -8,6 +8,7 @@
 #if provided, the cid/names file will be used to output a subset to the specified output
 
 import ftplib,sys,tempfile,gzip,re
+import io
 
 nscids = {}
 nscout = None
@@ -33,7 +34,7 @@ for f in files:
     temp = tempfile.TemporaryFile(mode='r+b')
     ftp.retrbinary('RETR %s' % f, temp.write)
     temp.seek(0)
-    data = gzip.GzipFile(fileobj=temp)
+    data = io.TextIOWrapper(gzip.GzipFile(fileobj=temp),encoding='utf-8')
     cid = None
     smile = None
     line = data.readline()

@@ -15,7 +15,7 @@ for line in open(sys.argv[1]):
       try: # 3 attempts
         p = subprocess32.Popen("%s %s" % (script,name), stdout=subprocess32.PIPE, shell=True,preexec_fn=os.setsid)    
         p.wait(timeout=60)
-        if p.stdout.read().startswith("True"):
+        if p.stdout.read().startswith(b"True"):
             print(line.rstrip())
         break
       except subprocess32.TimeoutExpired:

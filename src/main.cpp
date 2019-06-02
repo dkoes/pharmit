@@ -642,11 +642,12 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		LigandInfo info;
 
 		str >> info.file;
-
+/*
 		if(!filesystem::exists(info.file))
 		{
 			cerr << "File " << info.file << " does not exist\n";
 		}
+		*/
 		str >> info.id;
 		if(info.id < 0)
 		{

@@ -26,8 +26,8 @@ for sid in sids:
     try:
         #query each one individually! hopefully more robust..
         sys.stderr.write("sid %d\n"%sid)
-        sdf = urllib.request.urlopen('https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/sid/%d/sdf' % sid,timeout=30).read()        
-        mol = next(Chem.ForwardSDMolSupplier(io.StringIO(sdf)))
+        sdf = urllib.request.urlopen('https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/sid/%d/sdf' % sid,timeout=30).read()
+        mol = next(Chem.ForwardSDMolSupplier(io.BytesIO(sdf)))
         if mol.GetNumAtoms() == 0:
             continue
         name = ''
