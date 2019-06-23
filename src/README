@@ -53,7 +53,7 @@ make -j8
 cp libsmina.a /usr/local/lib/
 cd ../../../..
 
-#pharmit
+#pharmit - ensure SMINA_DIR is the install location above
 git clone http://git.code.sf.net/p/pharmit/code pharmit
 cd pharmit/src
 mkdir build
