@@ -80,4 +80,5 @@ for smile in smiles:
         names = list(itertools.chain.from_iterable(names)) 
         bigname =' '.join(sortNames(prefix,names))
         bigname = bigname.replace('\n','')
-        print(sdfloc,i,bigname)
+        if len(names) < 1000: #avoid what are likely solvents
+            print(sdfloc,i,bigname)
