@@ -4,7 +4,7 @@
 
 #Needs to be able to call createconfs.py and pharmitserver 
 
-import time, sys, os, MySQLdb, subprocess, json, psutil, signal, gzip
+import time, sys, os, MySQLdb, subprocess, json, psutil, signal, gzip, traceback
 from rdkit.Chem import AllChem as Chem
 from optparse import OptionParser
 
@@ -35,7 +35,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
     confconn = MySQLdb.connect (host = "localhost",user = "pharmit",db="conformers")
 
     try:
-        ligout = open("ligs.in", 'w')        
+        ligout = open("ligs.in", 'wt')        
         infile = gzip.open('input.sdf.gz')
         mols = Chem.ForwardSDMolSupplier(infile)
         molcnt = 0
@@ -69,7 +69,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
                     if not os.path.isdir(subdir):
                         os.makedirs(subdir)
                     fname = "%s/%d.sdf.gz" % (subdir,uniqueid)
-                    out = gzip.open(fname, 'w')
+                    out = gzip.open(fname, 'wt')
                     writer = Chem.SDWriter(out)
                     
                     if mol.HasProp('_Name'):
@@ -84,7 +84,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
                 
                         
             except: #catch rdkit issues
-                print(sys.exc_info())
+                traceback.print_exc()
                 continue
         
         if fname:
@@ -92,7 +92,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
             out.close()
         return True
     except:
-        print(sys.exc_info())
+        traceback.print_exc()
         return False;
             
             
@@ -113,7 +113,7 @@ def make_libraries(conn, dbprefixfile,row,numactives=0):
     if numactives > 0:
         dbinfo['numactives'] = numactives
     jsonfile = "dbinfo.json"
-    f = open(jsonfile,'w')
+    f = open(jsonfile,'wt')
     f.write(json.dumps(dbinfo,indent=4))
     f.close()
     #build libraries
@@ -214,5 +214,5 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             raise
         except:
-            print(sys.exc_info())
+            traceback.print_exc()
             time.sleep(1)

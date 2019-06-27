@@ -111,7 +111,8 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 	{
 		OBBond *bond = *bitr;
 		int btype = bond->GetBondOrder() - 1;
-		assert(btype >= 0 && btype < MAX_BONDS);
+		if(btype == 4 || btype < 0) btype = 1; //convert aromatic to single
+		btype = min(btype,MAX_BONDS-1);
 		OBAtom *a1 = bond->GetBeginAtom();
 		OBAtom *a2 = bond->GetEndAtom();
 
