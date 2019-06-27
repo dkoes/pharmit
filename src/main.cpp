@@ -46,6 +46,7 @@ See the LICENSE file provided with the distribution for more information.
 #include "ReadMCMol.h"
 #include "dbloader.h"
 #include "MinimizationSupport.h"
+#include <openbabel/stereo/stereo.h>
 
 using namespace boost;
 using namespace OpenBabel;
@@ -265,7 +266,7 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 				mol.AddHydrogens();
 
 				mol.FindRingAtomsAndBonds();
-				mol.FindChiralCenters();
+				PerceiveStereo(&mol);
 				mol.PerceiveBondOrders();
 				aromatics.AssignAromaticFlags(mol);
 				mol.FindSSSR();
@@ -421,7 +422,7 @@ static void handle_phogrify_cmd(const Pharmas& pharmas)
 			mol.AddHydrogens();
 
 			mol.FindRingAtomsAndBonds();
-			mol.FindChiralCenters();
+			PerceiveStereo(&mol);
 			mol.PerceiveBondOrders();
 			aromatics.AssignAromaticFlags(mol);
 			mol.FindSSSR();
@@ -641,11 +642,12 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		LigandInfo info;
 
 		str >> info.file;
-
+/*
 		if(!filesystem::exists(info.file))
 		{
 			cerr << "File " << info.file << " does not exist\n";
 		}
+		*/
 		str >> info.id;
 		if(info.id < 0)
 		{

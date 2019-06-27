@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #Given a prefix, extract a ligand file from the database of all the compounds
 #that have a name that starts with the prefix.
@@ -28,7 +28,7 @@ def sortNames(prefix, names):
     
 
 if len(sys.argv) < 2:
-    print "Need prefix"
+    print("Need prefix")
     sys.exit(-1)
     
 prefix = sys.argv[1]
@@ -57,4 +57,4 @@ for smile in smiles:
         names = list(itertools.chain.from_iterable(names)) 
         bigname =' '.join(sortNames(prefix,names))
         bigname = bigname.replace('\n','')
-        print sdfloc,i,bigname
+        print(sdfloc,i,bigname)

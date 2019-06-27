@@ -786,7 +786,7 @@ unsigned long PharmerDatabaseCreator::doSplitNewPage(unsigned pharma,
 	GeoKDPage page;
 
 	//reserve space
-	unique_lock<shared_mutex> lock(fileAccessLock);
+	boost::unique_lock<boost::shared_mutex> lock(fileAccessLock);
 	fseek(geoFile, 0, SEEK_END);
 	unsigned long location = ftell(geoFile);
 	assert(location % sizeof(GeoKDPage) == 0);
@@ -897,6 +897,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	//initialize self-managed flat file databases
 	//open for reading
 	//info - and read it in
+	valid = false;
 	filesystem::path ipath = dbpath;
 	ipath /= "info";
 	info = fopen(ipath.string().c_str(), "r");
@@ -905,7 +906,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	if (read != 1)
 	{
 		cerr << ipath.string() << "\n";
-		abort();
+		return;
 	}
 
 	//json info
@@ -915,7 +916,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	if (!reader.parse(json, dbinfo))
 	{
 		cerr << "Error reading database info JSON\n";
-		exit(-1);
+		return;
 	}
 
 	//pharmas

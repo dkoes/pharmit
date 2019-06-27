@@ -111,7 +111,8 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 	{
 		OBBond *bond = *bitr;
 		int btype = bond->GetBondOrder() - 1;
-		assert(btype >= 0 && btype < MAX_BONDS);
+		if(btype == 4 || btype < 0) btype = 1; //convert aromatic to single
+		btype = min(btype,MAX_BONDS-1);
 		OBAtom *a1 = bond->GetBeginAtom();
 		OBAtom *a2 = bond->GetEndAtom();
 
@@ -119,7 +120,7 @@ void PMolCreator::copyFrom(OBMol& mol, bool deleteH)
 			continue;
 
 		nDsts++; //basically nubmer of bonds
-		if (a2->GetValence() > a1->GetValence())
+		if (a2->GetExplicitDegree() > a1->GetExplicitDegree())
 		{
 			//a2 goes first
 			if (bonds[btype][atomindex[a2->GetIdx()]].size() == 0)

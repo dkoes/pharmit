@@ -14,43 +14,60 @@ See the LICENSE file provided with the distribution for more information.
 
 BUILDING
 
-Currently, the easiest way to build pharmit is to checkout the source code
-using Eclipse and build it with the automatically generated make files.
-The contribution of a standard autoconf/make build system would be greatly
-appreciated.
+CMake is required to build Pharmit.  Starting from the src directory:
+mkdir build
+cd build
+#most likely you will have to specify the location of smina nad lemon
+cmake .. -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/
+make -j12
 
-There are several dependencies on third party libraries:
-Boost (currently building against version 1.45)
-http://www.boost.org/
 
-JsonCpp
-https://github.com/open-source-parsers/jsoncpp
+UBUNTU 18.04
 
-FastCGI
-https://fastcgi-archives.github.io/
+apt install  git autoconf automake libtool ghostscript liblemon-dev libeigen3-dev libann-dev bmagic libcgicc-dev libgoogle-perftools-dev libglpk-dev coinor-* libjsoncpp-dev cmake libboost-dev swig python-dev libxml2-dev  libcairo2-dev libboost-all-dev libcurl4-openssl-dev
 
-cgicc
-http://www.gnu.org/software/cgicc/
+#NOTE: Currently the liblemon-dev package has an incorrect cmake config file that does
+#not set LEMON_LIBRARY to the correct location.  Either edit /usr/lib/cmake/LEMONConfig.cmake
+#so the correct location (/usr/lib/x86_64-linux-gnu/) is set or set LEMON_LIBRARY directly
+#on the cmake commandline
 
-tcmalloc (google performance tools)
-http://code.google.com/p/google-perftools/
+#fastcgi
+git clone https://github.com/FastCGI-Archives/fcgi2.git
+cd fcgi2
+autoreconf -i
+./configure
+make
+make install
+cd ..
 
-OpenBabel
-http://openbabel.org/
+#openbabel 
+#you can _probably_ use the libopenbabel-dev package, but it doesn't install cmake files by default, so you'd have to provide a custom FindOpenBabel module
+git clone https://github.com/openbabel/openbabel.git
+cd openbabel
+mkdir build
+cd build
+cmake .. -DPYTHON_BINDINGS=1 -DRUN_SWIG=1
+make -j12
+make install
+cd ..
 
-Eigen
-http://eigen.tuxfamily.org
+#smina
+git clone http://git.code.sf.net/p/smina/code smina
+cd smina/build/linux/release/
+make -j8
+cp libsmina.a /usr/local/lib/
+cd ../../../..
 
-Lemon Graph Library
-https://lemon.cs.elte.hu/trac/lemon
+#pharmit - ensure SMINA_DIR is the install location above
+git clone http://git.code.sf.net/p/pharmit/code pharmit
+cd pharmit/src
+mkdir build
+cd build
+#/usr/lib/cmake/LEMONConfig.cmake is editted to point LEMON_LIBRARY to /usr/lib/x86_64-linux-gnu/
+cmake .. -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/ 
 
-LibANN
-https://www.cs.umd.edu/~mount/ANN/
 
-bitmagic
-https://github.com/tlk00/BitMagic
-
-CENTOS
+CENTOS (these instructions may be out of date)
 yum groupinstall 'Development Tools'
 yum install git boost-devel autoconf automake libtool make cmake gperftools-libs gperftools-devel ghostscript libcurl-devel
 

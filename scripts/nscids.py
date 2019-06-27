@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #get cids and names of nsc compounds
 #since this is a large set and I can't do the necessary query
@@ -50,7 +50,7 @@ for f in files:
             elif line.startswith('$$$$'):
                 if cid != None and name != None:
                     if nscavail.nscavail(name):
-                        print cid,name
+                        print(cid,name)
                 name = None
                 cid = None
             line = data.readline()
@@ -61,4 +61,4 @@ for f in files:
         badfiles.append(f)
     
 ftp.close()
-print badfiles
+print(badfiles)

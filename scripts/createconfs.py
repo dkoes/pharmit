@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #Turns smiles into conformers and deposits them in a local database if needed
 #Each line of the smiles file is of the form 
@@ -25,7 +25,7 @@ def createconfs(uniqueid, smile, mol, fname, options):
     cids = Chem.EmbedMultipleConfs(mol, sample,randomSeed=1301979)
     cenergy = []           
 
-    output = gzip.open(fname,'w') #overwrite
+    output = gzip.open(fname,'wt') #overwrite
     sdwriter = Chem.SDWriter(output) 
     mol.SetProp("_Name",str(uniqueid)) #the id should be the name 
 
@@ -48,7 +48,7 @@ def createconfs(uniqueid, smile, mol, fname, options):
         passed = True
         if cenergy[conf]-mine > energycut:
             break
-        for seenconf in written.iterkeys():
+        for seenconf in written.keys():
             rms = getRMS(mol,seenconf,conf) 
             if rms < rmsdcut:
                 passed = False
@@ -78,7 +78,7 @@ def dowork(queue):
         try:
             createconfs(*ins)
         except Exception as e:
-            print e, ins
+            print(e, ins, traceback.print_exc())
 
 if __name__ == '__main__':
 	
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         parser.error("Need input smiles")
         sys.exit(-1)
     if not options.prefixfile or not os.path.isfile(options.prefixfile):
-        print "Require prefix file for storing structures"
+        print("Require prefix file for storing structures")
         sys.exit(-1)
     
     #read prefixes
@@ -122,9 +122,9 @@ if __name__ == '__main__':
         if os.path.isdir(line):
             prefixes.append(line)
         else:
-            print line,"is not a directory"
+            print(line,"is not a directory")
     if len(prefixes) == 0:
-        print "No valid prefixes provided"
+        print("No valid prefixes provided")
         sys.exit(-1)
     whichprefix = 0
     
@@ -142,7 +142,7 @@ if __name__ == '__main__':
         numt = options.threads
         
     queue = multiprocessing.Queue(numt)
-    for _ in xrange(numt):
+    for _ in range(numt):
         multiprocessing.Process(target=dowork, args=(queue,)).start()
 
     if options.verbose:
@@ -236,16 +236,15 @@ if __name__ == '__main__':
                 fname = cursor.fetchone()[0]
         
             #output a "ligs" file for database generation
-            print fname,uniqueid,name
+            print(fname,uniqueid,name)
             
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
             sys.stderr.write("%s %s %s %d\n\n%s" %(e,smile,name, len(smile),traceback.print_exc()))
-            
     
     #clear out queues
-    for _ in xrange(numt):
+    for _ in range(numt):
         queue.put(None)
 
 

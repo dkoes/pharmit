@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''Take a smi file with NSC compounds and call nscavail on each one.
 For some reason every so often the connection hangs and mechanize's timeout
@@ -11,12 +11,12 @@ if len(sys.argv) > 2:
     script = sys.argv[2]
 for line in open(sys.argv[1]):
     (smi,name) = line.split()
-    for i in xrange(3):
+    for i in range(3):
       try: # 3 attempts
         p = subprocess32.Popen("%s %s" % (script,name), stdout=subprocess32.PIPE, shell=True,preexec_fn=os.setsid)    
         p.wait(timeout=60)
-        if p.stdout.read().startswith("True"):
-            print line.rstrip()
+        if p.stdout.read().startswith(b"True"):
+            print(line.rstrip())
         break
       except subprocess32.TimeoutExpired:
         os.killpg(os.getpgid(p.pid), signal.SIGTERM) 
