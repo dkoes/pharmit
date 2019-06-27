@@ -31,6 +31,7 @@ a {
 	float: left;
 	position: absolute;
 	top: 0;
+	z-index: 10;
 	box-shadow: 2px 2px 5px #888888;
 	padding: 0.5em;
 	margin: 1px;

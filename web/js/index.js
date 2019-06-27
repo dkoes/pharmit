@@ -47,7 +47,7 @@ r();
 			val = val.substring(0,4);
 			var sel = $('#pdbligand').empty();
 			$('<option disabled selected>...</option>').appendTo(sel);
-			$.get('http://www.rcsb.org/pdb/rest/ligandInfo?structureId='+val).done(function(ret) {
+			$.get('https://www.rcsb.org/pdb/rest/ligandInfo?structureId='+val).done(function(ret) {
 				var ligands = $(ret).find('ligand');
 				sel.empty();
 				$.each(ligands, function(k,v) {
@@ -96,7 +96,7 @@ r();
 		}
 
 		//download pdb
-		$.get('http://www.rcsb.org/pdb/files/'+pdb+".pdb").done(function(mol) {
+		$.get('https://files.rcsb.org/view/'+pdb+".pdb").done(function(mol) {
 			var lines = mol.split('\n');
 			var reclines = []; //anthing that starts with ATOM
 			var waterlines = []; //HOH or WAT resname
