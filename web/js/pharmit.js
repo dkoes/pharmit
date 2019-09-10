@@ -2552,6 +2552,8 @@ Pharmit.Results = (function() {
 		    }
 		    else if((m = name.match(/CSC(\d+)/))) {
 		    	return "https://chem-space.com/"+name;
+		    } else if((m = name.match(/^MCULE-/))) {
+			return "https://mcule.com/"+name;
 		    }
 		    
 		    return null;
@@ -2648,6 +2650,7 @@ Pharmit.Results = (function() {
 
 	return Results;
 })();
+
 /*
  * Pharmit Web Client
  * Copyright 2015 David R Koes and University of Pittsburgh
