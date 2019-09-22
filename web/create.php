@@ -320,6 +320,7 @@ else //logged in, let's create some databases
 	<!--  TODO: add more input validation (name and file are required, check file name extension - sdf,smi,sdf.gz, or smi.gz - all in the client -->
 	<input type="hidden" name="op" value="create">
 	<span class="font">new databases from compounds</span><br><br>
+	<span class="font-4"><b>If your compound library is derived from a public source, please verify that these compounds aren't already provided in Pharmit which provides pre-built libraries for many popular databases (ZINC, ChEMBL, PubChem, MCULE, Chemspace, etc.).</b></font><br><br>
 	<span class="font-2">a short descriptive name of the database:</span><br>
 	<input type="text" autofocus="autofocus" id="dbname" name="dbname" size="60" class="input-2"><br><br>
 	<span class="font-2">a longer description: </span><br>

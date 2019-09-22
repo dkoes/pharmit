@@ -15,8 +15,9 @@
 
 	</head>
 	<body id="body">
-		<div id="notice">
-		<font color="#000066"><b>After a cascade of hard drive failures, Pharmit is now fully operational with the exception of the PubChem library, which will be rebuilt after a final hardware upgrade sometime in <strike>March</strike> April.</b></font>  <div class=closebutton style="float:right"></div>
+		<div id="notice"> <div class=closebutton style="float:right"></div>
+		<font color="#191970"><b>Thanks to a generous gift from Relay Therapeutics, the Pharmit backend has been upgraded to modern hardware with twice the capacity.</b>  <br>Note that public user-contributed libraries have been reset as many were subsets of the provided libraries (e.g. ZINC and MCULE). 
+<br>Please contact dkoes@pitt.edu if there is a library you want rebuilt or you notice problems.</font>
 		</div>
 		<div class="cont">
 			<div class="section">
@@ -195,7 +196,7 @@ else
 				<div class="cont-58">
 					<div class="cont-59"><p class="para-27"><span class="font-36">acknowledgements</span></p>
 					<p class="para-28"><span class="font-37">If you find this site useful please cite <span class="pharmitlink"><a href='http://nar.oxfordjournals.org/content/early/2016/04/19/nar.gkw287.long'>Pharmit: interactive exploration of chemical space</a><span></span>.</span></p></div>
-					<p class="para-28"><span class="font-37">Pharmit is funded through R01GM108340 from the National Institute of General Medical Sciences. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institute of General Medical Sciences or the National Institutes of Health.</span></p></div>
+					<p class="para-28"><span class="font-37">Pharmit is funded through R01GM108340 from the National Institute of General Medical Sciences and a generous gift from Relay Therapeutics. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institute of General Medical Sciences, the National Institutes of Health, or Relay Therapeutics.</span></p></div>
 				</div>
 			</div>
 		</div>
@@ -225,8 +226,8 @@ else
   ga('send', 'pageview');
 
   $(document).ready(function() {
-//	  $('#notice').slideDown();
-//	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
+	  $('#notice').slideDown();
+	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
   });
 </script>		
 	</body>
