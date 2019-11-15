@@ -25,6 +25,11 @@ See the LICENSE file provided with the distribution for more information.
  *  requires a single target.
  */
 
+#include <cstdio>
+#include <execinfo.h>
+#include <csignal>
+#include <cstdlib>
+#include <unistd.h>
 #include "CommandLine2/CommandLine.h"
 #include "pharmarec.h"
 #include "pharmerdb.h"
@@ -290,6 +295,18 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 	}
 }
 
+void sigv_handler(int sig) {
+  void *array[10];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 10);
+
+  // print out all the frames to stderr
+  fprintf(stderr, "Error: signal %d:\n", sig);
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(1);
+}
 
 //there was a bug with generating sminaData due to a bug in openbabel's handling
 //of multi-conformer OBMols.  This regenerates the sminaData/Index.
@@ -1040,6 +1057,8 @@ int main(int argc, char *argv[])
 	obErrorLog.StopLogging(); //just slows us down, possibly buggy?
 	ttab.Init();
 	resdat.Init();
+
+	signal(SIGSEGV, sigv_handler);   // install our handler for printing a backtrace on a segfault
 
 	//if a pharma specification file was given, load that into the global Pharmas
 	Pharmas pharmas(defaultPharmaVec);
