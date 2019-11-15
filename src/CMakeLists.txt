@@ -62,7 +62,7 @@ endif()
 
 # add external libraries
 find_package( Boost 1.53 COMPONENTS system regex filesystem program_options iostreams thread serialization date_time REQUIRED )
-find_package( OpenBabel2 REQUIRED )
+find_package( OpenBabel3 REQUIRED )
 find_package( jsoncpp REQUIRED )
 find_package( Eigen3 REQUIRED )
 find_package( LEMON REQUIRED )
@@ -72,9 +72,11 @@ find_package( Fcgi COMPONENTS streambuf REQUIRED )
 find_package( ANN REQUIRED )
 find_package( CURL REQUIRED )
 
+get_target_property(OpenBabel3_LIBRARY openbabel LOCATION)
+
 include_directories("${PROJECT_BINARY_DIR}")
 include_directories( ${Boost_INCLUDE_DIR} )
-include_directories( ${OpenBabel2_INCLUDE_DIRS} )
+include_directories( ${OpenBabel3_INCLUDE_DIRS})
 include_directories( $<TARGET_PROPERTY:jsoncpp_lib,INTERFACE_INCLUDE_DIRECTORIES> )
 include_directories( ${jsoncpp_INCLUDE_DIRS} )
 include_directories( "${EIGEN3_ROOT_DIR}/include" )
@@ -97,7 +99,7 @@ add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 # add the executable
 add_executable(pharmit ${MAIN_SOURCES})
 target_link_libraries(pharmit jsoncpp ${SMINALIB} ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
-                      openbabel ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARY} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
+                      ${OpenBabel3_LIBRARY} ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARY} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
 
 # add the install targets
 install (TARGETS pharmit DESTINATION bin)
