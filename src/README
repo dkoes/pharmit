@@ -42,14 +42,16 @@ cd ..
 
 #openbabel 
 #you can _probably_ use the libopenbabel-dev package, but it doesn't install cmake files by default, so you'd have to provide a custom FindOpenBabel module
+#In general, I recommend using openbabel 3.0 or later as it fixed a number of bugs.
 git clone https://github.com/openbabel/openbabel.git
 cd openbabel
 mkdir build
 cd build
-cmake .. -DPYTHON_BINDINGS=1 -DRUN_SWIG=1
+#presumably at some point maeparser and coordgen won't be broken...
+cmake .. -DPYTHON_BINDINGS=1 -DRUN_SWIG=1  -DWITH_MAEPARSER=0 -DWITH_COORDGEN=0
 make -j12
 make install
-cd ..
+cd ../..
 
 #smina
 git clone http://git.code.sf.net/p/smina/code smina
@@ -65,6 +67,7 @@ mkdir build
 cd build
 #/usr/lib/cmake/LEMONConfig.cmake is editted to point LEMON_LIBRARY to /usr/lib/x86_64-linux-gnu/
 cmake .. -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/ 
+make -j12
 
 
 CENTOS (these instructions may be out of date)
@@ -262,22 +265,65 @@ To run a MINIMIZATION server:
 ~/git/smina/build/linux/release/server -port 18000 -logfile /home/dkoes/log/minlog
 
 To HOST a server, add a fastcgi rule connecting the webserver hosting /web to the storage server running the backend.  e.g. (apache):
+
+ln -s ~/pharmit/web /var/www/html
+mkdir /var/www/html/fcgi-bin
+
+apt install apache2 libapache2-mod-fcgid libapache2-mod-php php-mysql apache2-dev
+
+git clone https://github.com/FastCGI-Archives/mod_fastcgi.git
+cp Makefile.AP2 Makefile
+#change /usr/local/apache2 to /usr/share/apache2 in Makefile
+make
+make install
+
+#create /etc/apache2/mods-available/fastcgi.load
+LoadModule fastcgi_module /usr/lib/apache2/modules/mod_fastcgi.so
+#fastcgi.conf
+
+
 <IfModule mod_fastcgi.c>
   AddHandler fastcgi-script .fcgi
+  #FastCgiWrapper /usr/lib/apache2/suexec
   FastCgiIpcDir /var/lib/apache2/fastcgi
 
-Alias /fcgi-bin/ /var/www/fcgi-bin/
+Alias /fcgi-bin/ /var/www/html/fcgi-bin/
 
-<Directory /var/www/fcgi-bin/>
+<Directory /var/www/html/fcgi-bin/>
  SetHandler fastcgi-script
  Options +ExecCGI
 </Directory>
 
-FastCgiExternalServer /var/www/fcgi-bin/pharmitserv.fcgi -host 192.168.6.4:16000 -idle-timeout 300
+FastCgiExternalServer /var/www/html/fcgi-bin/pharmitserv.fcgi -host 127.0.0.1:16000 -idle-timeout 300
+FastCgiExternalServer /var/www/html/fcgi-bin/createlib.fcgi -host 127.0.0.1:11111 -idle-timeout 300
+
 FastCgiConfig -autoUpdate -maxClassProcesses 1
 
 </IfModule>
 
+# enable
+a2enmod fastcgi
+
+LIBRARY CREATION
+The library creation scripts require rdkit to be installed.
+
+apt install python3-numpy  mysql-server mysql-client python3-mysqldb python3-pip
+pip3 install flup psutil
+mysql < ~/pharmit/scripts/pharmit.sql
+mysql < ~/pharmit/scripts/conformers.sql
+#also, run the mysql commands:
+ CREATE USER 'pharmit'@'localhost';
+ GRANT ALL PRIVILEGES ON pharmit.* TO 'pharmit'@'localhost';
+ GRANT ALL PRIVILEGES ON conformers.* TO 'pharmit'@'localhost';
+
+ INSERT INTO pharmit.users (email,name,maxprivatedbs,maxprivateconfs,maxdbs,maxconfs) VALUES ("guest","Anonymous",0,0,0,10000);
+
+git clone https://github.com/rdkit/rdkit.git
+cd rdkit
+mkdir build
+cd build
+cmake .. -DPYTHON_EXECUTABLE=/usr/bin/python3
+make -j12
 
 BUGS (Not Really)
 
