@@ -674,13 +674,13 @@ public:
 		WebQueryHandle query = getQuery(CGI, IO);
 		if (query)
 		{
+			unsigned nR = query->numResults(); //do before lock
 			SpinLock lock(logmutex);
 			posix_time::ptime t(
 					posix_time::second_clock::local_time());
 			fprintf(LOG, "save %s %s %lu %u\n", posix_time::to_simple_string(
 					t).c_str(), CGI.getEnvironment().getRemoteHost().c_str(),
-					cgiGetInt(CGI, "qid"),
-					query->numResults());
+					cgiGetInt(CGI, "qid"), nR);
 			fflush(LOG);
 			lock.release();
 
@@ -861,13 +861,14 @@ public:
 		WebQueryHandle query = getQuery(CGI, IO);
 		if (query)
 		{
+			unsigned nR = query->numResults();
 			SpinLock lock(logmutex);
 			unsigned max = cgiGetInt(CGI, "num");
 			posix_time::ptime t(posix_time::second_clock::local_time());
 			fprintf(LOG, "startmin %s %s %u %u %lu\n",
 					posix_time::to_simple_string(t).c_str(),
 					CGI.getEnvironment().getRemoteHost().c_str(),
-					query->numResults(), max, cgiGetInt(CGI, "qid"));
+					nR, max, cgiGetInt(CGI, "qid"));
 			fflush(LOG);
 			lock.release();
 
@@ -1065,14 +1066,14 @@ public:
 		WebQueryHandle query = getQuery(CGI, IO);
 		if (query)
 		{
+			unsigned nR = query->numResults();
 			SpinLock lock(logmutex);
 			unsigned max = cgiGetInt(CGI, "num");
 			posix_time::ptime t(posix_time::second_clock::local_time());
 			fprintf(LOG, "save %s %s %u %u %lu\n",
 					posix_time::to_simple_string(t).c_str(),
 					CGI.getEnvironment().getRemoteHost().c_str(),
-					query->numResults(), max, cgiGetInt(CGI,
-							"qid"));
+					nR, max, cgiGetInt(CGI, "qid"));
 			fflush(LOG);
 			lock.release();
 
