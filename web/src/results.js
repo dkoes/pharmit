@@ -94,6 +94,8 @@ Pharmit.Results = (function() {
 		    	return "https://chem-space.com/"+name;
 		    } else if((m = name.match(/^MCULE-/))) {
 			return "https://mcule.com/"+name;
+		    } else if((m = name.match(/(\S+-N)$/))) {
+			return "https://ultimateapp.mcule.com/search/?t=exact&q="+name;
 		    }
 		    
 		    return null;
