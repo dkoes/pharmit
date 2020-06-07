@@ -16,8 +16,7 @@
 	</head>
 	<body id="body">
 		<div id="notice"> <div class=closebutton style="float:right"></div>
-		<font color="#191970"><b>Thanks to a generous gift from Relay Therapeutics, the Pharmit backend has been upgraded to modern hardware with twice the capacity.</b>  <br>Note that public user-contributed libraries have been reset as many were subsets of the provided libraries (e.g. ZINC and MCULE). 
-<br>Please contact dkoes@pitt.edu if there is a library you want rebuilt or you notice problems.</font>
+		<font color="#ff4444"><b>Attention:</b>The Pharmit server will be moved to a new physical location once COVID-19 restrictions on operations have been lifted.  This will result in protracted outages during this time. <font>
 		</div>
 		<div class="cont">
 			<div class="section">
