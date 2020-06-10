@@ -878,7 +878,8 @@ void PharmerDatabaseCreator::createSpatialIndex()
 		fwrite(binnedCnts[i].c_array(), LENGTH_BINS * LENGTH_BINS * LENGTH_BINS,
 				sizeof(unsigned), binData);
 
-	shapedb.createIndex();
+	if(!NoShapeIndex)
+		shapedb.createIndex();
 
 	cout << stats[NumConfs] << "\tconformations\n";
 	cout << stats[NumMols] << "\tmolecules\n";
