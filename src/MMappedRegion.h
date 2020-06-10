@@ -88,8 +88,10 @@ public:
 		if (filesystem::file_size(fname) > 0)
 		{
 			size = filesystem::file_size(fname);
-			data = (T*) mmap(NULL, size, flags, (readOnly ? MAP_PRIVATE
-					: MAP_SHARED) |(populate ? MAP_POPULATE : 0) , fd, 0);
+			data = (T*) mmap(NULL, size, flags, (readOnly ? MAP_PRIVATE|MAP_NORESERVE
+					: MAP_SHARED) |(populate ? MAP_POPULATE : 0), 
+					fd, 0);
+			close(fd); //once mmapped, don't need to keep open             
 		}
 		else
 		{

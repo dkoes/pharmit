@@ -33,7 +33,7 @@ See the LICENSE file provided with the distribution for more information.
 #include "pharmarec.h"
 #include <string>
 #include <cstdio>
-#include <google/malloc_extension.h>
+#include <gperftools/malloc_extension.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -266,7 +266,7 @@ public:
 				unsigned oldqid = cgiGetInt(CGI, "oldqid");
 
 				//DEBUG code - output queries
-				if(true)
+				if(false)
 				{
 					SpinLock lock(logmutex);
 
@@ -558,12 +558,12 @@ public:
 				ShapeConstraints excluder;
 				if (parsers[ext]->parse(*pharmas, str, points, excluder))
 				{
-					if (points.size() > 25)
+					if (points.size() > 50)
 					{
 						//this many points is a pointless query and at some point
 						//you just generate too many triplets
 						sendError(IO, CGI,
-								"I'm sorry, your query has too many points (more than 25!).");
+								"I'm sorry, your query has too many points (more than 50!).");
 					}
 					else
 					{
@@ -580,7 +580,7 @@ public:
 				else
 				{
 					sendError(IO, CGI,
-							"Error parsing query format file. Note that third party file formats (e.g. pml, ph4) are reverse engineered. Please submit any examples that do not work in the forums so we can improve the parser.");
+							"Error parsing query format file. Note that third party file formats (e.g. pml, ph4) are reverse engineered. Please submit any examples that do not work so we can improve the parser.");
 				}
 			}
 			else //molecular data
@@ -590,8 +590,7 @@ public:
 					stringstream err;
 					err << "Could not understand molecular data in " << filename
 							<<
-							" (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format."
-							<< " Please request support for new formats in the ZINCPharmer forum.";
+							" (OpenBabel compatible format required). Pharmacophore features must be in ph4, pml, or json format.";
 					sendError(IO, CGI, err.str().c_str());
 					return;
 				}

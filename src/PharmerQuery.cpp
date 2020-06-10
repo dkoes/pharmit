@@ -21,7 +21,7 @@ See the LICENSE file provided with the distribution for more information.
  *      Author: dkoes
  */
 
-#include <google/malloc_extension.h>
+#include <gperftools/malloc_extension.h>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/assign/list_of.hpp>
@@ -80,11 +80,11 @@ void PharmerQuery::initializeTriplets()
 }
 
 PharmerQuery::PharmerQuery(
-		const vector< boost::shared_ptr<PharmerDatabaseSearcher> >& dbs,
+		const vector< std::shared_ptr<PharmerDatabaseSearcher> >& dbs,
 		istream& in, const string& ext, const QueryParameters& qp, unsigned nth) :
 		databases(dbs), params(qp), valid(false), stopQuery(false), tripletMatchThread(
 		NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(dbs.size()), currsort(
-				SortType::Undefined), nthreads(nth), dbcnt(0), inUseCnt(0), numactives(0),
+				SortType::Undefined), currrev(false), nthreads(nth), dbcnt(0), inUseCnt(0), numactives(0),
 				totalmols(0), sminaid(0)
 {
 	if (dbs.size() == 0)
@@ -117,12 +117,12 @@ PharmerQuery::PharmerQuery(
 }
 
 PharmerQuery::PharmerQuery(
-		const vector< boost::shared_ptr<PharmerDatabaseSearcher> >& dbs,
+		const vector< std::shared_ptr<PharmerDatabaseSearcher> >& dbs,
 		const vector<PharmaPoint>& pts, const QueryParameters& qp,
 		const ShapeConstraints& ex, unsigned nth) :
 		databases(dbs), points(pts), params(qp), excluder(ex), valid(false), stopQuery(
 				false), tripletMatchThread(NULL), shapeMatchThread(NULL), lastAccessed(time(NULL)), corrsQs(
-				dbs.size()), currsort(SortType::Undefined), nthreads(nth), dbcnt(
+				dbs.size()), currsort(SortType::Undefined), currrev(false), nthreads(nth), dbcnt(
 				0), inUseCnt(0), numactives(0), totalmols(0), sminaid(0)
 {
 	if (dbs.size() == 0)
@@ -502,7 +502,7 @@ class ReverseSort
 //do stable sorts, which require an explicit reverse sort
 void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 {
-	if (currsort == srt)
+	if (currsort == srt && currrev == reverse)
 		return;
 	QRCompare cmp = NULL;
 	switch (srt)
@@ -520,6 +520,7 @@ void PharmerQuery::sortResults(SortTyp srt, bool reverse)
 			break;
 	}
 	currsort = srt;
+	currrev = reverse;
 	if (cmp != NULL)
 	{
 		if (reverse)
@@ -561,6 +562,7 @@ bool PharmerQuery::loadResults()
 	SpinLock lock(mutex);
 	checkThreads();
 	bool moretoread = !threadsDone();
+	unsigned newcnt = 0; //number added to results
 	for (unsigned i = 0, n = corrsQs.size(); i < n; i++)
 	{
 		vector<CorrespondenceResult*> corrs;
@@ -572,10 +574,11 @@ bool PharmerQuery::loadResults()
 			currsort = SortType::Undefined;
 			results.push_back(
 					new (resalloc.alloc(sizeof(QueryResult))) QueryResult(c));
+			newcnt++;
 		}
 	}
 
-//filter
+	//filter and sort if we've seen something new
 	sortResults(params.sort, params.reverseSort);
 	reduceResults();
 
@@ -619,7 +622,7 @@ void PharmerQuery::setExtraInfo(QueryResult& r)
 {
 	if (!r.name[0])
 	{
-		shared_ptr<PharmerDatabaseSearcher> db;
+		std::shared_ptr<PharmerDatabaseSearcher> db;
 		unsigned long loc = getLocation(&r, db);
 
 		//TODO: make this more efficient (don't need to unpack full mol)
@@ -733,6 +736,7 @@ void PharmerQuery::setDataJSON(const DataParameters& dp, Json::Value& data)
 		allparam.extraInfo = true; //need names
 		getResults(allparam, all);
 		computeBenchmarkStats(all, data["benchmark"]);
+		getResults(dp, r); //resort
 	}
 
 	for (unsigned i = 0, n = r.size(); i < n; i++)
@@ -752,7 +756,7 @@ static bool locationCompare(const QueryResult* lhs, const QueryResult* rhs)
 }
 
 unsigned long PharmerQuery::getLocation(const QueryResult* r,
-		shared_ptr<PharmerDatabaseSearcher>& db)
+		std::shared_ptr<PharmerDatabaseSearcher>& db)
 {
 	unsigned dbid = r->c->location % databases.size();
 	unsigned long loc = r->c->location / databases.size();
@@ -779,7 +783,7 @@ void PharmerQuery::outputMols(ostream& out)
 	for (unsigned i = 0, n = myres.size(); i < n && out; i++)
 	{
 		access();
-		shared_ptr<PharmerDatabaseSearcher> db;
+		std::shared_ptr<PharmerDatabaseSearcher> db;
 		unsigned long loc = getLocation(myres[i], db);
 
 		sddata.clear();
@@ -803,7 +807,7 @@ void PharmerQuery::outputMol(const QueryResult* mol, ostream& out,
 	if(params.isshape) dataname = "sim";
 	sddata.push_back(ASDDataItem(dataname, lexical_cast<string>(mol->c->val)));
 
-	shared_ptr<PharmerDatabaseSearcher> db;
+	std::shared_ptr<PharmerDatabaseSearcher> db;
 	unsigned long loc = getLocation(mol, db);
 
 	db->getMolData(loc, mdata, pread);
@@ -928,7 +932,7 @@ void PharmerQuery::thread_sendSmina(PharmerQuery *query, stream_ptr out,
 		{
 			query->access();
 			QueryResult *r = rescopy[i];
-			shared_ptr<PharmerDatabaseSearcher> db;
+			std::shared_ptr<PharmerDatabaseSearcher> db;
 			unsigned long loc = query->getLocation(r, db);
 
 			//extract and zip rmsd transform

@@ -141,7 +141,7 @@ void ShapeObj::normalizeMol(OBMol& mol)
 	//find center of mass
 	for (atom = mol.BeginAtom(j); atom; atom = mol.NextAtom(j))
 	{
-		if(!atom->IsHydrogen())
+		if(atom->GetAtomicNum() != OBElements::Hydrogen)
 		{
 			Vector3d c(atom->x(), atom->y(), atom->z());
 			coords.push_back(c);

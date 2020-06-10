@@ -830,7 +830,7 @@ var Pharmit = Pharmit ||  {};
 $(document).ready(function() {
 	
 	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
-	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	Pharmit.email = 'dkoes@pitt.edu';
 	
 	//global variable checking - we should add nothing but Pharmit
 	var globalsBefore = {};
@@ -893,13 +893,19 @@ $(document).ready(function() {
 		else if(event.data == "ack2") {
 			//ignore, message should handle these
 		}
+		else if(event.data.type && event.data.type == "init") {
+			//actually have no idea where this event comes from, but it pops up in chrome
+		}
+		else if(event.contexts) {
+			//same here
+		}
 		else {
 			try {
 				var obj = $.parseJSON(event.data);
 				query.setLigandAndReceptor(obj.ligand, obj.ligandFormat, obj.receptor, obj.recname);
 			}
 			catch(e) {
-				alert("Communication error: "+e);
+				console.log("Communication error: "+e);
 			}
 		}
 	};
@@ -930,7 +936,8 @@ var Pharmit = Pharmit || {};
 Pharmit.MinResults = (function() {
 	// private class variables and functions
 	
-
+	var MAXMIN = 25000;
+	
 	function MinResults(results, viewer) {
 		//private variables and functions
 		var mindiv = null;
@@ -1006,9 +1013,9 @@ Pharmit.MinResults = (function() {
 			qid = q;
 			query = qobj;
 			
-			if(startTotal > 10000) {
-				alert("Results minimization is limited to 10,000 compounds.  Your results will be truncated.");
-				startTotal = 10000;
+			if(startTotal > MAXMIN) {
+				alert("Results minimization is limited to "+MAXMIN+" compounds.  Your results will be truncated.");
+				startTotal = MAXMIN;
 			}
 			var postData = {cmd: 'startsmina',
 					qid: qid,
@@ -1151,8 +1158,14 @@ Pharmit.MinResults = (function() {
 			var lang = table.DataTable().settings()[0].oLanguage;
 
 			if(json.finished) {
+				ga('send','event','query','minimize',query.subset,json.recordsTotal);
+
 				save.button( "option", "disabled", false );			
-				lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";
+				save.one('click', function() {
+					ga('send','event','save','minimized',query.subset,json.recordsTotal);
+				});
+				
+				lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";				
 			} 
 	        else if(json.status === 0) {
 	        	alert(json.msg);
@@ -1345,9 +1358,11 @@ Pharmit.Query = (function() {
 			var qobj = getQueryObj(true);
 			
 			if(shapeMode == 'search') {
+				ga('send','event','query','shape',qobj.subset);
 				results.shquery(qobj, receptorData);
 			} else {
 				//results manages queries
+				ga('send','event','query','pharmacophore',qobj.subset);
 				results.phquery(qobj, receptorData);
 			}
 		};
@@ -1390,6 +1405,8 @@ Pharmit.Query = (function() {
 		//take an array of pharmacophore features (query.points) and
 		//put them in the query view
 		var setFeatures = function(featurearray) {
+			
+			if(!featurearray) return;
 			var start = new Date().getTime();
 			
 			viewer.disableRendering();
@@ -1417,6 +1434,7 @@ Pharmit.Query = (function() {
 			setFeaturesHelper(phfeatures, features);
 			setFeaturesHelper(inspheres, inshapefeatures, Feature.INCLUSIVESHAPE);
 			setFeaturesHelper(exspheres, exshapefeatures, Feature.EXCLUSIVESHAPE);
+			$('#exselect').change();
 			
 			viewer.enableRendering();
 			var end = new Date().getTime();
@@ -2143,58 +2161,118 @@ Pharmit.Query = (function() {
 			var lis = [];
 			var i, info, display;
 			for(i = 0, n = subsetinfo.length; i < n; i++) {
-				info = subsetinfo[i];
-				display = escHTML(info.name);
-				if(info.html) display = info.html; //optionally can provide html, but not from users
-				lis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
-				lis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
-				lis[i] += '<span class="pharmit_subsettime">Updated: '+info.updated+'</span>';
-				lis[i] += '</li>';
-				
-				//default to molport for now
-				if(info.subdir == 'molport') {
-					run.button("option",'label',"Search "+info.name);
-					run.val(info.subdir);
-				}
+					info = subsetinfo[i];
+					display = escHTML(info.name);
+					if(info.html) display = info.html; //optionally can provide html, but not from users
+					lis[i] = '<li value='+i+' class="pharmit_subsetmenu">'+display+'<br>';
+					lis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
+					lis[i] += '<span class="pharmit_subsettime">Updated: '+info.updated+'</span>';
+					lis[i] += '</li>';
+					
+					//default to molport for now
+					if(info.subdir == 'molport') {
+							run.button("option",'label',"Search "+info.name);
+							run.val(info.subdir);
+					}
 			}
 			ul.append(lis);
 			ul.append($('<li> </li>'));
 			var publicli = $('<li class="pharmit_contributed">Contributed Libraries</li>');
 			var publicul =  $('<ul>').appendTo(publicli).addClass('pharmit_contributed_menu');
 			var publiclis = [];
+			var tosearch = [];
 			var publicinfo = dbinfo.public;
 			for(i = 0, n = publicinfo.length; i < n; i++) {
 				info = publicinfo[i];
+				if(info.numConfs === 0) continue;
 				display = escHTML(info.name);
 				var titlestr = "";
-				if(info.description) titlestr = " title='"+escHTML(info.description)+"' ";
+				tosearch[i] = display + info.updated; //can search by date
+				if(info.description) {
+					titlestr = " title='"+escHTML(info.description)+"' ";
+					tosearch[i] += " " + escHTML(info.description);
+				}
+				tosearch[i] = tosearch[i].toLowerCase();
 				publiclis[i] = '<li value='+subsetinfo.length+titlestr+' class="pharmit_subsetmenu">'+display+'<br>';
 				subsetinfo.push(info);
-				publiclis[i] += '<span class="pharmit_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
-				publiclis[i] += '<span class="pharmit_subsettime">Created: '+info.updated+'</span>';
+				publiclis[i] += '<span class="pharmit_contrib_subsettime">Created: '+info.updated+'</span>';
+				publiclis[i] += '<span class="pharmit_contrib_subsetcnts">' + numeral(info.numConfs).format('0,0') + ' conformers of ' + numeral(info.numMols).format('0,0') + ' molecules</span>';
 				publiclis[i] += '</li>';
+				publiclis[i] = $(publiclis[i]);
 			}
 			publicul.append(publiclis);
-			ul.append(publicli);
-			ul.append($('<li> </li>'));
-
-			$('<li class="pharmit_private">Access Private Library</li>').appendTo(ul).click(
-					function() {
-						privatedialog.dialog("open");
-					});
+			publicdialog = $('<div class="pharmit_public_dialog" title="Contributed Libraries"> </div>');
+			publicsearch = $('<input type="text" id="input" class="pharmit_contrib_search">');
+			$('<div class="pharmit_search_div"><b>Search: </b></div>').append(publicsearch).appendTo(publicdialog);
+			publicsearch.keyup(function (){
+				var a, txtValue, filter;
+				filter = publicsearch.val().toLowerCase();
+				for(i in publiclis) {
+					if(tosearch[i].indexOf(filter) > -1) {
+						publiclis[i].css('display', "");
+					} else {
+						publiclis[i].css('display', "none");
+					}
+				}
+			});
+			publicdialog.append(publicul);
+			publicdialog.appendTo(body);
+			publicdialog.dialog({
+					autoOpen: false,
+					height: 525,
+					width: 600,
+					modal: true,                
+					});         
+			$('<li class="pharmit_private">Contributed Libraries...</li>').appendTo(ul).click(
+				function() {
+						publicdialog.dialog("open");
+				});
 			
-			ul.hide().menu({position:{
-				my: "left top",
-				at: "right top",
-				collision: 'fit'
+			
+			ul.append($('<li> </li>'));
+			$('<li class="pharmit_private">Access Private Library...</li>').appendTo(ul).click(
+							function() {
+									privatedialog.dialog("open");
+							});
+		 publicul.menu({position:{
+					my: "left top",
+					at: "right top",
+					collision: 'fit'
 			}}).on('menuselect', function(event, ui) {
-				var info = subsetinfo[ui.item.val()];
-				run.button("option",'label',"Search "+info.name);
-				run.val(info.subdir);
+					var info = subsetinfo[ui.item.val()];
+					run.button("option",'label',"Search "+info.name);
+					run.val(info.subdir);
+					publicdialog.dialog("close");
 			});
 			
+			ul.hide().menu({position:{
+					my: "left top",
+					at: "right top",
+					collision: 'fit'
+			}}).on('menuselect', function(event, ui) {
+					var info = subsetinfo[ui.item.val()];
+					run.button("option",'label',"Search "+info.name);
+					run.val(info.subdir);
+			});
+
 			//handlers
 			run.click(doSearch);
+			
+			run.change(function() {
+				//update button name
+				var subdir = run.val();
+				var i, n;
+				for(i = 0, n = subsetinfo.length; i < n; i++) {
+					info = subsetinfo[i];
+					if(info.subdir == subdir) {
+						run.button("option",'label',"Search "+info.name);
+						break;
+					}
+				}
+				if(i == n) {
+					run.button("option",'label',"Unknown Subset");
+				}				
+			});
 			select.click(
 					function() {
 						var menu = ul.show().position({
@@ -2469,6 +2547,16 @@ Pharmit.Results = (function() {
 		    else if((m = name.match(/ChemDiv-?(\S+)/))) {
 		        return "http://chemistryondemand.com:8080/eShop/search_results.jsp?idnumber="+m[1];
 		    }
+		    else if((m = name.match(/ZINC(\d+)/))) {
+		    	return "http://zinc15.docking.org/substances/"+m[1];
+		    }
+		    else if((m = name.match(/CSC(\d+)/))) {
+		    	return "https://chem-space.com/"+name;
+		    } else if((m = name.match(/^MCULE-/))) {
+			return "https://mcule.com/"+name;
+		    } else if((m = name.match(/(\S+-N)$/))) {
+			return "https://ultimateapp.mcule.com/search/?t=exact&q="+name;
+		    }
 		    
 		    return null;
 		};
@@ -2564,6 +2652,7 @@ Pharmit.Results = (function() {
 
 	return Results;
 })();
+
 /*
  * Pharmit Web Client
  * Copyright 2015 David R Koes and University of Pittsburgh
@@ -2735,6 +2824,7 @@ Pharmit.SearchResults = (function() {
 		
 		this.show = function() {
 			phdiv.show();
+			table.DataTable().ajax.reload();
 		};
 		
 		//cancel any query. clear out the table, and hide the div
@@ -2777,7 +2867,8 @@ Pharmit.SearchResults = (function() {
 			var qobj = $.extend({}, query);
 			qobj.receptor = receptor;
 			minresults.minimize(qid, qobj, cnt, function() {
-				phdiv.show();				
+				phdiv.show();			
+				table.DataTable().ajax.reload();
 			});
 		};
 		
@@ -2833,6 +2924,9 @@ Pharmit.SearchResults = (function() {
 					lang.sInfo +="</span>";								
 					minimize.button( "option", "disabled", false );
 					save.button( "option", "disabled", false );
+					save.one('click', function() {
+						ga('send','event','save','pharmacophore',query.subset,json.recordsTotal);
+					});
 				}
 				
 			} 
@@ -5256,6 +5350,7 @@ Pharmit.Viewer = (function() {
 				'Receptor':{model: null,
 					defaultColor: '#C8C8C8',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					backbone: null,
 					selectedstyle: 'cartoonwire',
 					styles: {
 						stick: {name: "Stick",
@@ -5416,6 +5511,32 @@ Pharmit.Viewer = (function() {
 			createStyleSelector("Results", table, null);
 			createStyleSelector("Receptor",  table, null);
 			
+			//backbone color scheme
+			var backdiv = $('<div>').addClass('pharmit_backbonediv').appendTo(vizgroup);
+			$('<label for="receptorbackbone">Receptor Backbone:</label>').appendTo(backdiv);
+			var bradiodiv = $('<div id="receptorbackbone">').appendTo(backdiv);
+			$('<input type="radio" id="plainBackbone" name="receptorbackbone"><label for="plainBackbone">Plain</label>').appendTo(bradiodiv)
+				.change(function() {
+					if($(this).prop("checked")) {
+						var rec = modelsAndStyles.Receptor;
+						delete rec.styles.cartoon.style.cartoon.color;
+						delete rec.styles.cartoonwire.style.cartoon.color;						
+						updateStyle('Receptor');
+					}
+					bradiodiv.buttonset("refresh");
+				}).prop("checked",true);
+			$('<input type="radio" id="rainbowBackbone" name="receptorbackbone"><label for="rainbowBackbone">Rainbow</label>').appendTo(bradiodiv)
+				.change(function() {
+						if($(this).prop("checked")) {
+							var rec = modelsAndStyles.Receptor;
+							rec.styles.cartoon.style.cartoon.color = 'spectrum';
+							rec.styles.cartoonwire.style.cartoon.color = 'spectrum';
+							updateStyle('Receptor');
+						}
+						bradiodiv.buttonset("refresh");
+					});
+			bradiodiv.buttonset();
+			
 			//surface transparency
 			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
 			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
@@ -5480,8 +5601,9 @@ Pharmit.Viewer = (function() {
 				
 				//surface
 				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
-				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
+				var surfacepromise = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, {model:receptor, bonds: 0, invert:true});
+				surface = surfacepromise.surfid;
 				viewer.zoomTo({});
 			}
 			else

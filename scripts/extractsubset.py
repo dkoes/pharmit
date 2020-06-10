@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #Given a prefix, extract a ligand file from the database of all the compounds
 #that have a name that starts with the prefix.
@@ -7,15 +7,20 @@ import sys,subprocess, re, MySQLdb, os, collections
 import itertools
 
 def sortNames(prefix, names):
-    #sort alphabetically, but with prefixed names first
-    prefixed = []
-    unprefixed = []
+    #sort alphabetically, but with prefixed names first, make sure there are no duplicates
+    prefixed = set()
+    unprefixed = set()
     for n in names:
+        n = n.strip();
+        if n.startswith('MolPort') and '_' in n: #workaround for bad molport names
+            n = n.split('_')[0]
         if n.startswith(prefix):
-            prefixed.append(n)
+            prefixed.add(n)
         else:
-            unprefixed.append(n)
+            unprefixed.add(n)
             
+    prefixed = list(set(prefixed))
+    unprefixed = list(set(unprefixed))
     prefixed.sort()
     unprefixed.sort()
     
@@ -23,7 +28,7 @@ def sortNames(prefix, names):
     
 
 if len(sys.argv) < 2:
-    print "Need prefix"
+    print("Need prefix")
     sys.exit(-1)
     
 prefix = sys.argv[1]
@@ -52,4 +57,4 @@ for smile in smiles:
         names = list(itertools.chain.from_iterable(names)) 
         bigname =' '.join(sortNames(prefix,names))
         bigname = bigname.replace('\n','')
-        print sdfloc,i,bigname
+        print(sdfloc,i,bigname)

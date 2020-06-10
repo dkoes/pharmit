@@ -233,7 +233,7 @@ public:
 				//support different feature formats by parsing this line -
 				//still assume that x y z r are all in order
 				vector<string> tokens;
-				boost::algorithm::split(tokens, line, isblank);
+				boost::algorithm::split(tokens, line, boost::is_any_of("\t "));
 				unsigned start = 0, end = 0;
 				for(unsigned i = 0, n = tokens.size()-1; i < n; i++)
 				{
@@ -320,7 +320,10 @@ public:
 				in >> r;
 
 				if (in)
+				{
 					excluder.addExclusionSphere(x, y, z, r);
+					excluder.enableExclusionSpheres();
+				}
 			}
 		}
 		return true;
@@ -343,7 +346,7 @@ public:
 
 			virtual bool VisitEnter(const TiXmlElement& elem, const TiXmlAttribute* at)
 			{
-				ph = elem.FirstChildElement("pharmacophore");
+				if(ph == NULL) ph = elem.FirstChildElement("pharmacophore");
 				return ph == NULL; //keep going if haven't found it
 			}
 		};
@@ -541,6 +544,7 @@ public:
 						pos->Attribute("z3", &z);
 						pos->Attribute("tolerance", &r);
 						excluder.addExclusionSphere(x, y, z, r);
+						excluder.enableExclusionSpheres();
 					}
 				}
 			}

@@ -36,13 +36,12 @@ See the LICENSE file provided with the distribution for more information.
 #include "PMol.h"
 #include "MolProperties.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
-#include "GninaConverter.h"
+#include "MinimizationSupport.h"
 #include "ShapeObj.h"
 #include "ShapeResults.h"
 #include "ShapeConstraints.h"
 #include "pharminfo.h"
 
-using namespace boost;
 using namespace std;
 using namespace OpenBabel;
 
@@ -477,7 +476,8 @@ void PharmerDatabaseCreator::addMolToDatabase(OBMol& mol, long uniqueid,
 	props.write(mid, propFiles);
 
 	//output smina and shape data here
-	GninaConverter::MCMolConverter mcsmina(mol);
+	MinimizeConverter::MCMolConverter mcsmina(mol);
+
 	const vector<unsigned>& confOffsets = mdc.ConfOffsets();
 	unsigned long mloc = mid;
 	mloc <<= (TPD_MOLDATA_BITS - TPD_MOLID_BITS);
@@ -786,7 +786,7 @@ unsigned long PharmerDatabaseCreator::doSplitNewPage(unsigned pharma,
 	GeoKDPage page;
 
 	//reserve space
-	unique_lock<shared_mutex> lock(fileAccessLock);
+	boost::unique_lock<boost::shared_mutex> lock(fileAccessLock);
 	fseek(geoFile, 0, SEEK_END);
 	unsigned long location = ftell(geoFile);
 	assert(location % sizeof(GeoKDPage) == 0);
@@ -898,6 +898,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	//initialize self-managed flat file databases
 	//open for reading
 	//info - and read it in
+	valid = false;
 	filesystem::path ipath = dbpath;
 	ipath /= "info";
 	info = fopen(ipath.string().c_str(), "r");
@@ -906,7 +907,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	if (read != 1)
 	{
 		cerr << ipath.string() << "\n";
-		abort();
+		return;
 	}
 
 	//json info
@@ -916,7 +917,7 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	if (!reader.parse(json, dbinfo))
 	{
 		cerr << "Error reading database info JSON\n";
-		exit(-1);
+		return;
 	}
 
 	//pharmas
@@ -1192,11 +1193,11 @@ void PharmerDatabaseSearcher::generateShapeMatches(const ShapeConstraints& const
 	if(numMolecules() == 0)
 		return;
 	//create tree version of constraints
-	GSSTreeSearcher::ObjectTree small = shared_ptr<const MappableOctTree>(
+	GSSTreeSearcher::ObjectTree small = std::shared_ptr<const MappableOctTree>(
 					MappableOctTree::createFromGrid(constraints.getInclusiveGrid()), free);
-	shared_ptr<MappableOctTree> big = shared_ptr<MappableOctTree>(
+	std::shared_ptr<MappableOctTree> big = std::shared_ptr<MappableOctTree>(
 					MappableOctTree::createFromGrid(constraints.getExclusiveGrid()), free);
-	GSSTreeSearcher::ObjectTree lig = shared_ptr<const MappableOctTree>(
+	GSSTreeSearcher::ObjectTree lig = std::shared_ptr<const MappableOctTree>(
 					MappableOctTree::createFromGrid(constraints.getLigandGrid()), free);
 
 	big->invert();

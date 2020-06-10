@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #Given a smiles file and prefix, extract a ligand file from the database of all the compounds
 #with those smiles that have a name that starts with the prefix.
@@ -13,13 +13,15 @@ def sortNames(prefix, names):
     unprefixed = set()
     for n in names:
         n = n.strip();
+        if n.startswith('MolPort') and '_' in n: #workaround for bad molport names
+            n = n.split('_')[0]
         if n.startswith(prefix):
             prefixed.add(n)
         else:
             unprefixed.add(n)
             
-    prefixed = list(prefixed)
-    unprefixed = list(unprefixed)
+    prefixed = list(set(prefixed))
+    unprefixed = list(set(unprefixed))
     prefixed.sort()
     unprefixed.sort()
     
@@ -27,7 +29,7 @@ def sortNames(prefix, names):
     
 
 if len(sys.argv) < 3:
-    print "Need smiles and prefix"
+    print("Need smiles and prefix")
     sys.exit(-1)
 
 smilesf = sys.argv[1]
@@ -47,6 +49,8 @@ for line in f:
     smile = max(cmpds, key=len) #take largest component by smiles length
 
     try: #catch any rdkit problems
+        if len(smile) > 275:
+            continue #conveniently skips molecule that hangs rdkit
         mol = Chem.MolFromSmiles(smile)
         Chem.SanitizeMol(mol)
         #to be sure, canonicalize smile (with iso)
@@ -76,4 +80,5 @@ for smile in smiles:
         names = list(itertools.chain.from_iterable(names)) 
         bigname =' '.join(sortNames(prefix,names))
         bigname = bigname.replace('\n','')
-        print sdfloc,i,bigname
+        if len(names) < 1000: #avoid what are likely solvents
+            print(sdfloc,i,bigname)

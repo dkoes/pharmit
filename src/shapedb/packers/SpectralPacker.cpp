@@ -7,7 +7,6 @@
 
 #include "SpectralPacker.h"
 #include "ShapeDistance.h"
-#include <boost/shared_ptr.hpp>
 
 #include "CommandLine2/CommandLine.h"
 

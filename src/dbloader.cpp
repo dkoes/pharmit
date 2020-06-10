@@ -39,10 +39,10 @@ struct LoadDatabase
 
 	}
 
-	void operator()( boost::shared_ptr<PharmerDatabaseSearcher>& database, unsigned i,
+	void operator()( std::shared_ptr<PharmerDatabaseSearcher>& database, unsigned i,
 			filesystem::path dbpath)
 	{
-		shared_ptr<PharmerDatabaseSearcher> db(new PharmerDatabaseSearcher(dbpath));
+		std::shared_ptr<PharmerDatabaseSearcher> db(new PharmerDatabaseSearcher(dbpath));
 
 		if (!db->isValid())
 		{
@@ -61,7 +61,7 @@ void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& database
 {
 	databases.totalConfs = 0;
 	databases.totalMols = 0;
-	databases.stripes.resize(dbpaths.size());
+	databases.stripes.reserve(dbpaths.size());
 	vector<LoadDatabase> loaders(dbpaths.size());
 	thread_group loading_threads;
 	for (unsigned i = 0, n = dbpaths.size(); i < n; i++)
@@ -69,11 +69,12 @@ void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& database
 		if (!filesystem::is_directory(dbpaths[i]))
 		{
 			cerr << "Invalid database directory path: " << dbpaths[i] << "\n";
-			exit(-1);
+			continue; //be tolerant of missing slices exit(-1);
 		}
 
+		databases.stripes.push_back(std::shared_ptr<PharmerDatabaseSearcher>());
 		loading_threads.add_thread(
-				new thread(ref(loaders[i]), ref(databases.stripes[i]), i, dbpaths[i]));
+				new thread(boost::ref(loaders[i]), boost::ref(databases.stripes.back()), i, dbpaths[i]));
 	}
 	loading_threads.join_all();
 
@@ -155,13 +156,16 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 					for(unsigned p = 0, np = prefixes.size(); p < np; p++)
 					{
 						filesystem::path dir = prefixes[p] / name / splits[s].asString();
-						dbpaths.push_back(dir);
 
 						filesystem::path infofile = dir / "info";
 						if(!filesystem::exists(infofile) || filesystem::file_size(infofile) == 0)
 						{
 							badsubdir = true;
 							cerr << "Invalid subdir info: " << infofile << "\n";
+						}
+						else
+						{
+							dbpaths.push_back(dir);
 						}
 					}
 				}
@@ -174,7 +178,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				}
 			}
 
-			if(!badsubdir)
+			if(true || !badsubdir) //lets try to be fault taulorant
 				loadDatabases(dbpaths, databases[specified]);
 		}
 	}

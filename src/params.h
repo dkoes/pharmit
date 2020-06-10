@@ -27,7 +27,6 @@ See the LICENSE file provided with the distribution for more information.
 #define PHARMITSERVER_PARAMS_H_
 #include <iostream>
 #include <boost/tuple/tuple.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
 #include <vector>
 #include <json/json.h>

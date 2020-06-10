@@ -31,6 +31,7 @@ a {
 	float: left;
 	position: absolute;
 	top: 0;
+	z-index: 10;
 	box-shadow: 2px 2px 5px #888888;
 	padding: 0.5em;
 	margin: 1px;
@@ -1166,6 +1167,16 @@ a {
 	line-height: 26pt;
 	letter-spacing: normal;
 }
+.subheader {
+	font-family: "Open Sans", sans-serif;
+	font-size: 16pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	color: rgb(64,64,64);
+	line-height: 34pt;
+	letter-spacing: normal;
+}
 .para-21 {
 	text-indent: 0;
 	padding-top: 4pt;
@@ -1403,6 +1414,7 @@ a {
 	z-index: 30;
 	margin-left: 10px;
 	margin-top: 0px;
+	margin-bottom: 20px;
 	overflow: visible;
 }
 .para-27 {
@@ -1559,6 +1571,18 @@ a {
 	line-height: 26pt;
 	letter-spacing: normal;
 }
+
+.pharmitlink {
+	font-family: "Open Sans", sans-serif;
+	font-size: 13.5pt;
+	font-weight: 400;
+	font-style: italic;
+	text-decoration: underline;
+	color: rgb(108,113,196);
+	line-height: 26pt;
+	letter-spacing: normal;
+}
+
 .cont-65 {
 	overflow: hidden;
 }

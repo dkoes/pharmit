@@ -17,7 +17,7 @@ var Pharmit = Pharmit ||  {};
 $(document).ready(function() {
 	
 	Pharmit.server = '/fcgi-bin/pharmitserv.fcgi';
-	Pharmit.email = 'dkoes+pharmit@pitt.edu';
+	Pharmit.email = 'dkoes@pitt.edu';
 	
 	//global variable checking - we should add nothing but Pharmit
 	var globalsBefore = {};
@@ -80,13 +80,19 @@ $(document).ready(function() {
 		else if(event.data == "ack2") {
 			//ignore, message should handle these
 		}
+		else if(event.data.type && event.data.type == "init") {
+			//actually have no idea where this event comes from, but it pops up in chrome
+		}
+		else if(event.contexts) {
+			//same here
+		}
 		else {
 			try {
 				var obj = $.parseJSON(event.data);
 				query.setLigandAndReceptor(obj.ligand, obj.ligandFormat, obj.receptor, obj.recname);
 			}
 			catch(e) {
-				alert("Communication error: "+e);
+				console.log("Communication error: "+e);
 			}
 		}
 	};

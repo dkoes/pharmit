@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #why does everyone make it so hard to get smiles
 #defaults to getting everything, will eventually support getting
@@ -35,7 +35,7 @@ for f in files:
             continue
         smiles = Chem.MolToSmiles(mol,isomericSmiles=True)
         name = mol.GetProp("_Name")
-        print smiles,name
+        print(smiles,name)
     temp.close()
     
 ftp.close()

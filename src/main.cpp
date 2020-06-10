@@ -25,12 +25,16 @@ See the LICENSE file provided with the distribution for more information.
  *  requires a single target.
  */
 
+#include <cstdio>
+#include <execinfo.h>
+#include <csignal>
+#include <cstdlib>
+#include <unistd.h>
 #include "CommandLine2/CommandLine.h"
 #include "pharmarec.h"
 #include "pharmerdb.h"
 #include "PharmerQuery.h"
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
@@ -46,7 +50,8 @@ See the LICENSE file provided with the distribution for more information.
 #include <ShapeConstraints.h>
 #include "ReadMCMol.h"
 #include "dbloader.h"
-#include "GninaConverter.h"
+#include "MinimizationSupport.h"
+#include <openbabel/stereo/stereo.h>
 
 using namespace boost;
 using namespace OpenBabel;
@@ -99,6 +104,8 @@ cl::opt<bool> SortRMSD("sort-rmsd", cl::desc("Sort results by RMSD."),
 cl::opt<bool> FilePartition("file-partition",
 		cl::desc("Partion database slices based on files"), cl::init(false));
 cl::opt<string> Single("singledir",cl::desc("Specify a single directory to recreate on a dbcreateserverdir command"));
+cl::opt<string> SingleSplit("singlesplit",cl::desc("Specify a single directory split to recreate on a dbcreateserverdir command"));
+
 cl::opt<string> SpecificTimestamp("timestamp",cl::desc("Specify timestamp to use for server dirs (for use with single)"));
 
 cl::opt<string> MinServer("min-server",cl::desc("minimization server address"));
@@ -265,7 +272,7 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 				mol.AddHydrogens();
 
 				mol.FindRingAtomsAndBonds();
-				mol.FindChiralCenters();
+				PerceiveStereo(&mol);
 				mol.PerceiveBondOrders();
 				aromatics.AssignAromaticFlags(mol);
 				mol.FindSSSR();
@@ -289,6 +296,18 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 	}
 }
 
+void sigv_handler(int sig) {
+  void *array[10];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 10);
+
+  // print out all the frames to stderr
+  fprintf(stderr, "Error: signal %d:\n", sig);
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(1);
+}
 
 //there was a bug with generating sminaData due to a bug in openbabel's handling
 //of multi-conformer OBMols.  This regenerates the sminaData/Index.
@@ -355,7 +374,7 @@ static void handle_fixsmina_cmd()
 
       //write out updated sminaData
       stringstream data;
-      GninaConverter::MCMolConverter mconv(mol);
+      MinimizeConverter::MCMolConverter mconv(mol);
       mconv.convertConformer(0, data);
       unsigned long smpos = ftell(sminaData); //location in smina dta
       unsigned sz = data.str().size();
@@ -421,7 +440,7 @@ static void handle_phogrify_cmd(const Pharmas& pharmas)
 			mol.AddHydrogens();
 
 			mol.FindRingAtomsAndBonds();
-			mol.FindChiralCenters();
+			PerceiveStereo(&mol);
 			mol.PerceiveBondOrders();
 			aromatics.AssignAromaticFlags(mol);
 			mol.FindSSSR();
@@ -641,11 +660,12 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		LigandInfo info;
 
 		str >> info.file;
-
+/*
 		if(!filesystem::exists(info.file))
 		{
 			cerr << "File " << info.file << " does not exist\n";
 		}
+		*/
 		str >> info.id;
 		if(info.id < 0)
 		{
@@ -670,6 +690,18 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 		key << "-" << time(NULL);
 	string subset = root["subdir"].asString();
 
+	if(root.isMember("maxconfs") && root["maxconfs"].isNumeric())
+	{
+		if(ReduceConfs == 0)
+		{
+			ReduceConfs = root["maxconfs"].asInt();
+		}
+		else
+		{
+			cerr << "Warning: -reduceconfs overriding dbinfo\n";
+		}
+	}
+
 	//check for splits
 	vector<string> splits;
 	if(root.isMember("splitdirs") && root["splitdirs"].isArray())
@@ -692,6 +724,8 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	}
 
 	string fname;
+	unordered_set<filesystem::path> singlesplits;
+
 	while(getline(prefixes,fname))
 	{
 		if(fname.length() > 0 && fname[0] == '#') //comment
@@ -710,6 +744,11 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 				for(unsigned i = 0, n = splits.size(); i < n; i++)
 				{
 					filesystem::path splitdb = dbpath / splits[i];
+					if(SingleSplit.size() > 0 && splits[i] == SingleSplit)
+					{
+						singlesplits.insert(splitdb);
+					}
+
 					filesystem::create_directories(splitdb);
 					unflatdirectories.back().push_back(splitdb);
 				}
@@ -761,8 +800,13 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	{
 		if (d == (nd-1) || fork() == 0)
 		{
-			if(Single.size() == 0 || filesystem::equivalent(directories[d],Single))
-			{ //for single, do everything as if we were doing a full build, but only actual build the specified directory
+			//for singles, do everything as if we were doing a full build, but only actual build the specified directory
+			if(singlesplits.size() > 0 && singlesplits.count(directories[d]) == 0)
+				cerr << "Skipping " << directories[d] << "\n"; //skip
+			else if(Single.size() > 0 && !filesystem::equivalent(directories[d],Single))
+				cerr << "Skipping " << directories[d] << "\n"; //skip
+			else
+			{
 				cerr << "Building " << directories[d] << "\n";
 				PharmerDatabaseCreator db(pharmas, directories[d], root);
 				db.setInMemorySize(memsz);
@@ -1012,10 +1056,10 @@ int main(int argc, char *argv[])
 {
 	cl::ParseCommandLineOptions(argc, argv);
 	obErrorLog.StopLogging(); //just slows us down, possibly buggy?
-	isotab.Init(); //avoid race conditions! stupid openbabel
-	etab.Init();
 	ttab.Init();
 	resdat.Init();
+
+	signal(SIGSEGV, sigv_handler);   // install our handler for printing a backtrace on a segfault
 
 	//if a pharma specification file was given, load that into the global Pharmas
 	Pharmas pharmas(defaultPharmaVec);

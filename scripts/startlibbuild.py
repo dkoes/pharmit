@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #takes an fcgi request to create a compound database, sets up the diretory 
 #with the input files and inserts the request into the Database
@@ -6,8 +6,8 @@
 #another script will poll the database looking for databases that need to be
 #built (this way only one is done at a time); this script just sets up the input directory
 
-import sys, flup, MySQLdb, gzip, cgi, os,random,string
-
+import sys, flup, MySQLdb, gzip, cgi, os,random,string,re
+import traceback
 
 def application(environ, start_response):
     form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ, keep_blank_values=True)
@@ -29,15 +29,15 @@ def application(environ, start_response):
         dir = os.path.abspath(id)
         
         infile = ''
-        mols = ''
+        mols = b''
         #copy file into directory as input.[smi|sdf.gz]
         if file.filename.endswith('.sdf.gz'):
             infile = id+'/input.sdf.gz' 
             mols = gzip.GzipFile(mode='r',fileobj=file.file).read()
-        elif file.filename.endswith('.smi.gz') or file.filename.endswith('.can.gz') or file.filename.endswith('.ism.gz'):
+        elif file.filename.endswith('.smi.gz') or file.filename.endswith('.can.gz') or file.filename.endswith('.ism.gz') or file.filename.endswith('.smiles.gz'):
             infile = id+'/input.smi'
             mols = gzip.GzipFile(mode='r',fileobj=file.file).read()
-        elif file.filename.endswith('.smi') or file.filename.endswith('.can') or file.filename.endswith('.ism'): #store smis uncompressed
+        elif file.filename.endswith('.smi') or file.filename.endswith('.can') or file.filename.endswith('.ism') or file.filename.endswith('.smiles'): #store smis uncompressed
             infile = id+'/input.smi'
             mols = file.file.read()
         elif file.filename.endswith('.sdf'): #store sdfs compressed
@@ -45,8 +45,9 @@ def application(environ, start_response):
             mols = file.file.read()
         else:
             output = "Error\nUnsupported file format in file %s"%file.filename
-        
+        mols = mols.decode() #python3 
         if infile:
+            mols = mols.replace('\r\n','\n') #remove dos line endings
             numconfs = 0
             if infile.endswith('sdf.gz'):
                 numconfs = mols.count('$$$$\n')
@@ -71,14 +72,14 @@ def application(environ, start_response):
                     if infile.endswith('.smi'):
                         open(infile, 'w').write(mols)
                     else:
-                        gzip.open(infile,'wb').write(mols)
+                        gzip.open(infile,'wt').write(mols)
                     #insert row in databases table
                     c = conn.cursor()
                     c.execute("INSERT INTO `databases` (email, name, description, id, isprivate, status, message, directory) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
                            (email, name, description, id, isprivate, "Pending", "Your submission is pending in the queue.",dir))
                     
     except:
-        output = "Error\n"+str(sys.exc_info())
+        output = "Error\n"+str(traceback.format_exc())
     status = '200 OK'
     response_headers = [('Content-type', 'text/plain'),
                         ('Content-Length', str(len(output)))]

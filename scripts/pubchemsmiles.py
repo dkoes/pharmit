@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 #extract smiles from PubChem (not sure why this isn't easier)
 #defaults to getting everything, will eventually support getting
@@ -8,6 +8,7 @@
 #if provided, the cid/names file will be used to output a subset to the specified output
 
 import ftplib,sys,tempfile,gzip,re
+import io
 
 nscids = {}
 nscout = None
@@ -16,7 +17,6 @@ if len(sys.argv) == 3:
     nscf = open(sys.argv[1])
     nscout = open(sys.argv[2],'w')
     for line in nscf:
-        print line.strip().split()
         (cid,name) = line.strip().split()
         nscids[cid] = name
         
@@ -34,7 +34,7 @@ for f in files:
     temp = tempfile.TemporaryFile(mode='r+b')
     ftp.retrbinary('RETR %s' % f, temp.write)
     temp.seek(0)
-    data = gzip.GzipFile(fileobj=temp)
+    data = io.TextIOWrapper(gzip.GzipFile(fileobj=temp),encoding='utf-8')
     cid = None
     smile = None
     line = data.readline()
@@ -45,10 +45,10 @@ for f in files:
         elif re.search(r'PUBCHEM_OPENEYE_ISO_SMILES',line):
             smile = data.readline().strip()
         elif line.startswith('$$$$'):
-            print '%s\tPubChem-%s'% (smile,cid) 
+            print('%s\tPubChem-%s'% (smile,cid)) 
             if cid in nscids:
                 nscout.write('%s\t%s' % (smile,nscids[cid]))
-                sys.stderr.write('%s\t%s',(smile,nscids[cid]))
+                sys.stderr.write('%s\t%s' % (smile,nscids[cid]))
             smile = None
             cid = None
         line = data.readline()

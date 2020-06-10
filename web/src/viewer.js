@@ -60,6 +60,7 @@ Pharmit.Viewer = (function() {
 				'Receptor':{model: null,
 					defaultColor: '#C8C8C8',
 					colorscheme: $.extend({},$3Dmol.elementColors.defaultColors),
+					backbone: null,
 					selectedstyle: 'cartoonwire',
 					styles: {
 						stick: {name: "Stick",
@@ -220,6 +221,32 @@ Pharmit.Viewer = (function() {
 			createStyleSelector("Results", table, null);
 			createStyleSelector("Receptor",  table, null);
 			
+			//backbone color scheme
+			var backdiv = $('<div>').addClass('pharmit_backbonediv').appendTo(vizgroup);
+			$('<label for="receptorbackbone">Receptor Backbone:</label>').appendTo(backdiv);
+			var bradiodiv = $('<div id="receptorbackbone">').appendTo(backdiv);
+			$('<input type="radio" id="plainBackbone" name="receptorbackbone"><label for="plainBackbone">Plain</label>').appendTo(bradiodiv)
+				.change(function() {
+					if($(this).prop("checked")) {
+						var rec = modelsAndStyles.Receptor;
+						delete rec.styles.cartoon.style.cartoon.color;
+						delete rec.styles.cartoonwire.style.cartoon.color;						
+						updateStyle('Receptor');
+					}
+					bradiodiv.buttonset("refresh");
+				}).prop("checked",true);
+			$('<input type="radio" id="rainbowBackbone" name="receptorbackbone"><label for="rainbowBackbone">Rainbow</label>').appendTo(bradiodiv)
+				.change(function() {
+						if($(this).prop("checked")) {
+							var rec = modelsAndStyles.Receptor;
+							rec.styles.cartoon.style.cartoon.color = 'spectrum';
+							rec.styles.cartoonwire.style.cartoon.color = 'spectrum';
+							updateStyle('Receptor');
+						}
+						bradiodiv.buttonset("refresh");
+					});
+			bradiodiv.buttonset();
+			
 			//surface transparency
 			var stdiv = $('<div>').addClass('pharmit_surfacetransparencydiv').appendTo(vizgroup);
 			$('<label for="surfaceopacity">Receptor Surface Opacity:</label>').appendTo(stdiv);
@@ -284,8 +311,9 @@ Pharmit.Viewer = (function() {
 				
 				//surface
 				viewer.mapAtomProperties($3Dmol.applyPartialCharges,{model:receptor});
-				surface = viewer.addSurface($3Dmol.SurfaceType.VDW, 
+				var surfacepromise = viewer.addSurface($3Dmol.SurfaceType.VDW, 
 						surfaceStyle, {model:receptor, bonds: 0, invert:true});
+				surface = surfacepromise.surfid;
 				viewer.zoomTo({});
 			}
 			else

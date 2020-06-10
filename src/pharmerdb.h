@@ -737,7 +737,7 @@ class PharmerDatabaseSearcher
 //class for holding databases that have been striped across hard drives
 struct StripedSearchers
 {
-	vector<boost::shared_ptr<PharmerDatabaseSearcher> > stripes;
+	vector<std::shared_ptr<PharmerDatabaseSearcher> > stripes;
 	unsigned long totalConfs;
 	unsigned long totalMols;
 	bool hasShape;

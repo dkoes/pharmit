@@ -21,7 +21,8 @@ var Pharmit = Pharmit || {};
 Pharmit.MinResults = (function() {
 	// private class variables and functions
 	
-
+	var MAXMIN = 25000;
+	
 	function MinResults(results, viewer) {
 		//private variables and functions
 		var mindiv = null;
@@ -97,9 +98,9 @@ Pharmit.MinResults = (function() {
 			qid = q;
 			query = qobj;
 			
-			if(startTotal > 10000) {
-				alert("Results minimization is limited to 10,000 compounds.  Your results will be truncated.");
-				startTotal = 10000;
+			if(startTotal > MAXMIN) {
+				alert("Results minimization is limited to "+MAXMIN+" compounds.  Your results will be truncated.");
+				startTotal = MAXMIN;
 			}
 			var postData = {cmd: 'startsmina',
 					qid: qid,
@@ -242,8 +243,14 @@ Pharmit.MinResults = (function() {
 			var lang = table.DataTable().settings()[0].oLanguage;
 
 			if(json.finished) {
+				ga('send','event','query','minimize',query.subset,json.recordsTotal);
+
 				save.button( "option", "disabled", false );			
-				lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";
+				save.one('click', function() {
+					ga('send','event','save','minimized',query.subset,json.recordsTotal);
+				});
+				
+				lang.sInfo = "Showing _START_ to _END_ of _TOTAL_ entries";				
 			} 
 	        else if(json.status === 0) {
 	        	alert(json.msg);

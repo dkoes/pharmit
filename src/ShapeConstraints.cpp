@@ -25,6 +25,7 @@ See the LICENSE file provided with the distribution for more information.
 #include <cmath>
 #include <openbabel/mol.h>
 #include <openbabel/obconversion.h>
+#include <openbabel/elements.h>
 #include <ShapeConstraints.h>
 #include "MappableOctTree.h"
 using namespace OpenBabel;
@@ -51,7 +52,7 @@ Eigen::Affine3d ShapeConstraints::computeTransform(Json::Value& root)
 		for (OBAtomIterator aitr = lig.BeginAtoms(); aitr != lig.EndAtoms(); ++aitr)
 		{
 			OBAtom* atom = *aitr;
-			if(!atom->IsHydrogen())
+			if(atom->GetAtomicNum() != OBElements::Hydrogen)
 			{
 				Vector3d c(atom->x(), atom->y(), atom->z());
 				coords.push_back(c);
@@ -108,7 +109,7 @@ void ShapeConstraints::makeGrid(MGrid& grid, OBMol& mol, const Affine3d& transfo
 		OBAtom* atom = *aitr;
 		Vector3d c(atom->x(), atom->y(), atom->z());
 		c = transform*c;
-		grid.markXYZSphere(c.x(), c.y(), c.z(), etab.GetVdwRad(atom->GetAtomicNum()));
+		grid.markXYZSphere(c.x(), c.y(), c.z(), OBElements::GetVdwRad(atom->GetAtomicNum()));
 	}
 
 	//make solvent accessible grid
@@ -240,6 +241,9 @@ bool ShapeConstraints::readJSONExclusion(Json::Value& root)
 			OBConversion conv;
 			string rname = root["recname"].asString();
 			conv.SetInFormat(OBConversion::FormatFromExt(rname.c_str()));
+			//ignore bonds since we don't need them and openbabel likes to crash perceiving them
+			conv.AddOption("b",OBConversion::INOPTIONS);
+
 			OBMol rec;
 			conv.ReadString(&rec, root["receptor"].asString());
 
@@ -395,6 +399,7 @@ void ShapeConstraints::addToJSON(Json::Value& root) const
 		pt["y"] = exspheres[i].y;
 		pt["z"] = exspheres[i].z;
 		pt["radius"] = sqrt(exspheres[i].rSq);
+		pt["enabled"] = (exclusiveKind == Spheres);
 	}
 	start = jpoints.size();
 	for(unsigned i = 0, n = inspheres.size(); i < n; i++)
@@ -405,6 +410,7 @@ void ShapeConstraints::addToJSON(Json::Value& root) const
 		pt["y"] = inspheres[i].y;
 		pt["z"] = inspheres[i].z;
 		pt["radius"] = sqrt(inspheres[i].rSq);
+		pt["enabled"] = (inclusiveKind == Spheres);
 	}
 }
 
