@@ -48,6 +48,7 @@ using namespace OpenBabel;
 extern cl::opt<bool> Quiet;
 extern cl::opt<unsigned> ReduceConfs;
 extern cl::opt<bool> ComputeThresholds;
+extern cl::opt<bool> NoShapeIndex;
 
 //location comparison functions for pointdata
 bool comparePointDataX(const ThreePointData& lhs, const ThreePointData& rhs)

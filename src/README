@@ -66,7 +66,7 @@ cd pharmit/src
 mkdir build
 cd build
 #/usr/lib/cmake/LEMONConfig.cmake is editted to point LEMON_LIBRARY to /usr/lib/x86_64-linux-gnu/
-cmake .. -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/ 
+cmake .. -DSMINALIB=/usr/local/lib/libsmina.a -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/ 
 make -j12
 
 
