@@ -48,6 +48,7 @@ using namespace OpenBabel;
 extern cl::opt<bool> Quiet;
 extern cl::opt<unsigned> ReduceConfs;
 extern cl::opt<bool> ComputeThresholds;
+extern cl::opt<bool> NoShapeIndex;
 
 //location comparison functions for pointdata
 bool comparePointDataX(const ThreePointData& lhs, const ThreePointData& rhs)
@@ -878,7 +879,8 @@ void PharmerDatabaseCreator::createSpatialIndex()
 		fwrite(binnedCnts[i].c_array(), LENGTH_BINS * LENGTH_BINS * LENGTH_BINS,
 				sizeof(unsigned), binData);
 
-	shapedb.createIndex();
+	if(!NoShapeIndex)
+		shapedb.createIndex();
 
 	cout << stats[NumConfs] << "\tconformations\n";
 	cout << stats[NumMols] << "\tmolecules\n";

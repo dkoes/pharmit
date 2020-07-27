@@ -3,14 +3,15 @@
   "version": "0.0.0",
   "description": "Pharmit Web Search Interface",
   "main": "gulpfile.js",
-  "dependencies": {
-    "gulp": "^3.8.11"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
     "gulp-concat": "^2.5.2",
-    "gulp-jshint": "^1.9.2",
+    "gulp-jshint": "^2.1.0",
     "gulp-rename": "^1.2.0",
-    "gulp-uglify": "^1.1.0"
+    "gulp-uglify": "^3.0.2",
+    "jshint": "^2.11.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

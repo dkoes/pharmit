@@ -120,6 +120,7 @@ cl::opt<string> DBInfo("dbinfo",
 		cl::desc("[dbcreateserverdir] JSON file describing database subset"));
 cl::opt<string> Ligands("ligs", cl::desc("[dbcreateserverdir] Text file listing locations of molecules"));
 cl::opt<bool> NoIndex("noindex",cl::desc("[dbcreateserverdir] Do not create indices"), cl::init(false));
+cl::opt<bool> NoShapeIndex("no-shape-index",cl::desc("[dbcreateserverdir] Do not create shape indices"), cl::init(false));
 
 typedef void (*pharmaOutputFn)(ostream&, vector<PharmaPoint>&, ShapeConstraints& excluder);
 
