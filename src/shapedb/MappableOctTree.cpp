@@ -782,7 +782,7 @@ bool MChildNode::containedIn(const MOctNode* tree, const MChildNode& rhs,
 	else if (isLeaf)
 	{
 		assert(!rhs.isLeaf);
-		assert(leaf.numbits > 0);
+		if(leaf.numbits <= 0) return false;
 		//rhs has children, have to compare bit by bit
 		for (unsigned i = 0; i < 8; i++)
 		{

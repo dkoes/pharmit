@@ -447,6 +447,8 @@ public:
 				pos = 0;
 		}
 		TripletMatch *match = alloc.newTripletMatch(mid, tdata);
+		if(match == nullptr) return nullptr;
+
 		table[pos] = match;
 		num_elements++;
 
@@ -543,6 +545,9 @@ public:
 			match = seenMatches.create(mid, tdata);
 		}
 		//create match info
+		//it should be impossible for match to by NULL here, but somehow it is
+		//so let's be robust to failure and return false
+		if(match == NULL) return false;
 		assert(match != NULL);
 		TripletMatchInfo info(tdata, which, trip.getNextUnconnected(), trip.getPrevUnconnected());
 		if(match->add(info, trip, curIndex, alloc))
