@@ -101,7 +101,8 @@ public:
 
 		if ((long) data == -1)
 		{
-			perror("mmap  failed: ");
+			string msg = "mmap of "+fname+" failed: ";
+			perror(msg.c_str());
 			abort();
 		}
 
