@@ -616,7 +616,10 @@ void MappableOctTree::write(ostream& out) const
 float MappableOctTree::relativeVolumeDistance(const MappableOctTree * rhs) const
 {
 	float ival = 0, uval = 0;
-	assert(dimension == rhs->dimension);
+	if(dimension != rhs->dimension) { //how does this happen???
+		std::cerr << "Dimensions do not match relativeVolumeDistance: " << dimension << " vs " << rhs->dimension << "\n";
+		return 0;
+	}
 
 	root.intersectUnionVolume(tree, rhs->root, rhs->tree,
 			dimension * dimension * dimension, ival, uval);
@@ -626,9 +629,12 @@ float MappableOctTree::relativeVolumeDistance(const MappableOctTree * rhs) const
 }
 
 float MappableOctTree::absoluteVolumeDistance(const MappableOctTree * rhs) const
-		{
+{
 	float ival = 0, uval = 0;
-	assert(dimension == rhs->dimension);
+	if(dimension != rhs->dimension) {
+		std::cerr << "Dimensions do not match in absoluteVolumeDistance: " << dimension << " vs " << rhs->dimension << "\n";
+                return rhs->volume()+volume();
+	}
 
 	root.intersectUnionVolume(tree, rhs->root, rhs->tree,
 			dimension * dimension * dimension, ival, uval);
@@ -776,7 +782,7 @@ bool MChildNode::containedIn(const MOctNode* tree, const MChildNode& rhs,
 	else if (isLeaf)
 	{
 		assert(!rhs.isLeaf);
-		assert(leaf.numbits > 0);
+		if(leaf.numbits <= 0) return false;
 		//rhs has children, have to compare bit by bit
 		for (unsigned i = 0; i < 8; i++)
 		{

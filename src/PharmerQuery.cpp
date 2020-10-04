@@ -41,6 +41,8 @@ static JSonQueryParser jsonParser;
 static PH4Parser ph4Parser;
 static PMLParser pmlParser;
 
+static const int MAX_FEATURES = 64;
+
 static unordered_map<string, QueryParser*> parsers = assign::map_list_of("",
 		(QueryParser*) &textParser)(".txt", (QueryParser*) &textParser)(".json",
 		(QueryParser*) &jsonParser)(".query", (QueryParser*) &jsonParser)(
@@ -113,6 +115,11 @@ PharmerQuery::PharmerQuery(
 		errorStr = "Require at least three pharmacophore points.";
 		return;
 	}
+	if(!params.isshape && points.size() >  MAX_FEATURES) 
+	{
+		errorStr = "Too many pharmacophore features specified.";
+		return;
+	}
 	initializeTriplets();
 }
 
@@ -155,6 +162,12 @@ PharmerQuery::PharmerQuery(
 		errorStr = "Require at least three pharmacophore points.";
 		return;
 	}
+	if(points.size() >  MAX_FEATURES)
+        {
+                errorStr = "Too many pharmacophore features specified.";
+                return;
+        }
+
 	initializeTriplets();
 }
 
@@ -394,7 +407,7 @@ void PharmerQuery::thread_shapeMatch(PharmerQuery *query)
 }
 
 
-//execute the query, if block is true then perform asynchronously
+//execute the query, if block is true then perform synchronously
 void PharmerQuery::execute(bool block)
 {
 	for (unsigned d = 0, nd = databases.size(); d < nd; d++)

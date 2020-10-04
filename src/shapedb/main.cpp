@@ -45,7 +45,7 @@ See the LICENSE file provided with the distribution for more information.
 using namespace std;
 using namespace boost;
 
-typedef shared_ptr<Packer> PackerPtr;
+typedef std::shared_ptr<Packer> PackerPtr;
 
 enum CommandEnum
 {
@@ -280,7 +280,7 @@ static void create_trees(GSSTreeSearcher& gss, const string& includeMol,
 		MGrid lgrid;
 		smallTree->makeGrid(lgrid, resolution);
 		lgrid &= igrid;
-		smallTree = shared_ptr<const MappableOctTree>(
+		smallTree = std::shared_ptr<const MappableOctTree>(
 				MappableOctTree::createFromGrid(lgrid), free);
 	}
 }
