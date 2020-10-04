@@ -1,3 +1,24 @@
+<?php
+session_start();
+
+require("lib.php");
+
+if(isset($_REQUEST["logout"]))
+{
+	session_unset();
+	session_destroy();
+}
+
+$gotinvalid = ""; //set to something if there was a botched login
+if(isset($_REQUEST["login"]))
+{
+	$user = $_POST['user'];
+	$pass = $_POST['pass'];
+
+	$gotinvalid = login($user,$pass);
+}
+
+?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -16,7 +37,7 @@
 	</head>
 	<body id="body">
 		<div id="notice"> <div class=closebutton style="float:right"></div>
-		<font color="#ff4444"><b>Attention:</b>The Pharmit server will be moved to a new physical location once COVID-19 restrictions on operations have been lifted.  This will result in protracted outages during this time. <font>
+		<font color="navy"> The Pharmit server is now in its new location.  Thank you for your patience with the network disruptions. <font>
 		</div>
 		<div class="cont">
 			<div class="section">
@@ -102,26 +123,8 @@
 						</div>
 						<div class="cont-24">
 							<div class="cont-25"><p class="para-9"><span class="font-9">submit your own chemical libraries</span></p></div>
-
+                            
 <?php
-session_start();
-require("lib.php");
-
-if(isset($_REQUEST["logout"]))
-{
-	session_unset();
-	session_destroy();
-}
-
-$gotinvalid = ""; //set to something if there was a botched login
-if(isset($_REQUEST["login"]))
-{
-	$user = $_POST['user'];
-	$pass = $_POST['pass'];
-
-	$gotinvalid = login($user,$pass);
-}
-
 if (!isset($_SESSION['userid']))
 {
 ?>
