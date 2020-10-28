@@ -329,8 +329,8 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		return 0;
 	}
 
-	if(false && qp.isshape && queryPoints.size() > 0 && !excluder.isMeaningful())
-	{ //is this constraint necessary?
+	if(qp.isshape && queryPoints.size() > 0 && !excluder.isMeaningful())
+	{ //is this constraint necessary? ...apparently since otherwise people will search all of PubChem  with no shape constraints set at all
 		msg = "Please provide more expressive shape constraints to reduce the number of hits for pharmacophore filtering.";
 		return 0;
 	}
