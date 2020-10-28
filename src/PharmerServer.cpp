@@ -387,6 +387,9 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	}
 	unsigned id = nextID++;
 	queries[id] = new PharmerQuery(dbs, queryPoints, qp, excluder, numslices);
+	if(!queries[id]->isValid(msg)) return 0;
+	L.unlock();
+
 	queries[id]->execute(false); //don't wait for result
 	return id;
 }

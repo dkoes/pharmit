@@ -4,7 +4,7 @@
 
 #Needs to be able to call createconfs.py and pharmitserver 
 
-import time, sys, os, MySQLdb, subprocess, json, psutil, signal, gzip, traceback
+import time, sys, os, MySQLdb, subprocess, json, psutil, signal, gzip, traceback, io
 from rdkit.Chem import AllChem as Chem
 from optparse import OptionParser
 
@@ -24,7 +24,24 @@ def reset_server():
     for proc in psutil.process_iter():
         if proc.name() == 'pharmitserver' or proc.name() == 'pharmit':
             proc.send_signal(signal.SIGUSR1)
-            
+           
+class BytesIOWrapper(io.RawIOBase):
+    '''Because some people like to upload non-ASCII files'''
+    def __init__(self, file, encoding='utf-8', errors='strict'):
+        self.file, self.encoding, self.errors = file, encoding, errors
+        self.buf = b''
+    def readinto(self, buf):
+        if not self.buf:
+            self.buf = self.file.read(4096).encode(self.encoding, self.errors)
+            if not self.buf:
+                return 0
+        length = min(len(buf), len(self.buf))
+        buf[:length] = self.buf[:length]
+        self.buf = self.buf[length:]
+        return length
+    def readable():
+        return True
+
 def create_sdf_ligs(conn, libraryid, cprefixes):
     #break up molecules into individual files, assume molecules with the same name
     #are the same conformer; return true if successfull
@@ -36,7 +53,8 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
 
     try:
         ligout = open("ligs.in", 'wt')        
-        infile = gzip.open('input.sdf.gz')
+        #throw out non-ASCII characters
+        infile = BytesIOWrapper(gzip.open('input.sdf.gz','rt',encoding='ascii',errors='ignore'))
         mols = Chem.ForwardSDMolSupplier(infile)
         molcnt = 0
         for mol in mols:
@@ -61,9 +79,10 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
     
                     uniqueid = row[0]
                     #we do not store the user supplied conformers, but leave sdfloc blank
-                    if fname:
+                    if fname and not out.closed:
                         writer.close() #we have a file we have previously opened
                         out.close()
+                        fname = False
                     whichprefix = (whichprefix+1)%len(cprefixes)
                     subdir = "%s/user/%s/" % (cprefixes[whichprefix],libraryid)
                     if not os.path.isdir(subdir):
@@ -85,9 +104,13 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
                         
             except: #catch rdkit issues
                 traceback.print_exc()
+                if fname and not out.closed:
+                    fname = False
+                    writer.close()
+                    out.close()
                 continue
         
-        if fname:
+        if fname and not out.closed:
             writer.close()
             out.close()
         return True

@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 require("lib.php");
 
 //produce html with error message
