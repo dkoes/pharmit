@@ -37,7 +37,7 @@ if(isset($_REQUEST["login"]))
 	</head>
 	<body id="body">
 		<div id="notice"> <div class=closebutton style="float:right"></div>
-		<font color="navy"> The Pharmit server is now in its new location.  Thank you for your patience with the network disruptions. <font>
+		<font color="red"> We are currently experiencing server issues (11/26). There is no ETA on a resolution. <font>
 		</div>
 		<div class="cont">
 			<div class="section">
@@ -228,7 +228,7 @@ else
   ga('send', 'pageview');
 
   $(document).ready(function() {
-	  $('#notice').slideDown();
+	  //$('#notice').slideDown();
 	  $('#notice .closebutton').click(function() { $('#notice').slideUp(); });
   });
 </script>		
