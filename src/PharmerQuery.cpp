@@ -325,7 +325,7 @@ void PharmerQuery::thread_tripletMatches(PharmerQuery *query)
 
 	for (unsigned t = 0; t < query->nthreads; t++)
 	{
-		tmthreads.add_thread(new thread(thread_tripletMatch, query));
+		tmthreads.add_thread(new boost::thread(thread_tripletMatch, query));
 	}
 	tmthreads.join_all();
 }
@@ -338,7 +338,7 @@ void PharmerQuery::thread_shapeMatches(PharmerQuery *query)
 
 	for (unsigned t = 0; t < query->nthreads; t++)
 	{
-		shthreads.add_thread(new thread(thread_shapeMatch, query));
+		shthreads.add_thread(new boost::thread(thread_shapeMatch, query));
 	}
 	shthreads.join_all();
 }
@@ -417,7 +417,7 @@ void PharmerQuery::execute(bool block)
 	{
 		coralloc.setSize(0); //no actuall correspondances
 		assert(shapeMatchThread == NULL);
-		shapeMatchThread = new thread(thread_shapeMatches, this);
+		shapeMatchThread = new boost::thread(thread_shapeMatches, this);
 
 		if (block) //wait for completion
 		{
@@ -429,7 +429,7 @@ void PharmerQuery::execute(bool block)
 	else
 	{
 		assert(tripletMatchThread == NULL);
-		tripletMatchThread = new thread(thread_tripletMatches, this);
+		tripletMatchThread = new boost::thread(thread_tripletMatches, this);
 
 		if (block) //wait for completion
 		{

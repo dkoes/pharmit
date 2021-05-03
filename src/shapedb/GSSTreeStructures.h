@@ -77,14 +77,15 @@ public:
 private:
 	GSSNodeCommon info;
 	unsigned child_positions[]; //variable length, offset of trees within data section
-	unsigned char data[]; //convenient data ptr
-
+	
 public:
 	static void writeLeaf(const DataViewer *data, const Cluster& cluster, ostream& outNodes, ostream& outTrees);
 	const Child* getChild(unsigned i) const {
 #pragma GCC diagnostic ignored "-Warray-bounds"
-		return (Child*)&data[child_positions[i]];
+		unsigned char *d = data();
+		return (Child*)&d[child_positions[i]];
 	}
+	unsigned char *data() const { return (unsigned char*)&child_positions; }
 	unsigned size() const { return info.N; }
 	unsigned bytes() const;
 } __attribute__((__packed__));
@@ -116,14 +117,17 @@ public:
 private:
 	GSSNodeCommon info;
 	unsigned child_positions[]; //offset of children within data section
-	unsigned char data[]; //convienent data pointer
 
 public:
 	static void writeNode(const DataViewer *data, const Cluster& cluster, ostream& outNodes, ostream& outTrees);
 	static GSSInternalNode* createMergedNode(const vector<GSSInternalNode*>& nodes);
-	const Child* getChild(unsigned i) const { return (Child*)&data[child_positions[i]]; }
+	const Child* getChild(unsigned i) const { 
+		unsigned char *d = data();
+		return (Child*)&d[child_positions[i]]; 
+	}
 	unsigned size() const { return info.N; }
 	unsigned bytes() const;
+	unsigned char *data() const { return (unsigned char*)&child_positions; }
 
 	//truncates MIV/MSV of children, returns result in malloced memory
 	GSSInternalNode* createTruncated(float dimension, float resolution) const;

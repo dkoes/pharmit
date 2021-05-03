@@ -431,6 +431,7 @@ PMol* PMolReader::readPMol(FILE *f)
 unsigned PMol::setup()
 {
 	unsigned offset = sizeof(FloatCoord) * header.nAtoms;
+	char *buffer = (char*)header.coords;
 	atomtypes = (AtomTypeCnts*) &buffer[offset];
 
 	offset += header.nAtomTypes * sizeof(AtomTypeCnts);

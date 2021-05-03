@@ -74,7 +74,7 @@ void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& database
 
 		databases.stripes.push_back(std::shared_ptr<PharmerDatabaseSearcher>());
 		loading_threads.add_thread(
-				new thread(boost::ref(loaders[i]), boost::ref(databases.stripes.back()), i, dbpaths[i]));
+				new boost::thread(boost::ref(loaders[i]), boost::ref(databases.stripes.back()), i, dbpaths[i]));
 	}
 	loading_threads.join_all();
 

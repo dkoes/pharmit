@@ -255,7 +255,7 @@ void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 
 	for (unsigned i = 0; i < SERVERTHREADS; i++)
 	{
-		thread server(server_thread, listenfd, boost::ref(commands));
+		boost::thread server(server_thread, listenfd, boost::ref(commands));
 	}
 
 	{
@@ -273,7 +273,7 @@ void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 
 	while(true)
 	{
-		this_thread::sleep(posix_time::time_duration(0,3,0,0));
+		boost::this_thread::sleep(posix_time::time_duration(0,3,0,0));
 		unsigned npurged = queries.purgeOldQueries();
 		if(npurged > 0)
 		{
@@ -368,7 +368,7 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 	}
 
 	dbs = searchers->stripes;
-	numslices = min(thread::hardware_concurrency(),(unsigned)dbs.size()); //how many threads we should run, don't do more than available
+	numslices = min(boost::thread::hardware_concurrency(),(unsigned)dbs.size()); //how many threads we should run, don't do more than available
 	totalMols = searchers->totalMols;
 	totalConfs = searchers->totalConfs;
 
