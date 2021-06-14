@@ -266,7 +266,7 @@ public:
 				unsigned oldqid = cgiGetInt(CGI, "oldqid");
 
 				//DEBUG code - output queries
-				if(false)
+				if(true)
 				{
 					SpinLock lock(logmutex);
 
@@ -277,6 +277,17 @@ public:
 					fflush(LOG);
 					lock.release();
 				}
+				if(true)
+				{
+					posix_time::ptime t(posix_time::second_clock::local_time());
+					string lastname = (logdirpath/ "lastq").string();
+					FILE *last = fopen(lastname.c_str(), "w");
+					fprintf(last, "%s\n%s\n%s\n",
+                                                        posix_time::to_simple_string(t).c_str(),
+                                                        CGI.getEnvironment().getRemoteAddr().c_str(), cgiGetString(CGI,"json").c_str());
+					fclose(last);
+				}
+
 
 
 				unsigned qid = queries.add(*pharmas, root,

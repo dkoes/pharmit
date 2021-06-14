@@ -158,7 +158,7 @@ class PMol
 	char *adjlists[MAX_BONDS]; //cast to adjlist and iterate carefully
 	char *name;
 	PMolHeader header;
-	char buffer[];
+	//char buffer[]; //header ends in a flexible array
 
 	PMol() :
 			atomtypes(NULL), iso(NULL), chg(NULL)

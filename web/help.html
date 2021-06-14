@@ -439,6 +439,23 @@
 				  <br class="newline">
 				  <img src="images/submit.png"
 					   alt="Database submission form"  align="middle"  class="centeredimg" ><br>
+					   
+		<span class="font-21" id="benchmarking">Benchmarking Databases</span><br>
+			<p class="noindent">
+				<span class="font-23">
+				Databases can be formatted to enable automatic benchmarking of pharmacophore queries.
+				To enable this feature, active compounds must have the word "active" embedded in their name.
+				When a search is performed, Pharmit will compute and display the enrichment factor (EF) and
+				<a href="https://en.wikipedia.org/wiki/F-score">F1 score</a> of the results, as shown below.
+				When calculating these metrics, only the number of unique molecules are used.  That is,
+				the number of conformations of a molecule returned by the query isn't considered, only if
+				at least one conformation is returned.  Several benchmarking databases, derived from the 
+				<a href="http://dude.docking.org/">DUD-E</a> dataset, are available as contributed libraries
+				(search for benchmark).
+				
+				<br class="newline">
+				<img src="images/benchmarksearch.png" alt="Benchmark search" width="800" align="middle" class="centeredimg"><br>
+				  					   
 		<span class="font-21" id="background">Related Software</span><br>
 			<p class="noindent">
 				<span class="font-23">

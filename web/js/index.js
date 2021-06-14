@@ -47,17 +47,45 @@ r();
 			val = val.substring(0,4);
 			var sel = $('#pdbligand').empty();
 			$('<option disabled selected>...</option>').appendTo(sel);
-			$.get('https://www.rcsb.org/pdb/rest/ligandInfo?structureId='+val).done(function(ret) {
-				var ligands = $(ret).find('ligand');
-				sel.empty();
-				$.each(ligands, function(k,v) {
-					var lname = $(v).attr('chemicalID');
-					$('<option value="'+lname+'">'+lname+"</option>").appendTo(sel);
-				});
-				if(ligands.length > 0) {
-					$('#pdbligand').prop('disabled',false);
-					$('#pdbsubmit').prop('disabled',false);
+			let pdbquery = `{
+				  entry(entry_id: "${val}") {
+					nonpolymer_entities {
+					  rcsb_nonpolymer_entity_container_identifiers {
+						entry_id
+					  }
+					  nonpolymer_comp {
+						chem_comp {
+						  id
+						  type
+						  formula_weight
+						  formula
+						}
+						rcsb_chem_comp_descriptor {
+						  InChI
+						  InChIKey
+						}
+						pdbx_chem_comp_descriptor {
+						  descriptor
+						  type
+						  program
+						}
+					  }
+					}
+				  }
+			}`;
+			$.get('https://data.rcsb.org/graphql?query='+encodeURIComponent(pdbquery)).done(function(ret) {
+				let ligands = [];
+				
+				if(ret.data.entry) {
+					ligands = ret.data.entry.nonpolymer_entities;
+					sel.empty();
+					ligands.forEach(function(lig) {
+						let lname = lig.nonpolymer_comp.chem_comp.id;
+						$('<option value="'+lname+'">'+lname+"</option>").appendTo(sel);
+					});
 				}
+				$('#pdbligand').prop('disabled',ligands.length == 0);
+				$('#pdbsubmit').prop('disabled',ligands.length == 0);
 			});
 		} else {
 			//assume anything else invalid

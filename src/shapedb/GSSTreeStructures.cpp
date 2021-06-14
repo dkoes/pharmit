@@ -144,7 +144,7 @@ GSSInternalNode* GSSInternalNode::createMergedNode(const vector<GSSInternalNode*
 	ret->info.isLeaf = false;
 	ret->info.N = numChildren;
 	unsigned offset = 0;
-	memcpy(ret->data, &positions[0], posoff);
+	memcpy(ret->data(), &positions[0], posoff);
 	offset += posoff;
 
 	//copy in children
@@ -155,7 +155,7 @@ GSSInternalNode* GSSInternalNode::createMergedNode(const vector<GSSInternalNode*
 		{
 			const Child* ch = nodes[i]->getChild(c);
 			unsigned nb = ch->bytes();
-			memcpy(ret->data+offset, ch, nb);
+			memcpy(ret->data()+offset, ch, nb);
 			offset += nb;
 		}
 	}
@@ -170,7 +170,8 @@ unsigned GSSLeaf::bytes() const
 	unsigned ret = sizeof(GSSLeaf);
 	if(info.N == 0) return ret;
 	ret += child_positions[info.N-1]; //offset to last child
-	const Child* child = (const Child*)&data[child_positions[info.N-1]];
+	unsigned char *d = data();
+	const Child* child = (const Child*)&d[child_positions[info.N-1]];
 	//add size of last child
 	ret += sizeof(file_index);
 	ret += child->tree.bytes();
@@ -192,7 +193,8 @@ unsigned GSSInternalNode::bytes() const
 	unsigned ret = sizeof(GSSInternalNode);
 	if(info.N == 0) return ret;
 	ret += child_positions[info.N-1]; //offset to last child
-	const Child* child = (const Child*)&data[child_positions[info.N-1]];
+	unsigned char *d = data();
+	const Child* child = (const Child*)&d[child_positions[info.N-1]];
 	//add size of last child
 	ret += child->bytes();
 	return ret;
@@ -200,7 +202,8 @@ unsigned GSSInternalNode::bytes() const
 
 void GSSInternalNode::setChildPos(unsigned i, file_index newpos, bool isLeaf, file_index lstart, file_index lend)
 {
-	Child *child =  (Child*)&data[child_positions[i]];
+	unsigned char *d = data();
+	Child *child =  (Child*)&d[child_positions[i]];
 	child->node_pos = newpos;
 	child->isLeaf = isLeaf;
 	child->leaves_start = lstart;
