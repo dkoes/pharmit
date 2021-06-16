@@ -32,7 +32,12 @@ Pharmit.Viewer = (function() {
 							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey',
 							'InclusionSphere': 'yellow'};
 
-		
+        var surface = null;
+        var savedsurface = null;
+        var surfaceStyle = {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-0.8,0.8)}, opacity:0.8};
+        var viewer = null;
+        var shapes = [];
+                		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
 					defaultColor: '#C8C8C8',
@@ -83,6 +88,39 @@ Pharmit.Viewer = (function() {
 							style: {cartoon: {}, line: {linewidth: 3.0}},
 							nonbond: {sphere: {radius: 0.2}}
 							},
+                        bindingsite: {name: "Binding Site",
+                            style: {cartoon: {}, line: {linewidth: 3.0}},
+                            nonbond: {sphere: {radius: 0.2}},
+                            dynamic: function() {
+                                var lig = modelsAndStyles.Ligand.model;
+                                var rec = modelsAndStyles.Receptor.model;
+                                if(lig && rec) {
+                                    //obnoxiously, can't use within selector across models
+                                    var ligatoms = lig.selectedAtoms(); 
+                                    var close_to_lig = function(atom) {
+                                      for(var i = 0; i < ligatoms.length; i++) {
+                                        var a = ligatoms[i];
+                                        var sqdist = (atom.x-a.x)*(atom.x-a.x) + (atom.y-a.y)*(atom.y-a.y) + (atom.z-a.z)*(atom.z-a.z);
+                                        if(sqdist < 36.0) { //6A cutoff
+                                            return true;
+                                        }                                        
+                                      }  
+                                      return false;
+                                    };
+                                    rec.setStyle({model: rec, byres: true, predicate: close_to_lig},
+                                                   {stick:{radius:0.1}},true);
+                                                   
+                                    if(surface !== null) {
+                                        viewer.setSurfaceMaterialStyle(surface, {opacity:0});
+                                        savedsurface = surface;   
+                                    }
+                                    var surfacepromise = viewer.addSurface($3Dmol.SurfaceType.VDW, 
+                                            surfaceStyle, {model: rec, byres: true, predicate: close_to_lig},
+                                            {model:rec, bonds: 0, invert:true});
+                                    surface = surfacepromise.surfid;                                                   
+                                } 
+                              } 
+                            },
 						none: {name: "None",
 							style: {},
 							nonbond: {}
@@ -113,10 +151,6 @@ Pharmit.Viewer = (function() {
 					}
 					}
 		};
-		var surface = null;
-		var surfaceStyle = {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-0.8,0.8)}, opacity:0.8};
-		var viewer = null;
-		var shapes = [];
 		
 		var getExt = function(fname) { 
 			if(!fname) return "";
@@ -136,9 +170,19 @@ Pharmit.Viewer = (function() {
 			var nbond = s.nonbond;
 
 			var model = rec.model;
+            if(savedsurface) {
+                //slight hack for binding site - if this exists reset surface
+                if(surface) viewer.removeSurface(surface);
+                surface = savedsurface;
+                viewer.setSurfaceMaterialStyle(surface, surfaceStyle);
+                savedsurface = null;
+            }
 			if(model) {
 				model.setStyle({}, style);
 				model.setStyle({bonds: 0}, nbond);
+                if(s.dynamic) { //can run arbitrary commands
+                    s.dynamic();
+                }
 			}				
 			
 			viewer.render();
@@ -315,6 +359,19 @@ Pharmit.Viewer = (function() {
 						surfaceStyle, {model:receptor, bonds: 0, invert:true});
 				surface = surfacepromise.surfid;
 				viewer.zoomTo({});
+                
+                //hover labels
+                var hover_label = null;
+                receptor.setHoverable({},true, 
+                    function(atom){  //hover
+                      if(atom.resn) {
+                        hover_label = viewer.addLabel(atom.resn+":"+atom.atom,
+                                {position: atom, backgroundColor: 0x800080, backgroundOpacity: 0.8, alignment: "bottomCenter"});
+                        viewer.render();
+                      }
+                    },
+                    function(){ viewer.removeLabel(hover_label);viewer.render();} //unhover
+                    );
 			}
 			else
 				viewer.render();
@@ -332,6 +389,7 @@ Pharmit.Viewer = (function() {
 				ligand = viewer.addModel(ligstr, ext);
 				modelsAndStyles.Ligand.model = ligand;
 				updateStyle("Ligand");
+                updateStyle('Receptor'); //in case binding site is set
 				viewer.zoomTo({model: ligand});
 			}
 			else
@@ -534,6 +592,7 @@ Pharmit.Viewer = (function() {
 		//initialization code
 		viewer = new $3Dmol.GLViewer(element);
 		viewer.setBackgroundColor('white');
+        element.bind('mousemove touchmove', viewer._handleMouseMove); // need to grab even when things on top
 		
 	}
 

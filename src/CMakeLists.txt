@@ -99,7 +99,7 @@ add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 # add the executable
 add_executable(pharmit ${MAIN_SOURCES})
 target_link_libraries(pharmit jsoncpp ${SMINALIB} ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
-                      ${OpenBabel3_LIBRARY} ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARY} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
+                      ${OpenBabel3_LIBRARY} openbabel ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARY} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
 
 # add the install targets
 install (TARGETS pharmit DESTINATION bin)
