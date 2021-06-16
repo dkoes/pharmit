@@ -5414,7 +5414,7 @@ Pharmit.Viewer = (function() {
                                       return false;
                                     };
                                     rec.setStyle({model: rec, byres: true, predicate: close_to_lig},
-                                                   {stick:{radius:0.1}},true);
+                                                   {stick:{radius:0.1,colorscheme:modelsAndStyles.Receptor.colorscheme}},true);
                                                    
                                     if(surface !== null) {
                                         viewer.setSurfaceMaterialStyle(surface, {opacity:0});
