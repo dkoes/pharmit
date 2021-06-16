@@ -364,8 +364,8 @@ Pharmit.Viewer = (function() {
                 var hover_label = null;
                 receptor.setHoverable({},true, 
                     function(atom){  //hover
-                      if(atom.resn) {
-                        hover_label = viewer.addLabel(atom.resn+":"+atom.atom,
+                      if(atom.resn && atom.resi) {
+                        hover_label = viewer.addLabel(atom.resn+atom.resi+":"+atom.atom,
                                 {position: atom, backgroundColor: 0x800080, backgroundOpacity: 0.8, alignment: "bottomCenter"});
                         viewer.render();
                       }
