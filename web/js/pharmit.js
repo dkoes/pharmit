@@ -5672,7 +5672,7 @@ Pharmit.Viewer = (function() {
                     function(atom){  //hover
                       if(atom.resn && atom.resi) {
                         hover_label = viewer.addLabel(atom.resn+atom.resi+":"+atom.atom,
-                                {position: atom, backgroundColor: 0x800080, backgroundOpacity: 0.8, alignment: "bottomCenter"});
+                                {position: atom, fontSize: 12, backgroundColor: "#2c1943", backgroundOpacity: 0.5, alignment: "bottomCenter"});
                         viewer.render();
                       }
                     },
