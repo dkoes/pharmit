@@ -144,7 +144,7 @@ r();
 					continue;
 				}
 
-				if(resname == ligname) {
+				if(resname == ligname && (line.startsWith('HETATM') || line.startsWith('ATOM'))) {
 					//only retain the ligand(s) on the first chain
 					if(ligchain == null) ligchain = chain;
 					if(chain == ligchain) {
