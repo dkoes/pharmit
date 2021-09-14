@@ -30,7 +30,6 @@ See the LICENSE file provided with the distribution for more information.
 #include <string>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
-#include <boost/progress.hpp>
 #include <sstream>
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
@@ -618,6 +617,7 @@ class PharmerDatabaseSearcher
 
 	unsigned long stats[LastStat];
 	bool valid;
+	bool inactive = false;
 
 	void queryProcessPoints(QueryInfo& t,
 			unsigned long startLoc, unsigned long endLoc);
@@ -632,11 +632,12 @@ class PharmerDatabaseSearcher
 	unsigned matchedCnt;
 
 	GSSTreeSearcher shapesearch;
+	boost::mutex lock;
 
 	Json::Value dbinfo;
 	public:
 	PharmerDatabaseSearcher(const boost::filesystem::path& dbp) :
-			dbpath(dbp), info(NULL), valid(false), emptyCnt(0), processCnt(0), matchedCnt(
+			dbpath(dbp), info(NULL), valid(false), inactive(false), emptyCnt(0), processCnt(0), matchedCnt(
 					0)
 	{
 		goodChunkSize = 100000; //what's life without a little magic (numbers)? - should probably be related to cache size
@@ -653,6 +654,20 @@ class PharmerDatabaseSearcher
 		if (geoDataArrays != NULL)
 			delete[] geoDataArrays;
 	}
+
+	//setup memory maps
+	void activate()
+	{
+		if(inactive) {
+			boost::unique_lock<boost::mutex> m(lock);
+			if(inactive) initializeDatabases();
+			inactive = false;
+		}
+	}
+
+	void deactivate();
+
+	bool isActive() const { return !inactive; }
 
 	//return number in database
 	unsigned numMolecules() const
@@ -671,7 +686,7 @@ class PharmerDatabaseSearcher
 
 	//translate file-offset mid to true (lowest of cmpd) mid
 	unsigned getBaseMID(unsigned lmid) const
-			{
+	{
 		unsigned len = midList.length();
 		if (len == 0)
 			return lmid;
@@ -762,6 +777,24 @@ struct StripedSearchers
 		ret["numConfs"] = totalConfs;
 		ret["numMols"] = totalMols;
 		return ret;
+	}
+
+	//call activate on all dirs - does nothing if already activated
+	void activate()
+	{
+		for (unsigned i = 0, n = stripes.size(); i < n; i++)
+		{
+			stripes[i]->activate();
+		}
+	}
+
+	//call deactivate on all dirs
+	void deactivate()
+	{
+		for (unsigned i = 0, n = stripes.size(); i < n; i++)
+		{
+			stripes[i]->deactivate();
+		}
 	}
 };
 

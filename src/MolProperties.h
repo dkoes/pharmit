@@ -57,6 +57,17 @@ struct MolProperties
 		MMappedRegion<unsigned char> hba;
 		MMappedRegion<unsigned char> hbd;
 
+		void clear()
+		{
+			uniqueid.clear();
+			num_rings.clear();
+			num_aromatics.clear();
+			logP.clear();
+			psa.clear();
+			hba.clear();
+			hbd.clear();
+		}
+
 		//access the approprate map at pos and return value casted to double
 		double get(PropIDs kind, unsigned pos) const
 		{

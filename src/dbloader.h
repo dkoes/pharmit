@@ -37,5 +37,5 @@ void loadFromPrefixes(vector<boost::filesystem::path>& prefixes, boost::unordere
 
 void loadNewFromPrefixes(vector<boost::filesystem::path>& prefixes,
 		boost::unordered_map<string, StripedSearchers >& databases,
-		const boost::unordered_map<string, StripedSearchers >& olddatabases);
+		const boost::unordered_map<string, StripedSearchers >& olddatabases, bool deactivate=false);
 #endif /* DBLOADER_H_ */

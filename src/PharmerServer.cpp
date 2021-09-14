@@ -291,16 +291,18 @@ void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
 
 void WebQueryManager::addUserDirectories()
 {
+	//to avoid opening too many files, unmemmap user directories
+	//and only permenantly map them if someone actually uses them
 	DBMap newpublic;
-	loadNewFromPrefixes(publicPrefixes, newpublic, publicDatabases);
+	loadNewFromPrefixes(publicPrefixes, newpublic, publicDatabases, true);
 
 	DBMap newprivate;
-	loadNewFromPrefixes(privatePrefixes, newprivate, privateDatabases);
+	loadNewFromPrefixes(privatePrefixes, newprivate, privateDatabases, true);
 
 	if(newpublic.size() > 0 || newprivate.size() > 0)
 	{
 		//maps aren't thread-safe so protect
-		boost::unique_lock<boost::mutex>(lock);
+		boost::unique_lock<boost::mutex> m(lock);
 
 		publicDatabases.insert(newpublic.begin(), newpublic.end());
 		privateDatabases.insert(newprivate.begin(), newprivate.end());
@@ -349,10 +351,12 @@ unsigned WebQueryManager::add(const Pharmas& pharmas, Json::Value& data,
 		if(publicDatabases.count(qp.subset))
 		{
 			searchers = &publicDatabases[qp.subset];
+			searchers->activate();
 		}
 		else if(privateDatabases.count(qp.subset))
 		{
 			searchers = &privateDatabases[qp.subset];
+			searchers->activate();
 		}
 		else
 		{
@@ -473,7 +477,7 @@ Json::Value WebQueryManager::getSingleJSON(const string& id)
 
 WebQueryHandle WebQueryManager::get(unsigned qid)
 {
-	boost::unique_lock<boost::mutex>(lock);
+	boost::unique_lock<boost::mutex> m(lock);
 
 	if (queries.count(qid) == 0)
 		return WebQueryHandle(NULL);
@@ -489,7 +493,7 @@ WebQueryHandle WebQueryManager::get(unsigned qid)
 //delete any queries that are older than a timeout
 unsigned WebQueryManager::purgeOldQueries()
 {
-	boost::unique_lock<boost::mutex>(lock);
+	boost::unique_lock<boost::mutex> m(lock);
 	vector<unsigned> toErase;
 	for (QueryMap::iterator itr = queries.begin(), end = queries.end(); itr
 			!= end; itr++)

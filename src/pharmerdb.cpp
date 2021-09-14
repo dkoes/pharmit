@@ -1003,6 +1003,27 @@ void PharmerDatabaseSearcher::initializeDatabases()
 	shapesearch.load(shape);
 }
 
+//unmap all memory maps
+void PharmerDatabaseSearcher::deactivate()
+{
+	molData.clear();
+	sminaIndex.clear();
+	sminaData.clear();
+	pharmInfoData.clear();
+	midList.clear();
+	binnedCnts.clear();
+	delete [] tripletDataArrays;
+	tripletDataArrays = nullptr;
+	delete [] geoDataArrays;
+	geoDataArrays = nullptr;
+
+	props.clear();
+	shapesearch.clear();
+
+	inactive = true;
+}
+
+
 unsigned PharmerDatabaseSearcher::getBinCnt(unsigned pclass, unsigned i,
 		unsigned j, unsigned k)
 {

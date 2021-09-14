@@ -48,7 +48,7 @@ class TripleIndexer
 {
 	vector< boost::array<unsigned,3> > reverse;
 	boost::multi_array<unsigned, 3> lookup; //n*n*n matrix with indices for any ordering
-	unsigned sz;
+	unsigned sz = 0;
 public:
 
 	TripleIndexer() {}
@@ -61,6 +61,9 @@ public:
 	void set(unsigned n)
 	{
 		using namespace boost;
+		if(lookup.shape()[0] == n)
+			return; //already set
+
 		lookup.resize(extents[n][n][n]);
 		//there are (n+2)!/(3!) sets of triples
 		//for fast lookup, we create a table of all n^3 orderings

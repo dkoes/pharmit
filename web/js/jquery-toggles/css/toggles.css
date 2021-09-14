@@ -6,6 +6,7 @@
       -ms-user-select: none;
           user-select: none;
   direction: ltr;
+  height: 20px;
 }
 .toggle-slide .toggle-on,
 .toggle-slide .toggle-off,
