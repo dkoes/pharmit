@@ -1012,9 +1012,9 @@ void PharmerDatabaseSearcher::deactivate()
 	pharmInfoData.clear();
 	midList.clear();
 	binnedCnts.clear();
-	delete [] tripletDataArrays;
+	if(tripletDataArrays) delete [] tripletDataArrays;
 	tripletDataArrays = nullptr;
-	delete [] geoDataArrays;
+	if(geoDataArrays) delete [] geoDataArrays;
 	geoDataArrays = nullptr;
 
 	props.clear();
