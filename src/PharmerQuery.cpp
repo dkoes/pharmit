@@ -411,7 +411,10 @@ void PharmerQuery::thread_shapeMatch(PharmerQuery *query)
 void PharmerQuery::execute(bool block)
 {
 	for (unsigned d = 0, nd = databases.size(); d < nd; d++)
-		dbSearchQ.push(d);
+	{
+		if(databases[d]->isValid()) //fault tolerance
+			dbSearchQ.push(d);
+	}
 
 	if(params.isshape)
 	{
