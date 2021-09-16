@@ -47,7 +47,6 @@ struct LoadDatabase
 		if (!db->isValid())
 		{
 			cerr << "Error reading database " << dbpath;
-			exit(-1);
 		}
 		totalConf += db->numConformations();
 		totalMols += db->numMolecules();
@@ -136,7 +135,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 
 		if(!algorithm::ends_with(specified, name.string())) //ignore prefixed subdirs like Public, the specified subdir must match the actual subdir
 		{
-			cerr << "Ignoring " << name << "\n";
+			//cerr << "Ignoring " << name << "\n";
 			continue;
 		}
 		else if(olddatabases.count(specified) == 0)
@@ -178,7 +177,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				}
 			}
 
-			if(true || !badsubdir) //lets try to be fault tolerant, i.e. not punt if a single subdir is gone
+			if(!badsubdir) //lets try to be fault tolerant, i.e. not punt if a single subdir is gone
 			{
 				loadDatabases(dbpaths, databases[specified]);
 				if(deactivate) databases[specified].deactivate();
