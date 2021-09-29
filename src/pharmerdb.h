@@ -598,8 +598,8 @@ class PharmerDatabaseSearcher
 
 	FILE *info;
 	MMappedRegion<unsigned char> molData;
-	MMappedRegion<ThreePointData> * tripletDataArrays;
-	MMappedRegion<GeoKDPage> * geoDataArrays;
+	MMappedRegion<ThreePointData> * tripletDataArrays = nullptr;
+	MMappedRegion<GeoKDPage> * geoDataArrays = nullptr;
 	MMappedRegion<unsigned> midList; //index from location-based id to "actual" mid
 
 	MMappedRegion<pair<unsigned long, unsigned long> > sminaIndex; //maps moldata location to sminadata
@@ -649,9 +649,9 @@ class PharmerDatabaseSearcher
 
 	~PharmerDatabaseSearcher()
 	{
-		if (tripletDataArrays != NULL)
+		if (tripletDataArrays != nullptr)
 			delete[] tripletDataArrays;
-		if (geoDataArrays != NULL)
+		if (geoDataArrays != nullptr)
 			delete[] geoDataArrays;
 	}
 
