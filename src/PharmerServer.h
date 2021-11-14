@@ -32,7 +32,7 @@ See the LICENSE file provided with the distribution for more information.
 
 using namespace std;
 
-#define SERVERTHREADS 16
+#define SERVERTHREADS 64
 void pharmer_server(unsigned port, const vector<boost::filesystem::path>& prefixpaths,
 		boost::unordered_map<string, StripedSearchers>& databases,
 		const string& logdir, const string& minServer,unsigned minPort);

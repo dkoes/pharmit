@@ -47,7 +47,7 @@ class MMappedRegion
 	}
 public:
 	MMappedRegion() :
-		data(NULL), size(0)
+		data(nullptr), size(0)
 	{
 	}
 
@@ -60,6 +60,14 @@ public:
 	{
 		//free and sync back to disk
 		munmap(data, size);
+	}
+
+	void clear()
+	{
+		if(data != nullptr)
+			munmap(data, size);
+		data = nullptr;
+		size = 0;
 	}
 
 	//creating mapping to filename fname

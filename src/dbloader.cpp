@@ -47,7 +47,6 @@ struct LoadDatabase
 		if (!db->isValid())
 		{
 			cerr << "Error reading database " << dbpath;
-			exit(-1);
 		}
 		totalConf += db->numConformations();
 		totalMols += db->numMolecules();
@@ -103,13 +102,13 @@ inline vector<string> glob(const std::string& pat){
 void loadFromPrefixes(vector<filesystem::path>& prefixes, unordered_map<string, StripedSearchers >& databases)
 {
 	unordered_map<string, StripedSearchers > blank;
-	loadNewFromPrefixes(prefixes, databases, blank);
+	loadNewFromPrefixes(prefixes, databases, blank, false);
 }
 
 //only load databases that don't already have keys in olddatabases
 void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 		unordered_map<string, StripedSearchers >& databases,
-		const unordered_map<string, StripedSearchers >& olddatabases)
+		const unordered_map<string, StripedSearchers >& olddatabases, bool deactivate)
 {
 	assert(prefixes.size() > 0);
 	filesystem::path jsons = prefixes[0] / "*" / "dbinfo.json";
@@ -136,7 +135,7 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 
 		if(!algorithm::ends_with(specified, name.string())) //ignore prefixed subdirs like Public, the specified subdir must match the actual subdir
 		{
-			cerr << "Ignoring " << name << "\n";
+			//cerr << "Ignoring " << name << "\n";
 			continue;
 		}
 		else if(olddatabases.count(specified) == 0)
@@ -178,8 +177,11 @@ void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
 				}
 			}
 
-			if(true || !badsubdir) //lets try to be fault taulorant
+			if(!badsubdir) //lets try to be fault tolerant, i.e. not punt if a single subdir is gone
+			{
 				loadDatabases(dbpaths, databases[specified]);
+				if(deactivate) databases[specified].deactivate();
+			}
 		}
 	}
 }
