@@ -889,7 +889,7 @@ $(document).ready(
                     //actually have no idea where this event comes from, but it pops up in chrome
                 } else if (event.contexts) {
                     //same here
-		} else if(event.data && event.data === true) {
+		} else if (event.data && event.data === true) {
 		   //and here
                 } else {
                     try {
