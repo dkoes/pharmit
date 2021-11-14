@@ -1033,7 +1033,7 @@ Pharmit.Query = (function() {
         //load features and load receptor
         var loaders = $('<div>').appendTo(header).addClass('pharmit_loaderdiv').addClass('pharmit_nowrap');
         var loadrec = $('<button>Load Receptor...</button>').button();
-        var titletext = "Pharmacophore features can be provided as pharmacophore query formats (MOE, LigBuilder, LigandScout, Pharmer) or automatically extracted from ligand structures (sdf, pdf, mol2, xyz). If a receptor is loaded, only interacting features will be enabled.";
+        var titletext = "Pharmacophore features can be provided as pharmacophore query formats (MOE, LigBuilder, LigandScout, PharmaGist, Pharmer) or automatically extracted from ligand structures (sdf, pdf, mol2, xyz). If a receptor is loaded, only interacting features will be enabled.";
         var loadfeatures = $('<button title="'+titletext+'">Load Features...</button>').button();
 
         //fileinput needs the file inputs in the dom
