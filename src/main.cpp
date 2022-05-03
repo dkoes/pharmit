@@ -900,10 +900,13 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 			}
 		}
 		filesystem::create_directory_symlink(topdirectories[d], symlinks[d]);
-		filesystem::path dbipath = topdirectories[d] / "dbinfo.json";
-		ofstream dbfile(dbipath.c_str());
-		Json::StyledStreamWriter jwrite;
-		jwrite.write(dbfile, root);
+		
+		if(root.isMember("splitdirs") ) { //create top level dbinfo - does not have correct counts
+			filesystem::path dbipath = topdirectories[d] / "dbinfo.json";
+			ofstream dbfile(dbipath.c_str());
+			Json::StyledStreamWriter jwrite;
+			jwrite.write(dbfile, root);
+		}
 	}
 }
 

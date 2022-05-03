@@ -55,6 +55,12 @@ cd ../..
 
 #smina
 git clone http://git.code.sf.net/p/smina/code smina
+cd smina
+mkdir build
+cd build
+cmake ..
+make -j8
+
 cd smina/build/linux/release/
 make -j8
 cp libsmina.a /usr/local/lib/
