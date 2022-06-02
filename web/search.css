@@ -6,9 +6,12 @@ html {
 body {
     background: white;
     margin: 0;
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     padding: 0;
     height: 100%;
+    width: 100%;
     font-family: Verdana,Arial,sans-serif;
     font-size: 12px;
     overflow: hidden;
