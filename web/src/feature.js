@@ -138,7 +138,6 @@ function Feature(viewer, features, fobj, type) {
         if($.isNumeric(elem.value)) {
             var x = parseFloat(elem.value);
             if(text) text.text(numeral(x).format('0.0[0]'));
-            F.updateViewer();
             return round(x);
         }
     };
@@ -148,6 +147,7 @@ function Feature(viewer, features, fobj, type) {
     this.x = $('<input>').appendTo(c).addClass('pharmit_coordinput').change(function() {
         // change x value
         F.obj.x = updateNumber(this, F.xsummary);
+        F.updateViewer();
     });
     this.x.spinner(spinObject(F.x,{step: 0.1, numberFormat: 'n'}));
 
@@ -157,6 +157,7 @@ function Feature(viewer, features, fobj, type) {
     this.y.spinner(spinObject(F.y,{step: 0.1, numberFormat: 'n'})).change(function() {
         // change y value
         F.obj.y = updateNumber(this, F.ysummary);
+        F.updateViewer();
     });
 
     c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
@@ -164,6 +165,7 @@ function Feature(viewer, features, fobj, type) {
     this.z = $('<input>').appendTo(c).addClass('pharmit_coordinput');
     this.z.spinner(spinObject(F.z,{step: 0.1, numberFormat: 'n'})).change(function() {
         F.obj.z = updateNumber(this, F.zsummary);
+        F.updateViewer();
     });
 
     // radius
@@ -172,6 +174,7 @@ function Feature(viewer, features, fobj, type) {
     this.radius = $('<input>').appendTo(c).addClass('pharmit_radiusinput');
     this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
         F.obj.radius = updateNumber(this, F.rsummary);
+        F.updateViewer();
     });
 
     // orientation (for hbonds and aromatic)
