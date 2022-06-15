@@ -153,6 +153,8 @@ public:
 
 	const Pharma* pharmaFromName(const string& name) const;
 
+	void setDefaultSearchRadius(double val /*= 1.0*/);
+
 	bool read(istream& in);
 	void write(ostream& out) const;
 };

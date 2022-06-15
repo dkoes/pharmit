@@ -645,6 +645,7 @@ class PharmerDatabaseSearcher
 
 		//create databases
 		initializeDatabases();
+		pharmas.setDefaultSearchRadius(1.0);
 	}
 
 	~PharmerDatabaseSearcher()

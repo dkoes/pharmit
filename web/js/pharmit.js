@@ -5234,6 +5234,9 @@ Pharmit.Viewer = (function() {
 		var featureColors = {'Aromatic': 'purple', 'HydrogenDonor': '0xf0f0f0', 'HydrogenAcceptor': 'orange', 
 							'Hydrophobic': 'green', 'NegativeIon': 'red', 'PositiveIon': 'blue', 'ExclusionSphere': 'grey',
 							'InclusionSphere': 'yellow'};
+        var featureQuality = {'Aromatic': 1.5, 'HydrogenDonor': 2, 'HydrogenAcceptor': 1, 
+                            'Hydrophobic': 1, 'NegativeIon': 1.5, 'PositiveIon': 1.5, 'ExclusionSphere': 1.5,
+                            'InclusionSphere': 1.5};                            
 
         var surface = null;
         var savedsurface = null;
@@ -5669,6 +5672,7 @@ Pharmit.Viewer = (function() {
 				z: fobj.z},
 				radius: fobj.radius,
 				color: featureColors[fobj.name],
+                quality: featureQuality[fobj.name],
 				wireframe: true,
 				linewidth: 1.5,
 				clickable: true,

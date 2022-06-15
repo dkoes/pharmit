@@ -96,11 +96,11 @@ const char *hydrophobic[] =
 				"[$([S]~[#6])&!$(S~[!#6])]", NULL };
 
 const vector<Pharma> defaultPharmaVec = assign::list_of(
-		Pharma(0, "Aromatic", aromatic, 18, 1.1, 0.1))(
-		Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5, 0.1))(
-		Pharma(2, "HydrogenAcceptor", hydrogen_acceptor, 89, .5, 0.1))(
-		Pharma(3, "PositiveIon", positive_ion, 7, .75, 0.1))(
-		Pharma(4, "NegativeIon", negative_ion, 8, .75, 0.1))(
+		Pharma(0, "Aromatic", aromatic, 18, 1.0, 0.1))(
+		Pharma(1, "HydrogenDonor", hydrogen_donor, 1, 1.0, 0.1))(
+		Pharma(2, "HydrogenAcceptor", hydrogen_acceptor, 89, 1.0, 0.1))(
+		Pharma(3, "PositiveIon", positive_ion, 7, 1.0, 0.1))(
+		Pharma(4, "NegativeIon", negative_ion, 8, 1.0, 0.1))(
 		Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0));
 
 //TODO: make this user-configurable
@@ -133,11 +133,11 @@ const char *hydrophobic_protein[] =
 				"[$([S]~[#6])&!$(S~[!#6])]", NULL };
 
 static const vector<Pharma> proteinPharmaVec = assign::list_of(
-		Pharma(0, "Aromatic", aromatic, 18, 1.1, 0.1))(
-		Pharma(1, "HydrogenDonor", hydrogen_donor, 1, .5, 0.1))(
-		Pharma(2, "HydrogenAcceptor", hydrogen_acceptor, 89, .5, 0.1))(
-		Pharma(3, "PositiveIon", positive_ion_protein, 7, .75, 0.1))(
-		Pharma(4, "NegativeIon", negative_ion_protein, 8, .75, 0.1))(
+		Pharma(0, "Aromatic", aromatic, 18, 1.0, 0.1))(
+		Pharma(1, "HydrogenDonor", hydrogen_donor, 1, 1.0, 0.1))(
+		Pharma(2, "HydrogenAcceptor", hydrogen_acceptor, 89, 1.0, 0.1))(
+		Pharma(3, "PositiveIon", positive_ion_protein, 7, 1.0, 0.1))(
+		Pharma(4, "NegativeIon", negative_ion_protein, 8, 1.0, 0.1))(
 		Pharma(5, "Hydrophobic", hydrophobic_protein, 6, 1.0, 2.0));
 static Pharmas proteinPharmas(proteinPharmaVec);
 
@@ -203,6 +203,17 @@ bool Pharmas::operator==(const Pharmas& rhs) const
 			return false;
 	}
 	return true;
+}
+
+//override default search radius to a single specified constant
+//because I think uniform 1.0 is the best default but made the mistake
+//of embedding this information in the database
+void Pharmas::setDefaultSearchRadius(double val = 1.0)
+{
+	for (unsigned i = 0; i < numPharmas; i++)
+	{
+		pharmas[i].defaultSearchRadius = val;
+	}
 }
 
 static void readVectors(stringstream& str, vector<vector3>& vecs)
