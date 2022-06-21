@@ -104,7 +104,7 @@ const vector<Pharma> defaultPharmaVec = assign::list_of(
 		Pharma(5, "Hydrophobic", hydrophobic, 6, 1.0, 2.0));
 
 //TODO: make this user-configurable
-static unordered_map<string, PharmaInteract> pharmaInteractions =
+static boost::unordered_map<string, PharmaInteract> pharmaInteractions =
 		assign::map_list_of("Aromatic", PharmaInteract(0, 5, 1))(
 				"HydrogenDonor", PharmaInteract(2, 4, 1))("HydrogenAcceptor",
 				PharmaInteract(1, 4, 1))("PositiveIon", PharmaInteract(4, 5, 1))(
@@ -185,7 +185,7 @@ bool Pharma::operator==(const Pharma& rhs) const
 //return pharma from name
 const Pharma* Pharmas::pharmaFromName(const string& name) const
 {
-	unordered_map<string, unsigned>::const_iterator pos = nameLookup.find(name);
+	boost::unordered_map<string, unsigned>::const_iterator pos = nameLookup.find(name);
 	if (pos == nameLookup.end())
 	{
 		return NULL;

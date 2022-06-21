@@ -40,7 +40,7 @@ struct LoadDatabase
 	}
 
 	void operator()( std::shared_ptr<PharmerDatabaseSearcher>& database, unsigned i,
-			filesystem::path dbpath)
+			boost::filesystem::path dbpath)
 	{
 		std::shared_ptr<PharmerDatabaseSearcher> db(new PharmerDatabaseSearcher(dbpath));
 
@@ -56,7 +56,7 @@ struct LoadDatabase
 };
 
 //load databases based on commandline arguments
-void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& databases)
+void loadDatabases(vector<boost::filesystem::path>& dbpaths, StripedSearchers& databases)
 {
 	databases.totalConfs = 0;
 	databases.totalMols = 0;
@@ -65,7 +65,7 @@ void loadDatabases(vector<filesystem::path>& dbpaths, StripedSearchers& database
 	thread_group loading_threads;
 	for (unsigned i = 0, n = dbpaths.size(); i < n; i++)
 	{
-		if (!filesystem::is_directory(dbpaths[i]))
+		if (!boost::filesystem::is_directory(dbpaths[i]))
 		{
 			cerr << "Invalid database directory path: " << dbpaths[i] << "\n";
 			continue; //be tolerant of missing slices exit(-1);
@@ -99,17 +99,20 @@ inline vector<string> glob(const std::string& pat){
 
 //load striped databases from the specified prefixes
 //get the keys for each database from the database json file
-void loadFromPrefixes(vector<filesystem::path>& prefixes, unordered_map<string, StripedSearchers >& databases)
+void loadFromPrefixes(vector<boost::filesystem::path>& prefixes,
+		boost::unordered_map<string, StripedSearchers >& databases)
 {
-	unordered_map<string, StripedSearchers > blank;
+	boost::unordered_map<string, StripedSearchers > blank;
 	loadNewFromPrefixes(prefixes, databases, blank, false);
 }
 
 //only load databases that don't already have keys in olddatabases
-void loadNewFromPrefixes(vector<filesystem::path>& prefixes,
-		unordered_map<string, StripedSearchers >& databases,
-		const unordered_map<string, StripedSearchers >& olddatabases, bool deactivate)
+void loadNewFromPrefixes(vector<boost::filesystem::path>& prefixes,
+		boost::unordered_map<string, StripedSearchers >& databases,
+		const boost::unordered_map<string, StripedSearchers >& olddatabases, bool deactivate)
 {
+	namespace filesystem = boost::filesystem;
+
 	assert(prefixes.size() > 0);
 	filesystem::path jsons = prefixes[0] / "*" / "dbinfo.json";
 	vector<string> infos = glob(jsons.c_str());

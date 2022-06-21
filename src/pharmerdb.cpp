@@ -300,6 +300,8 @@ void MolData::readDataOnly(unsigned char *molData, unsigned long location)
 
 void PharmerDatabaseCreator::initializeDatabases()
 {
+	namespace filesystem = boost::filesystem;
+
 	//initialize self-managed flat file databases
 	//open for writing
 	//info
@@ -418,7 +420,7 @@ void PharmerDatabaseCreator::writeStats()
 	posix_time::ptime time(posix_time::second_clock::local_time());
 	dbinfo["updated"] = boost::posix_time::to_simple_string(time);
 
-	filesystem::path dbipath = dbpath / "dbinfo.json";
+	boost::filesystem::path dbipath = dbpath / "dbinfo.json";
 	ofstream dbfile(dbipath.c_str());
 	Json::StyledStreamWriter jwrite;
 	jwrite.write(dbfile, dbinfo);
@@ -846,7 +848,7 @@ void PharmerDatabaseCreator::createIJKSpatialIndex(int p)
 
 	//open
 	string gname = string("geoData_") + lexical_cast<string>(p);
-	filesystem::path gpath = dbpath / gname;
+	boost::filesystem::path gpath = dbpath / gname;
 	FILE * geoFile = fopen(gpath.string().c_str(), "w");
 	geoDataFiles[p] = geoFile;
 	assert(geoFile);
@@ -896,6 +898,8 @@ void PharmerDatabaseCreator::createSpatialIndex()
 
 void PharmerDatabaseSearcher::initializeDatabases()
 {
+	namespace filesystem = boost::filesystem;
+
 	//initialize self-managed flat file databases
 	//open for reading
 	//info - and read it in

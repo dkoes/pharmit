@@ -31,7 +31,6 @@ See the LICENSE file provided with the distribution for more information.
 #include <boost/filesystem.hpp>
 #include <string>
 
-using namespace std;
 
 //a memory mapped file viewed as an array of T
 template<class T>
@@ -51,7 +50,7 @@ public:
 	{
 	}
 
-	MMappedRegion(const string& fname, bool readOnly)
+	MMappedRegion(const std::string& fname, bool readOnly)
 	{
 		map(fname, readOnly);
 	}
@@ -72,7 +71,7 @@ public:
 
 	//creating mapping to filename fname
 	//readOnly should be set if only for reading
-	void map(const string& fname, bool readOnly, bool sequential=true, bool populate=false, bool readonce=false)
+	void map(const std::string& fname, bool readOnly, bool sequential=true, bool populate=false, bool readonce=false)
 	{
 		using namespace boost;
 		if (data != NULL)
@@ -93,9 +92,9 @@ public:
 			posix_fadvise(fd, 0, 0, POSIX_FADV_NOREUSE);
 #endif
 		flags = readOnly ? PROT_READ : (PROT_READ | PROT_WRITE);
-		if (filesystem::file_size(fname) > 0)
+		if (boost::filesystem::file_size(fname) > 0)
 		{
-			size = filesystem::file_size(fname);
+			size = boost::filesystem::file_size(fname);
 			data = (T*) mmap(NULL, size, flags, (readOnly ? MAP_PRIVATE|MAP_NORESERVE
 					: MAP_SHARED) |(populate ? MAP_POPULATE : 0), 
 					fd, 0);
@@ -109,7 +108,7 @@ public:
 
 		if ((long) data == -1)
 		{
-			string msg = "mmap of "+fname+" failed: ";
+			std::string msg = "mmap of "+fname+" failed: ";
 			perror(msg.c_str());
 			abort();
 		}

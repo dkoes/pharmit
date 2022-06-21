@@ -186,10 +186,12 @@ static void signalhandler(int sig)
 
 
 //start up a server
-void pharmer_server(unsigned port, const vector<filesystem::path>& prefixpaths,
+void pharmer_server(unsigned port, const vector<boost::filesystem::path>& prefixpaths,
 		boost::unordered_map<string, StripedSearchers >& databases,
 		const string& logdir, const string& minServer, unsigned minPort)
 {
+	namespace filesystem = boost::filesystem;
+
 	FILE *LOG;
 	filesystem::path logdirpath;
 	SpinMutex logmutex;

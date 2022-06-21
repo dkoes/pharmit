@@ -43,7 +43,7 @@ static PMLParser pmlParser;
 
 static const int MAX_FEATURES = 64;
 
-static unordered_map<string, QueryParser*> parsers = assign::map_list_of("",
+static boost::unordered_map<string, QueryParser*> parsers = assign::map_list_of("",
 		(QueryParser*) &textParser)(".txt", (QueryParser*) &textParser)(".json",
 		(QueryParser*) &jsonParser)(".query", (QueryParser*) &jsonParser)(
 		".ph4", (QueryParser*) &ph4Parser)(".pml", (QueryParser*) &pmlParser);
@@ -551,7 +551,7 @@ void PharmerQuery::reduceResults()
 {
 	if (params.reduceConfs != 0 && params.reduceConfs != UINT_MAX)
 	{
-		unordered_map<unsigned, unsigned> molCnts;
+		boost::unordered_map<unsigned, unsigned> molCnts;
 		vector<QueryResult*> newr;
 		newr.reserve(results.size());
 		for (unsigned i = 0, n = results.size(); i < n; i++)
@@ -685,8 +685,8 @@ void PharmerQuery::computeBenchmarkStats(const vector<QueryResult*>& r, Json::Va
 {
 	//we only care about molecules, not conformations - count number of unique
 	//molecules with active in the name
-	unordered_set<unsigned> seenactives;
-	unordered_set<unsigned> seendecoys;
+	boost::unordered_set<unsigned> seenactives;
+	boost::unordered_set<unsigned> seendecoys;
 
 	for(unsigned i = 0, n = r.size(); i < n; i++)
 	{
