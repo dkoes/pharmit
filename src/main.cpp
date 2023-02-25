@@ -264,8 +264,8 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 				}
 			}
 
-        		OBAromaticTyper aromatics;
-        		OBAtomTyper atyper;
+			OBAromaticTyper aromatics;
+			OBAtomTyper atyper;
 			while (conv.Read(&mol, &in))
 			{
 				//perform exactly the same analyses as dbcreate
@@ -284,6 +284,10 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 					vector<PharmaPoint> screenedout;
 					getInteractionPoints(pharmas, receptor, mol, points,
 							screenedout);
+				}
+				else if(Receptor.size() > 0) {
+				  std::cerr << "No atoms in " << Receptor << "\n";
+				  exit(-1);
 				}
 				else
 					getPharmaPoints(pharmas, mol, points);
@@ -560,7 +564,8 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 						continue;
 				}
 				ifstream in(inputFiles[i].c_str());
-				OBFormat *format = conv.FormatFromExt(inputFiles[i].c_str());
+				bool isgzip = false;
+				OBFormat *format = conv.FormatFromExt(inputFiles[i].c_str(), isgzip);
 				if (!Quiet)
 					cout << "Adding " << inputFiles[i] << "\n";
 				unsigned stride = nd;
@@ -570,7 +575,7 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 					stride = 1;
 					offset = 0;
 				}
-				ReadMCMol reader(in, format, stride, offset, ReduceConfs);
+				ReadMCMol reader(in, format, stride, offset, ReduceConfs, isgzip);
 				OBMol mol;
 
 				while (reader.read(mol))
@@ -837,12 +842,12 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 						}
 						inmol->push(*uncompressed_inmol);
 
-
-						OBFormat *format = conv.FormatFromExt(info.file.c_str());
+						bool isgzip = false;
+						OBFormat *format = conv.FormatFromExt(info.file.c_str(), isgzip);
 
 						if(format != NULL)
 						{
-							ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs);
+							ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs, isgzip);
 							OBMol mol;
 
 							while (reader.read(mol))
