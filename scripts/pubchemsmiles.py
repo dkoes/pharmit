@@ -28,10 +28,15 @@ files = ftp.nlst()
 for f in files:
     if not f.endswith('.sdf.gz'):
         continue
+    sys.stderr.write(f"Processing {f}\n")
     #it would be nice to be fancy and stream download and parsing,
     #but for simplicity we will download each file whole and then parse
     #which requires sufficient disk space in /tmp
     temp = tempfile.TemporaryFile(mode='r+b')
+    #reconnect for each file
+    ftp = ftplib.FTP('ftp.ncbi.nih.gov')
+    ftp.login()
+    ftp.cwd('pubchem/Compound/CURRENT-Full/SDF')    
     ftp.retrbinary('RETR %s' % f, temp.write)
     temp.seek(0)
     data = io.TextIOWrapper(gzip.GzipFile(fileobj=temp),encoding='utf-8')
