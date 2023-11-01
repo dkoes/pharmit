@@ -54,7 +54,7 @@ bool MemMapped::map(const string& fname, bool readOnly, bool sequential, bool po
 		posix_fadvise(fd, 0, 0, POSIX_FADV_NOREUSE);
 #endif
 	flags = readOnly ? PROT_READ : (PROT_READ | PROT_WRITE);
-	sz = filesystem::file_size(fname);
+	sz = boost::filesystem::file_size(fname);
 	if (sz > 0)
 	{
 		addr =  mmap(NULL, sz, flags, (readOnly ? MAP_PRIVATE

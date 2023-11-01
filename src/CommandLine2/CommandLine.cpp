@@ -121,7 +121,7 @@ void Option::addArgument() {
 /// structures that are easier to handle.
 static void GetOptionInfo(vector<Option*> &PositionalOpts,
                           vector<Option*> &SinkOpts,
-                          unordered_map<string, Option*> &OptionsMap) {
+                          boost::unordered_map<string, Option*> &OptionsMap) {
   vector<const char*> OptionNames;
   Option *CAOpt = 0;  // The ConsumeAfter option if it exists.
   for (Option *O = RegisteredOptionList; O; O = O->getNextRegisteredOption()) {
@@ -166,7 +166,7 @@ static void GetOptionInfo(vector<Option*> &PositionalOpts,
 /// command line.  If there is a value specified (after an equal sign) return
 /// that as well.  This assumes that leading dashes have already been stripped.
 static Option *LookupOption(string &Arg, string &Value,
-                            const unordered_map<string, Option*> &OptionsMap) {
+                            const boost::unordered_map<string, Option*> &OptionsMap) {
   // Reject all dashes.
   if (Arg.empty()) return 0;
 
@@ -175,13 +175,13 @@ static Option *LookupOption(string &Arg, string &Value,
   // If we have an equals sign, remember the value.
   if (EqualPos == string::npos) {
     // Look up the option.
-	  unordered_map<string, Option*>::const_iterator I = OptionsMap.find(Arg);
+	  boost::unordered_map<string, Option*>::const_iterator I = OptionsMap.find(Arg);
     return I != OptionsMap.end() ? I->second : 0;
   }
 
   // If the argument before the = is a valid option name, we match.  If not,
   // return Arg unmolested.
-  unordered_map<string, Option*>::const_iterator I =
+  boost::unordered_map<string, Option*>::const_iterator I =
     OptionsMap.find(Arg.substr(0, EqualPos));
   if (I == OptionsMap.end()) return 0;
 
@@ -309,9 +309,9 @@ static inline bool isPrefixedOrGrouping(const Option *O) {
 //
 static Option *getOptionPred(string& Name, size_t &Length,
                              bool (*Pred)(const Option*),
-                             const unordered_map<string, Option*> &OptionsMap) {
+                             const boost::unordered_map<string, Option*> &OptionsMap) {
 
-	unordered_map<string, Option*>::const_iterator OMI = OptionsMap.find(Name);
+	boost::unordered_map<string, Option*>::const_iterator OMI = OptionsMap.find(Name);
 
   // Loop while we haven't found an option and Name still has at least two
   // characters in it (so that the next iteration will not be the empty
@@ -334,7 +334,7 @@ static Option *getOptionPred(string& Name, size_t &Length,
 /// Arg/Value pair and return the Option to parse it with.
 static Option *HandlePrefixedOrGroupedOption(string& Arg, string &Value,
                                              bool &ErrorParsing,
-                                         const unordered_map<string, Option*> &OptionsMap) {
+                                         const boost::unordered_map<string, Option*> &OptionsMap) {
   if (Arg.size() == 1) return 0;
 
   // Do the lookup!
@@ -465,6 +465,8 @@ void cl::ParseEnvironmentOptions(const char *progName, const char *envVar,
 /// of type @file.
 static void ExpandResponseFiles(unsigned argc, char** argv,
                                 std::vector<char*>& newArgv) {
+  namespace filesystem = boost::filesystem;
+
   for (unsigned i = 1; i != argc; ++i) {
     char *arg = argv[i];
 
@@ -498,10 +500,12 @@ static void ExpandResponseFiles(unsigned argc, char** argv,
 
 void cl::ParseCommandLineOptions(int argc, char **argv,
                                  const char *Overview, bool ReadResponseFiles) {
+  namespace filesystem = boost::filesystem;
+
   // Process all registered options.
   vector<Option*> PositionalOpts;
   vector<Option*> SinkOpts;
-  unordered_map<string, Option*> Opts;
+  boost::unordered_map<string, Option*> Opts;
   GetOptionInfo(PositionalOpts, SinkOpts, Opts);
 
   assert((!Opts.empty() || !PositionalOpts.empty()) &&
@@ -763,7 +767,7 @@ void cl::ParseCommandLineOptions(int argc, char **argv,
   }
 
   // Loop over args and make sure all required args are specified!
-  for (unordered_map<string, Option*>::iterator I = Opts.begin(),
+  for (boost::unordered_map<string, Option*>::iterator I = Opts.begin(),
          E = Opts.end(); I != E; ++I) {
     switch (I->second->getNumOccurrencesFlag()) {
     case Required:
@@ -1078,14 +1082,14 @@ public:
     // Get all the options.
     vector<Option*> PositionalOpts;
     vector<Option*> SinkOpts;
-    unordered_map<string, Option*> OptMap;
+    boost::unordered_map<string, Option*> OptMap;
     GetOptionInfo(PositionalOpts, SinkOpts, OptMap);
 
     // Copy Options into a vector so we can sort them as we like.
     vector<std::pair<const char *, Option*> > Opts;
     unordered_set<Option*> OptionSet;  // Duplicate option detection.
 
-    for (unordered_map<string, Option*>::iterator I = OptMap.begin(), E = OptMap.end();
+    for (boost::unordered_map<string, Option*>::iterator I = OptMap.begin(), E = OptMap.end();
          I != E; ++I) {
       // Ignore really-hidden options.
       if (I->second->getOptionHiddenFlag() == ReallyHidden)

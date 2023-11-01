@@ -131,7 +131,7 @@ public:
 	{
 	}
 
-	bool load(const filesystem::path& dbpath);
+	bool load(const boost::filesystem::path& dbpath);
 	void clear();
 	~GSSTreeSearcher();
 

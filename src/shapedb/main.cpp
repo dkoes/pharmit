@@ -249,7 +249,7 @@ static void create_trees(GSSTreeSearcher& gss, const string& includeMol,
 
 	Molecule exMol;
 
-	if(filesystem::path(excludeMol).extension() != ".mira")
+	if(boost::filesystem::path(excludeMol).extension() != ".mira")
 	{
 		Molecule::iterator exmolitr(excludeMol, dimension, resolution,
 				KeepHydrogens, ProbeRadius);
@@ -383,13 +383,13 @@ static void dumpTree(MappableOctTree *tree, ostream& out)
 	}
 	if (out)
 	{
-		if (filesystem::extension(Output.c_str()) == ".raw")
+		if (boost::filesystem::extension(Output.c_str()) == ".raw")
 			tree->dumpRawGrid(out, Resolution);
-		if (filesystem::extension(Output.c_str()) == ".map")
+		if (boost::filesystem::extension(Output.c_str()) == ".map")
 			tree->dumpAD4Grid(out, Resolution);
-		else if (filesystem::extension(Output.c_str()) == ".mira")
+		else if (boost::filesystem::extension(Output.c_str()) == ".mira")
 			tree->dumpMiraGrid(out, Resolution);
-		else if (filesystem::extension(Output.c_str()) == ".csv")
+		else if (boost::filesystem::extension(Output.c_str()) == ".csv")
 			tree->dumpSproxelGrid(out, Resolution, SproxelColor);
 		else
 			tree->dumpGrid(out, Resolution);
@@ -440,7 +440,7 @@ int main(int argc, char *argv[])
 
 		GSSTreeCreator creator(&leveler, SuperNodeDepth);
 
-		filesystem::path dbpath(Database.c_str());
+		boost::filesystem::path dbpath(Database.c_str());
 
 		if (Command == Create)
 		{
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 		}
 		else if (Command == CreateFromTrees) //trees already created
 		{
-			filesystem::path treedir(Input.c_str());
+			boost::filesystem::path treedir(Input.c_str());
 			if (!creator.create(dbpath, treedir, MaxDimension, Resolution))
 			{
 				cerr << "Error creating database\n";
@@ -494,7 +494,7 @@ int main(int argc, char *argv[])
 
 		GSSTreeCreator creator(&leveler, SuperNodeDepth);
 
-		filesystem::path dbpath(Database.c_str());
+		boost::filesystem::path dbpath(Database.c_str());
 		Molecule::iterator molitr(Input, MaxDimension, Resolution,
 				KeepHydrogens, ProbeRadius);
 		if (!creator.createTreesOnly<Molecule, Molecule::iterator>(dbpath,
@@ -509,7 +509,7 @@ int main(int argc, char *argv[])
 	case MiraSearch:
 		{
 		//read in database
-		filesystem::path dbfile(Database.c_str());
+		boost::filesystem::path dbfile(Database.c_str());
 		GSSTreeSearcher gss(Verbose);
 		if (!gss.load(dbfile))
 		{
@@ -544,7 +544,7 @@ int main(int argc, char *argv[])
 	case DCMiraSearch:
 		{
 		//read in database
-		filesystem::path dbfile(Database.c_str());
+		boost::filesystem::path dbfile(Database.c_str());
 		GSSTreeSearcher gss(Verbose);
 
 		if (!gss.load(dbfile))
@@ -624,7 +624,7 @@ int main(int argc, char *argv[])
 	case BatchMiraSearch:
 		{
 		//read in database
-		filesystem::path dbfile(Database.c_str());
+		boost::filesystem::path dbfile(Database.c_str());
 		GSSTreeSearcher gss(Verbose);
 
 		if (!gss.load(dbfile))
@@ -765,7 +765,7 @@ int main(int argc, char *argv[])
 	case NNSearch:
 		{
 		//read in database
-		filesystem::path dbfile(Database.c_str());
+		boost::filesystem::path dbfile(Database.c_str());
 		GSSTreeSearcher gss(Verbose);
 		if (!gss.load(dbfile))
 		{
@@ -805,7 +805,7 @@ int main(int argc, char *argv[])
 	case DCSearch:
 		{
 		//read in database
-		filesystem::path dbfile(Database.c_str());
+		boost::filesystem::path dbfile(Database.c_str());
 		GSSTreeSearcher gss(Verbose);
 
 		if (!gss.load(dbfile))
@@ -862,7 +862,7 @@ int main(int argc, char *argv[])
 	case BatchSearch:
 		{
 		//read in database
-		filesystem::path dbfile(Database.c_str());
+		boost::filesystem::path dbfile(Database.c_str());
 		GSSTreeSearcher gss(Verbose);
 
 		if (!gss.load(dbfile))
@@ -1021,7 +1021,7 @@ int main(int argc, char *argv[])
 
 		while (getline(dbs, line))
 		{
-			filesystem::path dbfile(line.c_str());
+			boost::filesystem::path dbfile(line.c_str());
 			GSSTreeSearcher gss(Verbose);
 
 			if (!gss.load(dbfile))
@@ -1066,7 +1066,7 @@ int main(int argc, char *argv[])
 		//of n interaction points using both DCSearch and NNSearch scanning
 
 		//read in database
-		filesystem::path dbfile(Database.c_str());
+		boost::filesystem::path dbfile(Database.c_str());
 		GSSTreeSearcher gss(Verbose);
 
 		if (!gss.load(dbfile))

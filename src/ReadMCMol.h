@@ -128,10 +128,10 @@ class ReadMCMol
 
 public:
 
-	ReadMCMol(istream& in, OpenBabel::OBFormat* f, unsigned st, unsigned o, unsigned reduce) :
+	ReadMCMol(istream& in, OpenBabel::OBFormat* f, unsigned st, unsigned o, unsigned reduce, bool isgzip=false) :
 		infile(in), stride(st), offset(o), reduceConfs(reduce > 0 ? reduce : UINT_MAX), molcnt(0)
 	{
-		conv.SetInFormat(f);
+		conv.SetInFormat(f,isgzip);
 		conv.SetOutFormat("sdf");
 		conv.SetInStream(&infile);
 		next.load(conv);
