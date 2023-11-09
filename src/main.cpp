@@ -847,7 +847,7 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 
 						if(format != NULL)
 						{
-							ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs, isgzip);
+							ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs, false); // we uncompress ourselves
 							OBMol mol;
 
 							while (reader.read(mol))
