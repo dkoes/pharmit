@@ -1,7 +1,6 @@
 cff-version: 1.2.0
-title: 'Pharmit: interactive exploration of chemical space'
+title: 'Pharmit'
 message: 'If you find pharmit useful, please cite our paper'
-type: article
 authors:
   - given-names: Jocelyn
     family-names: Sunseri
@@ -14,18 +13,33 @@ authors:
 identifiers:
   - type: doi
     value: https://doi.org/10.1093/nar/gkw287
-repository-code: 'https://github.com/pharmit/pharmit'
-abstract: >-
-  Pharmit (http://pharmit.csb.pitt.edu) provides an online, interactive environment for the virtual screening of large compound databases using pharmacophores, molecular shape and energy minimization. Users can import, create and edit virtual screening queries in an interactive browser-based interface. Queries are specified in terms of a pharmacophore, a spatial arrangement of the essential features of an interaction, and molecular shape. Search results can be further ranked and filtered using energy minimization. In addition to a number of pre-built databases of popular compound libraries, users may submit their own compound libraries for screening. Pharmit uses state-of-the-art sub-linear algorithms to provide interactive screening of millions of compounds. Queries typically take a few seconds to a few minutes depending on their complexity. This allows users to iteratively refine their search during a single session. The easy access to large chemical datasets provided by Pharmit simplifies and accelerates structure-based drug design. Pharmit is available under a dual BSD/GPL open-source license.
-keywords:
-  - Pharmacophore search
-  - Structure-based drug design
 license: GPL-2.0
-journal: "Nucleic acids research"
-volume: 44
-number: W1
-start: W442
-end: W448
-year: 2016
-doi:  https://doi.org/10.1093/nar/gkw287
-publisher: "Oxford University Press"
+repository-code: 'https://github.com/pharmit/pharmit'    
+preferred-citation:
+    title: 'Pharmit: interactive exploration of chemical space'
+    type: article
+    authors:
+      - given-names: Jocelyn
+        family-names: Sunseri
+        affiliation: University of Pittsburgh
+      - given-names: David Ryan
+        family-names: Koes
+        email: dkoes@pitt.edu
+        affiliation: University of Pittsburgh
+        orcid: 'https://orcid.org/0000-0002-6892-6614'
+    identifiers:
+      - type: doi
+        value: https://doi.org/10.1093/nar/gkw287
+    abstract: >-
+      Pharmit (http://pharmit.csb.pitt.edu) provides an online, interactive environment for the virtual screening of large compound databases using pharmacophores, molecular shape and energy minimization. Users can import, create and edit virtual screening queries in an interactive browser-based interface. Queries are specified in terms of a pharmacophore, a spatial arrangement of the essential features of an interaction, and molecular shape. Search results can be further ranked and filtered using energy minimization. In addition to a number of pre-built databases of popular compound libraries, users may submit their own compound libraries for screening. Pharmit uses state-of-the-art sub-linear algorithms to provide interactive screening of millions of compounds. Queries typically take a few seconds to a few minutes depending on their complexity. This allows users to iteratively refine their search during a single session. The easy access to large chemical datasets provided by Pharmit simplifies and accelerates structure-based drug design. Pharmit is available under a dual BSD/GPL open-source license.
+    keywords:
+      - Pharmacophore search
+      - Structure-based drug design
+    journal: "Nucleic acids research"
+    volume: 44
+    number: W1
+    start: W442
+    end: W448
+    year: 2016
+    doi:  https://doi.org/10.1093/nar/gkw287
+    publisher: "Oxford University Press"
