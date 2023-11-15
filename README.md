@@ -26,8 +26,8 @@ cmake .. -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/
 make -j12
 ```
 
-UBUNTU 18.04
-====
+## UBUNTU 18.04
+
 ```
 apt install  git autoconf automake libtool ghostscript liblemon-dev libeigen3-dev libann-dev bmagic libcgicc-dev libgoogle-perftools-dev libglpk-dev coinor-* libjsoncpp-dev cmake libboost-dev swig python-dev libxml2-dev  libcairo2-dev libboost-all-dev libcurl4-openssl-dev
 
@@ -81,8 +81,7 @@ cmake .. -DSMINALIB=/usr/local/lib/libsmina.a -DSMINA_DIR=$HOME/git/smina -DLEMO
 make -j12
 ```
 
-CENTOS (these instructions may be out of date)
-====
+## CENTOS (these instructions may be out of date)
 ```
 yum groupinstall 'Development Tools'
 yum install git boost-devel autoconf automake libtool make cmake gperftools-libs gperftools-devel ghostscript libcurl-devel
