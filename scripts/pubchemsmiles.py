@@ -28,6 +28,7 @@ files = ftp.nlst()
 for f in files:
     if not f.endswith('.sdf.gz'):
         continue
+    sys.stderr.write(f"Processing {f}\n")
     #it would be nice to be fancy and stream download and parsing,
     #but for simplicity we will download each file whole and then parse
     #which requires sufficient disk space in /tmp
