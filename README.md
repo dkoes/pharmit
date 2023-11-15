@@ -13,6 +13,7 @@ GPL2 licensed software) may choose between the BSD or GPL licenses.
 
 See the LICENSE file provided with the distribution for more information.
 
+Pharmit is available for searching and creating libraries at [http://pharmit.csb.pitt.edu](http://pharmit.csb.pitt.edu).  It generally isn't necessary to build it from source.
 
 BUILDING
 ====
