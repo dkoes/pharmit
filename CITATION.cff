@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 title: 'Pharmit: interactive exploration of chemical space'
 message: 'If you find pharmit useful, please cite our paper'
-type: software
+type: article
 authors:
   - given-names: Jocelyn
     family-names: Sunseri
@@ -21,3 +21,11 @@ keywords:
   - Pharmacophore search
   - Structure-based drug design
 license: GPL-2.0
+journal: "Nucleic acids research"
+volume: 44
+number: W1
+start: W442
+end: W448
+year: 2016
+doi:  https://doi.org/10.1093/nar/gkw287
+publisher: "Oxford University Press"
