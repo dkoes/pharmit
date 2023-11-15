@@ -645,7 +645,7 @@ class PharmerDatabaseSearcher
 
 		//create databases
 		initializeDatabases();
-		pharmas.setDefaultSearchRadius(1.0);
+		pharmas.setDefaultSearchRadius(1.0); //default search radius _really_ shouldn't be property of database
 	}
 
 	~PharmerDatabaseSearcher()

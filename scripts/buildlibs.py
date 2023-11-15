@@ -54,7 +54,7 @@ def create_sdf_ligs(conn, libraryid, cprefixes):
     try:
         ligout = open("ligs.in", 'wt')        
         #throw out non-ASCII characters
-        infile = BytesIOWrapper(gzip.open('input.sdf.gz','rt',encoding='ascii',errors='ignore'))
+        infile = BytesIOWrapper(gzip.open('input.sdf.gz','rt',encoding='utf-8',errors='ignore'))
         mols = Chem.ForwardSDMolSupplier(infile)
         molcnt = 0
         for mol in mols:
@@ -145,6 +145,7 @@ def make_libraries(conn, dbprefixfile,row,numactives=0):
     print(cmd)
     ret = subprocess.call(cmd,shell=True)
     if ret != 0:
+        print("Problem generating databases",cmd)
         setError(conn,which, "Problem generating databases")
         return
     

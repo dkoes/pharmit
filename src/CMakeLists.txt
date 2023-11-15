@@ -15,6 +15,28 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 
+set( SHAPEDB_SOURCES
+    shapedb/GSSTreeCreator.cpp
+    shapedb/GSSTreeSearcher.cpp
+    shapedb/GSSTreeStructures.cpp
+    shapedb/KSamplePartitioner.cpp
+    shapedb/MGrid.cpp
+    shapedb/MappableOctTree.cpp
+    shapedb/MemMapped.cpp
+    shapedb/ShapeDistance.cpp
+    shapedb/WorkFile.cpp
+    shapedb/molecules/MolSphere.cpp
+    shapedb/molecules/OBMoleculeAnalytic.cpp
+    shapedb/molecules/RDMoleculeAnalytic.cpp
+    shapedb/packers/FullMergePacker.cpp
+    shapedb/packers/GreedyPacker.cpp
+    shapedb/packers/MatcherPacker.cpp
+    shapedb/packers/Packer.cpp
+    shapedb/packers/SpectralPacker.cpp
+    PMol.cpp
+    CommandLine2/CommandLine.cpp
+)
+
 set( MAIN_SOURCES
      basis.cpp MMappedRegion.h PharmerQuery.cpp QueryTripletFingerprint.cpp ShapeObj.h ThreePointData.h
      basis.h MolFilter.h PharmerQuery.h QueryTripletFingerprint.h ShapeResults.cpp Timer.h
@@ -28,7 +50,7 @@ set( MAIN_SOURCES
      BoundingBox.h dbloader.cpp params.h pharminfo.cpp RMSD.h SphereGrid.h TripletFingerprint.cpp
      BumpAllocator.h dbloader.h pharmarec.cpp pharminfo.h ShapeConstraints.cpp SpinLock.h TripletFingerprint.h
      cgi.cpp 
-     FloatCoord.h pharmarec.h PMol.cpp ShapeConstraints.h SPSCQueue.h Triplet.h
+     FloatCoord.h pharmarec.h ShapeConstraints.h SPSCQueue.h Triplet.h
      cgi.h
      pharmerdb.cpp PMol.h ThreadCounter.h tripletmatching.cpp
      main.cpp pharmerdb.h queryparsers.h ShapeObj.cpp ThreePointData.cpp tripletmatching.h
@@ -36,24 +58,6 @@ set( MAIN_SOURCES
     tinyxml/tinyxml.cpp 
     tinyxml/tinyxmlerror.cpp 
     tinyxml/tinyxmlparser.cpp 
-    shapedb/GSSTreeCreator.cpp 
-    shapedb/GSSTreeSearcher.cpp 
-    shapedb/GSSTreeStructures.cpp 
-    shapedb/KSamplePartitioner.cpp 
-    shapedb/MGrid.cpp 
-    shapedb/MappableOctTree.cpp 
-    shapedb/MemMapped.cpp 
-    shapedb/ShapeDistance.cpp 
-    shapedb/WorkFile.cpp
-    shapedb/molecules/MolSphere.cpp 
-    shapedb/molecules/OBMoleculeAnalytic.cpp 
-    shapedb/molecules/RDMoleculeAnalytic.cpp
-    shapedb/packers/FullMergePacker.cpp 
-    shapedb/packers/GreedyPacker.cpp 
-    shapedb/packers/MatcherPacker.cpp 
-    shapedb/packers/Packer.cpp 
-    shapedb/packers/SpectralPacker.cpp
-    CommandLine2/CommandLine.cpp
    )
 
 if (NOT LEMON_DIR)
@@ -97,9 +101,12 @@ add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 
 
 # add the executable
-add_executable(pharmit ${MAIN_SOURCES})
+add_executable(pharmit ${MAIN_SOURCES} ${SHAPEDB_SOURCES})
 target_link_libraries(pharmit jsoncpp ${SMINALIB} ${GPERFTOOLS_LIBRARIES} ${CGICC_LIBRARY} ${Boost_LIBRARIES} 
                       ${OpenBabel3_LIBRARY} openbabel ${jsoncpp_LIBRARIES} ${EIGEN3_LIBRARY} ${LEMON_LIBRARY} ${ANN_LIBRARY} ${CURL_LIBRARY} ${FCGI_LIBRARIES})
+
+add_executable(shapedb ${SHAPEDB_SOURCES} shapedb/main.cpp)
+target_link_libraries(shapedb  ${Boost_LIBRARIES} ${OpenBabel3_LIBRARY} openbabel ${ANN_LIBRARY} )
 
 # add the install targets
 install (TARGETS pharmit DESTINATION bin)

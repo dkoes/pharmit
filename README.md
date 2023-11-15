@@ -1,4 +1,6 @@
 Pharmit
+====
+
 Copyright (c) David Ryan Koes, University of Pittsburgh and contributors.
 All rights reserved.
 
@@ -13,17 +15,20 @@ See the LICENSE file provided with the distribution for more information.
 
 
 BUILDING
+====
 
 CMake is required to build Pharmit.  Starting from the src directory:
+```
 mkdir build
 cd build
 #most likely you will have to specify the location of smina nad lemon
 cmake .. -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/
 make -j12
+```
 
+## UBUNTU 18.04
 
-UBUNTU 18.04
-
+```
 apt install  git autoconf automake libtool ghostscript liblemon-dev libeigen3-dev libann-dev bmagic libcgicc-dev libgoogle-perftools-dev libglpk-dev coinor-* libjsoncpp-dev cmake libboost-dev swig python-dev libxml2-dev  libcairo2-dev libboost-all-dev libcurl4-openssl-dev
 
 #NOTE: Currently the liblemon-dev package has an incorrect cmake config file that does
@@ -74,9 +79,10 @@ cd build
 #/usr/lib/cmake/LEMONConfig.cmake is editted to point LEMON_LIBRARY to /usr/lib/x86_64-linux-gnu/
 cmake .. -DSMINALIB=/usr/local/lib/libsmina.a -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/ 
 make -j12
+```
 
-
-CENTOS (these instructions may be out of date)
+## CENTOS (these instructions may be out of date)
+```
 yum groupinstall 'Development Tools'
 yum install git boost-devel autoconf automake libtool make cmake gperftools-libs gperftools-devel ghostscript libcurl-devel
 
@@ -177,12 +183,13 @@ cd pharmit/src
 mkdir build
 cmake .. -DCMAKE_CXX_FLAGS=-std=c++0x -DSMINA_DIR=$HOME/smina
 #lots of warnings about missing directory which can be ignored for now
-
+```
 
 USING
+====
 
 The --help option will provide the following:
-
+```
 USAGE: pharmitserver [options] --cmd command [pharma, dbcreate, dbcreateserverdir, dbsearch, server]
 
 OPTIONS:
@@ -219,59 +226,79 @@ OPTIONS:
   -sort-rmsd           - Sort results by RMSD.
   -timestamp=<string>  - Specify timestamp to use for server dirs (for use with single)
   -unweighted-rmsd     - Compute minimal RMSD without radius weights
-
+```
 
 To IDENTIFY the pharmacophore features of a molecule ex.pdb:
+```
  pharmitserver pharma -in ex.pdb
  pharmitserver pharma -in ex.pdb -out out.sdf
  pharmitserver pharma -in ex.pdb -out out.json
+```
 For interactive, graphical editting of pharmacophore features, try
-http://zincpharmer.csb.pitt.edu
+[http://pharmit.csb.pitt.edu](http://pharmit.csb.pitt.edu)
 The saved session file is a json file that can be used as input for Pharmer.
 
 To CREATE a database DB from library.sdf:
+```
  pharmitserver dbcreate -dbdir DB -in library.sdf
+```
 If you have multiple disk drives, you can improve performance by striping the
 database across the drives:
+```
  pharmitserver dbcreate -dbdir /drive1/DB -dbdir /drive2/DB -in library.sdf
+```
 If you pre-split the input file things will go faster:
+```
  pharmitserver dbcreate -dbdir /drive1/DB -dbdir /drive2/DB -file-partition -in library1.sdf -in library2.sdf
+```
 
 To SEARCH a database:
+```
  pharmitserver dbsearch -dbdir DB -in query.json
  pharmitserver dbsearch -dbdir DB -in query.sdf
  pharmitserver dbsearch -dbdir DB -in query.ph4
-
+```
 When setting up a SERVER you create separate directories for each database to search:
+```
  pharmitserver dbcreateserverdir  -ligs molport.ligs -prefixes ../dbprefixes -dbinfo dbinfo.json 
+```
 The ligs files provides the files to add with unique ids and names (see extractsmisubset.py).  e.g.:
+```
 /data22/conformers/541/5416265.sdf.gz 5416265 MolPort-020-216-564 MCULE-1493214818 PubChem-56905170 ZINC000072151660
 /data17/conformers/53/534584.sdf.gz 534584 MolPort-000-887-730 MolPort-035-708-781 MCULE-2607511133 MCULE-2857980910 PubChem-19618431 PubChem-90484256 ZINC
 000002535004 ZINC02535004
 /data08/conformers/18890/188901458.sdf.gz 188901458 MolPort-007-641-322 MCULE-8587443370
+```
 
 The prefixes file specifies the directories (on different drives) to partition the database across. e.g.:
+```
 /data00/databases
 /data01/databases
 /data02/databases
+```
 
 The dbinfo.json file describes the library. e.g.:
+```
 {
 "name" : "MolPort",
 "html" : "MolPort<span><a target=\"_blank\" href=\"https://www.molport.com\" class=\"ui-icon-info ui-icon\"></a></span>",
 "subdir" : "molport",
 "prefix" : "MolPort"
 }
-
+```
 
 To run a SERVER:
+```
 pharmitserver server -port 16000 -prefixes /home/dkoes/vendors/dbprefixes  -logdir /home/dkoes/log -min-server localhost -min-port 18000
+```
 
 To run a MINIMIZATION server:
+```
 ~/git/smina/build/linux/release/server -port 18000 -logfile /home/dkoes/log/minlog
+```
 
 To HOST a server, add a fastcgi rule connecting the webserver hosting /web to the storage server running the backend.  e.g. (apache):
-
+```
 ln -s ~/pharmit/web /var/www/html
 mkdir /var/www/html/fcgi-bin
 
@@ -310,10 +337,13 @@ FastCgiConfig -autoUpdate -maxClassProcesses 1
 # enable
 a2enmod fastcgi
 mkdir /var/www/html/fcgi-bin  #this directory has to exist
+```
 
 LIBRARY CREATION
-The library creation scripts require rdkit to be installed.
+====
 
+The library creation scripts require rdkit to be installed.
+```
 apt install python3-numpy  mysql-server mysql-client python3-mysqldb python3-pip
 pip3 install flup psutil
 mysql < ~/pharmit/scripts/pharmit.sql
@@ -331,19 +361,22 @@ mkdir build
 cd build
 cmake .. -DPYTHON_EXECUTABLE=/usr/bin/python3
 make -j12
+```
 
 BUGS (Not Really)
-
+====
 When working with large datasets spread across multiple hard drives,
 you will likely run into a number of limits that will result in 
 segmentation faults (type 6 or 11).  The following changes need to be in place
 before building the database, or it will silently create incomplete 
 databases that crash when you search them.
 
-Make sure nofile is set high enough (1000000) in /etc/security/limits.conf
+Make sure nofile is set high enough (1000000) in `/etc/security/limits.conf`
 
-Make sure vm.max_map_count is set high enough - add the following to /etc/sysctl.conf
+Make sure vm.max_map_count is set high enough - add the following to `/etc/sysctl.conf`
+```
 vm.max_map_count=1000000
+```
 
 Make sure you build against libcurl4-openssl-dev, not gnutls, or you
 will get fortify_fail errors.
@@ -364,14 +397,17 @@ Currently, on Ubuntu 14.04, g++ 4.8 experiences an internal compiler error.
 Use g++-4.6 to get around this.
 
 BUGS (Really)
+====
 
 Send any bug reports to dkoes@pitt.edu with a complete test case.
 
 CITING
-
+====
 Please use the citation from http://pubs.acs.org/doi/abs/10.1021/ci200097m
 
-DEFAULT PHARMACOPHORE DEFINITIONS
+Default Pharmacophore Definitions
+---
+````
 Aromatic 18 0 1.1 1 0.1 
 a1aaaaa1
 a1aaaa1
@@ -418,4 +454,4 @@ a1aaaa1
 [$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]
 [$([CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[$([CH2X4,CH1X3,CH0X2]~[$([!#1]);!$([CH2X4,CH1X3,CH0X2])])])]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]~[CH2X4,CH1X3,CH0X2]
 [$([S]~[#6])&!$(S~[!#6])]
-
+````

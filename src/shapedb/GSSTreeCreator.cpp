@@ -28,16 +28,18 @@ See the LICENSE file provided with the distribution for more information.
 using namespace boost;
 
 //convience function for creating an indexed path name
-static string nextString(filesystem::path p, const char *base, unsigned i)
+static string nextString(boost::filesystem::path p, const char *base, unsigned i)
 {
 	stringstream str;
 	str << base << i;
-	return filesystem::path(p / str.str()).string();
+	return boost::filesystem::path(p / str.str()).string();
 }
 
 //creates the shape index, give that the objs and first level of trees have been created
 bool GSSTreeCreator::createIndex()
 {
+	namespace filesystem = boost::filesystem;
+
 	Timer t;
 	WorkFile nexttrees;
 	string nexttreesfile = filesystem::path(dbpath / "nexttrees").string();
@@ -108,10 +110,12 @@ bool GSSTreeCreator::createIndex()
 }
 
 //create index from existing trees, which are copied over
-bool GSSTreeCreator::create(filesystem::path dir, filesystem::path treedir,
+bool GSSTreeCreator::create(boost::filesystem::path dir, boost::filesystem::path treedir,
 		float dim,
 		float res)
 {
+	namespace filesystem = boost::filesystem;
+
 	initialize(dir, dim, res);
 
 	Timer t;
@@ -257,6 +261,8 @@ void GSSTreeCreator::getNodesForSuperNode(const GSSInternalNode* node,
 //re-write levels in depth first order; leaves get their own file
 void GSSTreeCreator::optimizeLevels()
 {
+	namespace filesystem = boost::filesystem;
+
 	for (unsigned i = 0, n = nodes.size(); i < n; i++)
 	{
 		nodes[i].switchToMap();

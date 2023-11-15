@@ -49,7 +49,7 @@ if(isset($_REQUEST["login"]))
 					</div>
 					<div class="colwrapper-2">
 						<div class="cont-4">
-							<div class="cont-5"><p class="para"><span class="font"><a href="http://sourceforge.net/projects/pharmit/">code</a></span></p></div>
+							<div class="cont-5"><p class="para"><span class="font"><a href="https://github.com/dkoes/pharmit">code</a></span></p></div>
 						</div>
 						<div class="cont-6">
 							<div class="cont-7"><p class="para-2"><span class="font-2"><a href="help.html">help</a></span></p></div>

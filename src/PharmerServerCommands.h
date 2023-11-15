@@ -222,7 +222,7 @@ public:
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
-		using namespace boost;
+		namespace filesystem = boost::filesystem;
 		if (!cgiTagExists(CGI, "json"))
 		{
 			//no query
@@ -365,7 +365,7 @@ public:
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
-		using namespace boost;
+		namespace filesystem = boost::filesystem;
 		if (!cgiTagExists(CGI, "json"))
 		{
 			//no query
@@ -546,7 +546,8 @@ public:
 
 	void execute(Cgicc& CGI, FastCgiIO& IO)
 	{
-		using namespace boost;
+		namespace filesystem = boost::filesystem;
+
 		using namespace OpenBabel;
 		vector<PharmaPoint> points;
 		if (!cgiTagExists(CGI, "ligand") || !cgiTagExists(CGI, "ligandname"))
@@ -863,6 +864,7 @@ public:
 		using namespace boost::asio;
 		using namespace boost::asio::ip;
 		using namespace OpenBabel;
+		namespace filesystem = boost::filesystem;
 
 		if (server.length() == 0)
 		{

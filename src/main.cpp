@@ -56,7 +56,6 @@ See the LICENSE file provided with the distribution for more information.
 using namespace boost;
 using namespace OpenBabel;
 
-
 cl::opt<bool> Quiet("q", cl::desc("quiet; suppress informational messages"),
 		cl::init(true));
 cl::opt<bool> ShowQuery("show-query", cl::desc("print query points"),
@@ -162,6 +161,7 @@ static void pharmaSDFOutput(ostream& out, vector<PharmaPoint>& points, ShapeCons
 //identify all the pharma points within each mol in the input file
 static void handle_pharma_cmd(const Pharmas& pharmas)
 {
+	namespace filesystem = boost::filesystem;
 
 	if (outputFiles.size() > 0 && outputFiles.size() != inputFiles.size())
 	{
@@ -264,8 +264,8 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 				}
 			}
 
-        		OBAromaticTyper aromatics;
-        		OBAtomTyper atyper;
+			OBAromaticTyper aromatics;
+			OBAtomTyper atyper;
 			while (conv.Read(&mol, &in))
 			{
 				//perform exactly the same analyses as dbcreate
@@ -284,6 +284,10 @@ static void handle_pharma_cmd(const Pharmas& pharmas)
 					vector<PharmaPoint> screenedout;
 					getInteractionPoints(pharmas, receptor, mol, points,
 							screenedout);
+				}
+				else if(Receptor.size() > 0) {
+				  std::cerr << "No atoms in " << Receptor << "\n";
+				  exit(-1);
 				}
 				else
 					getPharmaPoints(pharmas, mol, points);
@@ -314,6 +318,8 @@ void sigv_handler(int sig) {
 //Takes the path to sminaData/molData/sminaIndex
 static void handle_fixsmina_cmd()
 {
+  namespace filesystem = boost::filesystem;
+
   for (unsigned i = 0, n = inputFiles.size(); i < n; i++)
   {
     filesystem::path p(inputFiles[i]);
@@ -469,7 +475,7 @@ static void handle_phogrify_cmd(const Pharmas& pharmas)
 		}
 
 		string outname = outputFiles[i];
-		string oext = filesystem::extension(outname);
+		string oext = boost::filesystem::extension(outname);
 		ofstream outf;
 
 		outf.open(outname.c_str());
@@ -497,6 +503,8 @@ static void handle_phogrify_cmd(const Pharmas& pharmas)
 //create a database
 static void handle_dbcreate_cmd(const Pharmas& pharmas)
 {
+	namespace filesystem = boost::filesystem;
+
 	if (Database.size() == 0)
 	{
 		cerr
@@ -556,7 +564,8 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 						continue;
 				}
 				ifstream in(inputFiles[i].c_str());
-				OBFormat *format = conv.FormatFromExt(inputFiles[i].c_str());
+				bool isgzip = false;
+				OBFormat *format = conv.FormatFromExt(inputFiles[i].c_str(), isgzip);
 				if (!Quiet)
 					cout << "Adding " << inputFiles[i] << "\n";
 				unsigned stride = nd;
@@ -566,7 +575,7 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 					stride = 1;
 					offset = 0;
 				}
-				ReadMCMol reader(in, format, stride, offset, ReduceConfs);
+				ReadMCMol reader(in, format, stride, offset, ReduceConfs, isgzip);
 				OBMol mol;
 
 				while (reader.read(mol))
@@ -597,7 +606,7 @@ static void handle_dbcreate_cmd(const Pharmas& pharmas)
 //read in ligand file names and verify the files exist
 struct LigandInfo
 {
-	filesystem::path file;
+	boost::filesystem::path file;
 	long id;
 	string name;
 
@@ -620,6 +629,8 @@ static void signalhandler(int sig)
 //the json object is indexed by database key; the keys define the subdirectory name to use in prefixes
 static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 {
+	namespace filesystem = boost::filesystem;
+
 	signal(SIGUSR1, signalhandler); //don't let ourselves get interrupted by build signals
 
 	ifstream prefixes(Prefixes.c_str());
@@ -724,7 +735,7 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 	}
 
 	string fname;
-	unordered_set<filesystem::path> singlesplits;
+	boost::unordered_set<filesystem::path> singlesplits;
 
 	while(getline(prefixes,fname))
 	{
@@ -831,12 +842,12 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 						}
 						inmol->push(*uncompressed_inmol);
 
-
-						OBFormat *format = conv.FormatFromExt(info.file.c_str());
+						bool isgzip = false;
+						OBFormat *format = conv.FormatFromExt(info.file.c_str(), isgzip);
 
 						if(format != NULL)
 						{
-							ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs);
+							ReadMCMol reader(*inmol, format, 1, 0, ReduceConfs, false); // we uncompress ourselves
 							OBMol mol;
 
 							while (reader.read(mol))
@@ -915,6 +926,8 @@ static void handle_dbcreateserverdir_cmd(const Pharmas& pharmas)
 //search the database
 static void handle_dbsearch_cmd()
 {
+	namespace filesystem = boost::filesystem;
+
 	if (pharmaSpec.size() != 0)
 	{
 		cerr
@@ -1057,6 +1070,8 @@ static void handle_dbsearch_cmd()
 
 int main(int argc, char *argv[])
 {
+	namespace filesystem = boost::filesystem;
+
 	cl::ParseCommandLineOptions(argc, argv);
 	obErrorLog.StopLogging(); //just slows us down, possibly buggy?
 	ttab.Init();
@@ -1107,7 +1122,7 @@ int main(int argc, char *argv[])
 	else if (Cmd == "server")
 	{
 		vector<filesystem::path> prefixpaths;
-		unordered_map<string, StripedSearchers > databases;
+		boost::unordered_map<string, StripedSearchers > databases;
 
                 //total hack time - fcgi uses select which can't
 		//deal with file descriptors higher than 1024, so let's reserve some

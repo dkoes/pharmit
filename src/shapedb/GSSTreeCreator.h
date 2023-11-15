@@ -57,9 +57,6 @@ See the LICENSE file provided with the distribution for more information.
 #include "GSSTreeStructures.h"
 #include "TopDownPartitioner.h"
 #include "packers/Packer.h"
-
-using namespace std;
-
 #include "WorkFile.h"
 #include "Timer.h"
 
@@ -124,10 +121,10 @@ class GSSTreeCreator
 {
 	WorkFile objects;
 	WorkFile currenttrees;
-	vector<file_index> treeindices;
+	std::vector<file_index> treeindices;
 	vector<file_index> objindices;
 
-	vector<WorkFile> nodes;
+	std::vector<WorkFile> nodes;
 
 	boost::filesystem::path dbpath;
 
@@ -139,8 +136,8 @@ class GSSTreeCreator
 	//some bookkeeping for analysis purposes
 	unsigned numNodes;
 	unsigned numLeaves;
-	vector<unsigned> nodeContentDistribution;
-	vector<unsigned> leafContentDistribution;
+	std::vector<unsigned> nodeContentDistribution;
+	std::vector<unsigned> leafContentDistribution;
 	file_index optimizeLevelsR(ostream& outnodes, ostream& outleaves,
 			const GSSNodeCommon *n, unsigned level, file_index& lstart,
 			file_index& lend);
@@ -192,7 +189,7 @@ public:
 	bool initialize(boost::filesystem::path dir, float dim, float res,
 			GSSLevelCreator* l = NULL)
 	{
-		using namespace boost;
+		namespace filesystem = boost::filesystem;
 		dimension = dim;
 		resolution = res;
 
@@ -266,7 +263,7 @@ public:
 			float dim,
 			float res)
 	{
-		using namespace boost;
+		namespace filesystem = boost::filesystem;
 		dimension = dim;
 		resolution = res;
 		WorkFile currenttrees;

@@ -28,6 +28,7 @@ See the LICENSE file provided with the distribution for more information.
 using namespace OpenBabel;
 using namespace boost;
 
+
 void MolProperties::calculate(OpenBabel::OBMol& mol, unsigned long id)
 {
 	uniqueid = id;
@@ -59,6 +60,7 @@ vector<const char*> MolProperties::fileNames = assign::list_of("prop_uniqueid")
 void MolProperties::createFiles(const boost::filesystem::path& dbpath,
 		MolProperties::PropFiles& files)
 {
+	namespace filesystem = boost::filesystem;
 	files.clear();
 
 	//name files prop_<prop>
@@ -107,7 +109,7 @@ void MolProperties::setHB(const vector<PharmaPoint>& pts)
 //setup mmaps
 void MolProperties::initializeReader(const boost::filesystem::path& dbpath, MolPropertyReader& reader)
 {
-	filesystem::path fname = dbpath / fileNames[UniqueID];
+	boost::filesystem::path fname = dbpath / fileNames[UniqueID];
 	reader.uniqueid.map(fname.string(), true);
 	fname = dbpath / fileNames[NRings];
 	reader.num_rings.map(fname.string(), true);

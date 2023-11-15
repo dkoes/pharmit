@@ -28,8 +28,10 @@ See the LICENSE file provided with the distribution for more information.
 #include "ShapeDistance.h"
 
 //load a gsstree database by mmapping files, return true if successfull
-bool GSSTreeSearcher::load(const filesystem::path& dbpath)
+bool GSSTreeSearcher::load(const boost::filesystem::path& dbpath)
 {
+	namespace filesystem = boost::filesystem;
+
 	clear();
 	//read in info
 	filesystem::path infofile = dbpath / "info";
