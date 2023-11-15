@@ -105,17 +105,25 @@ const vector<Pharma> defaultPharmaVec = assign::list_of(
 
 //TODO: make this user-configurable
 static boost::unordered_map<string, PharmaInteract> pharmaInteractions =
-		assign::map_list_of("Aromatic", PharmaInteract(0, 5, 1))(
-				"HydrogenDonor", PharmaInteract(2, 4, 1))("HydrogenAcceptor",
-				PharmaInteract(1, 4, 1))("PositiveIon", PharmaInteract(4, 5, 1))(
-				"NegativeIon", PharmaInteract(3, 5, 1))("Hydrophobic",
-				PharmaInteract(5, 6, 3));
+		assign::map_list_of("Aromatic", PharmaInteract(0, 5, 1))
+		("HydrogenDonor", PharmaInteract(2, 4, 1))
+		("HydrogenAcceptor",PharmaInteract(1, 4, 1))
+		("PositiveIon", PharmaInteract(4, 5, 1))
+		("NegativeIon", PharmaInteract(3, 5, 1))
+		("Hydrophobic",	PharmaInteract(5, 6, 3));
 //reduced set of pharmacophore definitions for proteins
 const char * positive_ion_protein[] =
 { "[+,+2,+3,+4]",
 //amidine
 //guanidine
 		"[$(C(N)(N)=N)]", "[$(n1cc[nH]c1)]", NULL };
+		
+//include cation pi
+const char * aromatic_protein[] =
+{ 	"a1aaaaa1",
+	"a1aaaa1",
+	"[+,+2,+3,+4]",
+	"[$(C(N)(N)=N)]", "[$(n1cc[nH]c1)]", NULL };
 
 const char * negative_ion_protein[] =
 { "[-,-2,-3,-4]", "C(=O)[O-,OH,OX1]", NULL };
@@ -133,7 +141,7 @@ const char *hydrophobic_protein[] =
 				"[$([S]~[#6])&!$(S~[!#6])]", NULL };
 
 static const vector<Pharma> proteinPharmaVec = assign::list_of(
-		Pharma(0, "Aromatic", aromatic, 18, 1.0, 0.1))(
+		Pharma(0, "Aromatic", aromatic_protein, 18, 1.0, 0.1))(
 		Pharma(1, "HydrogenDonor", hydrogen_donor, 1, 1.0, 0.1))(
 		Pharma(2, "HydrogenAcceptor", hydrogen_acceptor, 89, 1.0, 0.1))(
 		Pharma(3, "PositiveIon", positive_ion_protein, 7, 1.0, 0.1))(
