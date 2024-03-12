@@ -365,6 +365,11 @@ body {
 .pharmit_featuresummary {
 	font-size: 75%;
 }
+
+.pharmit_customlabel {
+	font-weight: bold;
+}
+
 .pharmit_featureclose{
 	display: inline-block;
 	position: absolute;

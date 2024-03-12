@@ -71,14 +71,16 @@ function Feature(viewer, features, fobj, type) {
 
     // summary has (x,y,z) Radius r
     var summary = $('<span>').appendTo(namediv).addClass('pharmit_featuresummary');		
+    this.customlabel = $('<span>').appendTo(summary).addClass('pharmit_customlabel');
     summary.append($(document.createTextNode('(')));
     this.xsummary = $('<span>').appendTo(summary);
     summary.append($(document.createTextNode(',')));
     this.ysummary = $('<span>').appendTo(summary);
     summary.append($(document.createTextNode(',')));
     this.zsummary = $('<span>').appendTo(summary);
-    summary.append($(document.createTextNode(') Radius ')));
+    summary.append($(document.createTextNode(') r=')));
     this.rsummary = $('<span>').appendTo(summary);
+
 
     var editdiv = $('<div>').appendTo(this.container);
 
@@ -137,7 +139,7 @@ function Feature(viewer, features, fobj, type) {
     var updateNumber = function(elem, text) {
         if($.isNumeric(elem.value)) {
             var x = parseFloat(elem.value);
-            if(text) text.text(numeral(x).format('0.0[0]'));
+            if(text) text.text(numeral(x).format('0.0'));
             return round(x);
         }
     };
@@ -170,7 +172,7 @@ function Feature(viewer, features, fobj, type) {
 
     // radius
     c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
-    $('<label>Radius:</label>').appendTo(c);
+    $('<label>r=</label>').appendTo(c);
     this.radius = $('<input>').appendTo(c).addClass('pharmit_radiusinput');
     this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
         F.obj.radius = updateNumber(this, F.rsummary);
@@ -297,6 +299,11 @@ Feature.prototype.setFeature = function(fobj) {
         var phi = 180*Math.atan2(y,x)/Math.PI;
         this.theta.val(theta).trigger('change');
         this.phi.val(phi).trigger('change');
+    }
+
+    if(fobj.label) {
+        this.customlabel.val(fobj.label);
+        this.customlabel.text(fobj.label+" ");
     }
 };
 

@@ -13,6 +13,7 @@ GPL2 licensed software) may choose between the BSD or GPL licenses.
 
 See the LICENSE file provided with the distribution for more information.
 
+Pharmit is available for searching and creating libraries at [http://pharmit.csb.pitt.edu](http://pharmit.csb.pitt.edu).  It generally isn't necessary to build it from source.
 
 BUILDING
 ====
@@ -24,6 +25,45 @@ cd build
 #most likely you will have to specify the location of smina nad lemon
 cmake .. -DSMINA_DIR=$HOME/git/smina -DLEMON_DIR=/usr/lib/cmake/
 make -j12
+```
+## UBUNTU 22.04
+
+```bash
+sudo apt install  git autoconf automake libtool ghostscript liblemon-dev libeigen3-dev libann-dev bmagic libcgicc-dev libgoogle-perftools-dev libglpk-dev coinor-* libjsoncpp-dev cmake libboost-dev swig libxml2-dev libcairo2-dev libboost-all-dev libcurl4-openssl-dev
+
+git clone https://github.com/FastCGI-Archives/fcgi2.git
+cd fcgi2
+autoreconf -i
+./configure
+sudo make
+sudo make install
+cd ..
+
+git clone https://github.com/openbabel/openbabel.git
+cd openbabel
+mkdir build
+cd build
+sudo cmake .. -DPYTHON_BINDINGS=1 -DRUN_SWIG=1  -DWITH_MAEPARSER=0 -DWITH_COORDGEN=0
+sudo make -j12
+sudo make install
+cd ../..
+
+git clone http://git.code.sf.net/p/smina/code smina
+cd smina
+mkdir build
+cd build
+sudo cmake ..
+sudo make -j8
+sudo cp libsmina.a /usr/local/lib/libsmina.a
+cd ../..
+
+git clone http://git.code.sf.net/p/pharmit/code pharmit
+cd pharmit/src
+mkdir build
+cd build
+#change `$path/smina` the smina directory to reflect the install location from above
+sudo cmake .. -DSMINALIB=/usr/local/lib/libsmina.a -DSMINA_DIR=$path/smina/ -DLEMON_DIR=/usr/lib/x86_64-linux-gnu/cmake/lemon/
+sudo make -j12
 ```
 
 ## UBUNTU 18.04
