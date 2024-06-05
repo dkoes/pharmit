@@ -2082,6 +2082,13 @@ Pharmit.Query = (function() {
         });
         querydiv.disableSelection();
 
+        querydiv.on('keyup', function(event) {
+            //don't let arrows here buble up to results handler
+            if(event.key == "ArrowUp" || event.key == "ArrowDown" ||
+                event.key == "ArrowLeft" || event.key == "ArrowRight") {
+                event.stopPropagation();
+            }
+        });
 
         closer.click(function() {
             if(closer.hasClass('pharmit_leftisclosed')) {
