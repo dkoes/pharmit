@@ -49,7 +49,7 @@ if(isset($_REQUEST["login"]))
 					</div>
 					<div class="colwrapper-2">
 						<div class="cont-4">
-							<div class="cont-5"><p class="para"><span class="font"><a href="http://sourceforge.net/projects/pharmit/">code</a></span></p></div>
+							<div class="cont-5"><p class="para"><span class="font"><a href="https://github.com/dkoes/pharmit">code</a></span></p></div>
 						</div>
 						<div class="cont-6">
 							<div class="cont-7"><p class="para-2"><span class="font-2"><a href="help.html">help</a></span></p></div>
@@ -198,7 +198,7 @@ else
 				<div class="cont-58">
 					<div class="cont-59"><p class="para-27"><span class="font-36">acknowledgements</span></p>
 					<p class="para-28"><span class="font-37">If you find this site useful please cite <span class="pharmitlink"><a href='http://nar.oxfordjournals.org/content/early/2016/04/19/nar.gkw287.long'>Pharmit: interactive exploration of chemical space</a><span></span>.</span></p></div>
-					<p class="para-28"><span class="font-37">Pharmit is funded through R01GM108340 from the National Institute of General Medical Sciences and a generous gift from Relay Therapeutics. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institute of General Medical Sciences, the National Institutes of Health, or Relay Therapeutics.</span></p></div>
+					<p class="para-28"><span class="font-37">Pharmit is funded through R01GM108340 (previously) and R35GM140753 (currently) from the National Institute of General Medical Sciences and a generous gift from Relay Therapeutics. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institute of General Medical Sciences, the National Institutes of Health, or Relay Therapeutics.</span></p></div>
 				</div>
 			</div>
 		</div>

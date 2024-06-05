@@ -71,14 +71,16 @@ function Feature(viewer, features, fobj, type) {
 
     // summary has (x,y,z) Radius r
     var summary = $('<span>').appendTo(namediv).addClass('pharmit_featuresummary');		
+    this.customlabel = $('<span>').appendTo(summary).addClass('pharmit_customlabel');
     summary.append($(document.createTextNode('(')));
     this.xsummary = $('<span>').appendTo(summary);
     summary.append($(document.createTextNode(',')));
     this.ysummary = $('<span>').appendTo(summary);
     summary.append($(document.createTextNode(',')));
     this.zsummary = $('<span>').appendTo(summary);
-    summary.append($(document.createTextNode(') Radius ')));
+    summary.append($(document.createTextNode(') r=')));
     this.rsummary = $('<span>').appendTo(summary);
+
 
     var editdiv = $('<div>').appendTo(this.container);
 
@@ -137,7 +139,7 @@ function Feature(viewer, features, fobj, type) {
     var updateNumber = function(elem, text) {
         if($.isNumeric(elem.value)) {
             var x = parseFloat(elem.value);
-            if(text) text.text(numeral(x).format('0.0[0]'));
+            if(text) text.text(numeral(x).format('0.0'));
             return round(x);
         }
     };
@@ -170,7 +172,7 @@ function Feature(viewer, features, fobj, type) {
 
     // radius
     c = $('<div>').appendTo(locationdiv).addClass('pharmit_coorddiv');
-    $('<label>Radius:</label>').appendTo(c);
+    $('<label>r=</label>').appendTo(c);
     this.radius = $('<input>').appendTo(c).addClass('pharmit_radiusinput');
     this.radius.spinner(spinObject(F.radius,{step: 0.1, numberFormat: 'n'})).change(function() {
         F.obj.radius = updateNumber(this, F.rsummary);
@@ -297,6 +299,11 @@ Feature.prototype.setFeature = function(fobj) {
         var phi = 180*Math.atan2(y,x)/Math.PI;
         this.theta.val(theta).trigger('change');
         this.phi.val(phi).trigger('change');
+    }
+
+    if(fobj.label) {
+        this.customlabel.val(fobj.label);
+        this.customlabel.text(fobj.label+" ");
     }
 };
 
@@ -2061,19 +2068,141 @@ Pharmit.Query = (function() {
 
         };
 
+
+        //public variables and functions
+
+        var closer = $('<div>').appendTo(querydiv).addClass('pharmit_leftclose');
+        var closericon = $('<span>').addClass("ui-icon ui-icon-carat-1-w").appendTo(closer);
+
+        //initialization code
+        querydiv.resizable({handles: "e",
+            resize: function(event, ui) {
+                viewer.setLeft(ui.size.width);
+            }
+        });
+        querydiv.disableSelection();
+
+
+        closer.click(function() {
+            if(closer.hasClass('pharmit_leftisclosed')) {
+                closer.removeClass('pharmit_leftisclosed');
+                closericon.removeClass('ui-icon-carat-1-e');
+                closericon.addClass('ui-icon-carat-1-w');
+                var start = querydiv.width();
+                querydiv.css('width', ''); //restore stylesheet width	
+                var target = querydiv.width();
+                querydiv.width(start);
+
+                querydiv.animate({width: target},{
+                    progress: function() { viewer.setLeft(querydiv.width());}
+                }); 
+                querydiv.resizable( "option", "disabled", false);
+
+            } else { //close it 
+                querydiv.animate({width: 0}, {
+                    progress: function() { viewer.setLeft(querydiv.width());}
+                }); 
+                //viewer.setLeft(0);
+                closer.addClass('pharmit_leftisclosed');
+                closericon.addClass('ui-icon-carat-1-e');
+                closericon.removeClass('ui-icon-carat-1-w');			
+                querydiv.resizable( "option", "disabled", true );
+            }
+        });
+
+        var header = $('<div>').appendTo(querydiv).addClass("pharmit_queryheader");
+
+        //load features and load receptor
+        var loaders = $('<div>').appendTo(header).addClass('pharmit_loaderdiv').addClass('pharmit_nowrap');
+        var loadrec = $('<button>Load Receptor...</button>').button();
+        var titletext = "Pharmacophore features can be provided as pharmacophore query formats (MOE, LigBuilder, LigandScout, PharmaGist, Pharmer) or automatically extracted from ligand structures (sdf, pdf, mol2, xyz). If a receptor is loaded, only interacting features will be enabled.";
+        var loadfeatures = $('<button title="'+titletext+'">Load Features...</button>').button();
+
+        //fileinput needs the file inputs in the dom
+        element.append(querydiv);
+        var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(function(e) {readText(this, loadReceptor);});
+        var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(function(e) {readText(this,loadFeatures);});		
+
+        querydiv.detach();
+
+        //query features
+        body = $('<div>').appendTo(querydiv).addClass("pharmit_querybody");
+        var featureheading = $('<div>Pharmacophore</div>').appendTo(body).addClass('pharmit_heading');
+        featuregroup = $('<div>').appendTo(body);
+        features = $('<div>').appendTo(featuregroup);
+        features.accordion({header: "> div > h3", 
+            animate: true, 
+            active: false,
+            collapsible: true,
+            heightStyle:'content',
+            beforeActivate: function( event, ui ) { 
+                var fdiv = null;
+
+                //deslect all features
+                var fdivs = features.children();
+                $.each(fdivs, function(key,fdiv) {
+                    fdiv.feature.deselectFeature();
+                });
+                if(ui.newHeader.length > 0) { //being activated
+                    fdiv = ui.newHeader.parent();
+                    fdiv.get(0).feature.selectFeature();
+                }
+
+            }})
+            .sortable({ //from jquery ui example
+                axis: "y",
+                handle: "h3",
+                stop: function( event, ui ) {
+                    // IE doesn't register the blur when sorting
+                    // so trigger focusout handlers to remove .ui-state-focus
+                    ui.item.children( "h3" ).triggerHandler( "focusout" );
+                    // Refresh accordion to handle new order
+                    $( this ).accordion( "refresh" );
+                }
+            });
+
+        var buttondiv = $('<div>').appendTo(featuregroup).addClass('pharmit_featurebuttons');
+        var addbutton = $('<button>Add</button>').appendTo(buttondiv)
+        .button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
+        .click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
+        var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
+
+        createShapeQuery(body);
+
+        createFilterQuery(body);
+
+        prependModeSelect(header); //setup mode select after shape/pharmacophore elements are created
+
+        //setup search button
+        var buttons = $('<div>').addClass('pharmit_searchdiv');
+        var run = $('<button id="pharmitsearchbutton" name="subset">Search</button>').appendTo(buttons).button();
+        var select = $('<button>Select subset to search</button>').appendTo(buttons).button({text: false, icons: {primary: "ui-icon-triangle-1-s"}});
+        select.tooltip().tooltip("disable"); //conflicts with menu
+        run.val("");
+        buttons.buttonset();
+
         //create a split button from a list of vendors and prepend it to header
         var createSearchButton = function(header,dbinfo) {
             var subsetinfo = dbinfo.standard;
-            var buttons = $('<div>').addClass('pharmit_searchdiv');
-            var run = $('<button id="pharmitsearchbutton" name="subset">Search '+subsetinfo[0].name+'</button>').appendTo(buttons).button();
-            var select = $('<button>Select subset to search</button>').appendTo(buttons).button({text: false, icons: {primary: "ui-icon-triangle-1-s"}});
-            select.tooltip().tooltip("disable"); //conflicts with menu
-            run.val(subsetinfo[0].subdir);
+            var i;
+            //default to what is already set (e.g., by loaded query) or molport
+            var defaultdir = run.val();
+            if(defaultdir == "") defaultdir = "molport";
+            var founddefault = false;
+            for(i = 0, n = subsetinfo.length; i < n; i++) {
+                if(defaultdir == subsetinfo[i].subdir) {
+                    founddefault = true;
+                    break;
+                }
+            }
+            //fallback to first dir if default not found
+            if(!founddefault) {
+                defaultdir = subsetinfo[0].subdir;
+            }
 
-            buttons.buttonset();
             var ul = $('<ul>').appendTo($('body')).addClass('pharmit_floatmenu'); //can't be in query div because of overflow truncation
             var lis = [];
-            var i, info, display;
+            var info, display;
             for(i = 0, n = subsetinfo.length; i < n; i++) {
                 info = subsetinfo[i];
                 display = escHTML(info.name);
@@ -2084,11 +2213,12 @@ Pharmit.Query = (function() {
                 lis[i] += '</li>';
 
                 //default to molport for now
-                if(info.subdir == 'molport') {
+                if(info.subdir == defaultdir) {
                     run.button("option",'label',"Search "+info.name);
                     run.val(info.subdir);
                 }
             }
+
             ul.append(lis);
             ul.append($('<li> </li>'));
             var publicli = $('<li class="pharmit_contributed">Contributed Libraries</li>');
@@ -2199,52 +2329,8 @@ Pharmit.Query = (function() {
                         return false;
                     });
 
-            header.prepend(buttons);
         };
 
-
-        //public variables and functions
-
-        var closer = $('<div>').appendTo(querydiv).addClass('pharmit_leftclose');
-        var closericon = $('<span>').addClass("ui-icon ui-icon-carat-1-w").appendTo(closer);
-
-        //initialization code
-        querydiv.resizable({handles: "e",
-            resize: function(event, ui) {
-                viewer.setLeft(ui.size.width);
-            }
-        });
-        querydiv.disableSelection();
-
-
-        closer.click(function() {
-            if(closer.hasClass('pharmit_leftisclosed')) {
-                closer.removeClass('pharmit_leftisclosed');
-                closericon.removeClass('ui-icon-carat-1-e');
-                closericon.addClass('ui-icon-carat-1-w');
-                var start = querydiv.width();
-                querydiv.css('width', ''); //restore stylesheet width	
-                var target = querydiv.width();
-                querydiv.width(start);
-
-                querydiv.animate({width: target},{
-                    progress: function() { viewer.setLeft(querydiv.width());}
-                }); 
-                querydiv.resizable( "option", "disabled", false);
-
-            } else { //close it 
-                querydiv.animate({width: 0}, {
-                    progress: function() { viewer.setLeft(querydiv.width());}
-                }); 
-                //viewer.setLeft(0);
-                closer.addClass('pharmit_leftisclosed');
-                closericon.addClass('ui-icon-carat-1-e');
-                closericon.removeClass('ui-icon-carat-1-w');			
-                querydiv.resizable( "option", "disabled", true );
-            }
-        });
-
-        var header = $('<div>').appendTo(querydiv).addClass("pharmit_queryheader");
 
         $.post(Pharmit.server, {cmd: "getsubsets"}, null, 'json').done(function(ret) {
             createSearchButton(header, ret);
@@ -2253,67 +2339,7 @@ Pharmit.Query = (function() {
             alert("Error contacting server.  Please inform "+Pharmit.email+ " if this problem persists.");
         });
 
-
-        //load features and load receptor
-        var loaders = $('<div>').appendTo(header).addClass('pharmit_loaderdiv').addClass('pharmit_nowrap');
-        var loadrec = $('<button>Load Receptor...</button>').button();
-        var titletext = "Pharmacophore features can be provided as pharmacophore query formats (MOE, LigBuilder, LigandScout, PharmaGist, Pharmer) or automatically extracted from ligand structures (sdf, pdf, mol2, xyz). If a receptor is loaded, only interacting features will be enabled.";
-        var loadfeatures = $('<button title="'+titletext+'">Load Features...</button>').button();
-
-        //fileinput needs the file inputs in the dom
-        element.append(querydiv);
-        var loadrecfile = $('<input type="file">').appendTo(loaders).fileinput(loadrec).change(function(e) {readText(this, loadReceptor);});
-        var loadfeaturesfile = $('<input type="file">').appendTo(loaders).fileinput(loadfeatures).change(function(e) {readText(this,loadFeatures);});		
-
-        querydiv.detach();
-
-        //query features
-        body = $('<div>').appendTo(querydiv).addClass("pharmit_querybody");
-        var featureheading = $('<div>Pharmacophore</div>').appendTo(body).addClass('pharmit_heading');
-        featuregroup = $('<div>').appendTo(body);
-        features = $('<div>').appendTo(featuregroup);
-        features.accordion({header: "> div > h3", 
-            animate: true, 
-            active: false,
-            collapsible: true,
-            heightStyle:'content',
-            beforeActivate: function( event, ui ) { 
-                var fdiv = null;
-
-                //deslect all features
-                var fdivs = features.children();
-                $.each(fdivs, function(key,fdiv) {
-                    fdiv.feature.deselectFeature();
-                });
-                if(ui.newHeader.length > 0) { //being activated
-                    fdiv = ui.newHeader.parent();
-                    fdiv.get(0).feature.selectFeature();
-                }
-
-            }})
-            .sortable({ //from jquery ui example
-                axis: "y",
-                handle: "h3",
-                stop: function( event, ui ) {
-                    // IE doesn't register the blur when sorting
-                    // so trigger focusout handlers to remove .ui-state-focus
-                    ui.item.children( "h3" ).triggerHandler( "focusout" );
-                    // Refresh accordion to handle new order
-                    $( this ).accordion( "refresh" );
-                }
-            });
-
-        var buttondiv = $('<div>').appendTo(featuregroup).addClass('pharmit_featurebuttons');
-        var addbutton = $('<button>Add</button>').appendTo(buttondiv)
-        .button({text: true, icons: {secondary: "ui-icon-circle-plus"}})
-        .click(function() {new Feature(viewer, features, defaultFeature);}); //feature adds a reference to itself in its container
-        var sortbutton = $('<button>Sort</button>').appendTo(buttondiv).button({text: true, icons: {secondary: "ui-icon ui-icon-carat-2-n-s"}}).click(sortFeatures);
-
-        createShapeQuery(body);
-
-        createFilterQuery(body);
-
-        prependModeSelect(header); //setup mode select after shape/pharmacophore elements are created
+        header.prepend(buttons);
 
 
         //viewer settings
@@ -5943,8 +5969,8 @@ $(document).ready(
                     //actually have no idea where this event comes from, but it pops up in chrome
                 } else if (event.contexts) {
                     //same here
-		} else if (event.data && event.data === true) {
-		   //and here
+                } else if (event.data && event.data === true) {
+                   //and here
                 } else {
                     try {
                         var obj = $.parseJSON(event.data);
