@@ -1097,6 +1097,8 @@ Pharmit.MinResults = (function() {
             $('.pharmit_minname span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
         });
 
+        results.registerKeyEvents(table);
+
         $('tbody',table).on( 'click', 'tr', function () {
             var mid = table.DataTable().row(this).data()[0];
             var r = this;
@@ -2444,6 +2446,30 @@ Pharmit.Results = (function() {
             viewer.setRight(0);
         };
 
+        //code to install key handlers for a provided table
+        this.registerKeyEvents = function(table) {
+            $('body').on('keyup', function(event) {
+                let selected = table.find('tr.selected');            
+                if(event.key == "ArrowUp") { 
+                    if(selected.length == 1) {
+                        selected.prev().click();        
+                    } else {
+                        table.find('tbody tr:last').click();
+                    }
+                } else if(event.key == "ArrowDown") { 
+                    if(selected.length == 1) {
+                        selected.next().click();
+                    } else {
+                        table.find('tbody tr:first').click();
+                    }
+                } else if(event.key == "ArrowLeft") {
+                    table.parent().find('.paginate_button.previous').click();
+                } else if(event.key == "ArrowRight") {
+                    table.parent().find('.paginate_button.next').click();
+                }
+            });
+        };
+
         //if a compound name can be mapped to a url, return it
         var getNameURL = function(name) {
             var m = null;
@@ -2668,6 +2694,7 @@ Pharmit.SearchResults = (function() {
                         pageLength: numrows,
                         destroy: true, //replace any existing table
                         lengthChange: false,
+                        drawCallback: function() {viewer.setResult();}, //clear any selection
                         order: type == 'shape' ? [[ 1, "desc" ]] : [[ 1, "asc" ]],
                                 orderMulti: false,
                                 columnDefs: [
@@ -2862,6 +2889,8 @@ Pharmit.SearchResults = (function() {
             $('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
         });
 
+        results.registerKeyEvents(table);
+        
         $('tbody',table).on( 'click', 'tr', function () {
             var r = this;
             var mid = table.DataTable().row(r).data()[4];
@@ -5243,6 +5272,7 @@ Pharmit.Viewer = (function() {
         var surfaceStyle = {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-0.8,0.8)}, opacity:0.8};
         var viewer = null;
         var shapes = [];
+		var autozoom = true;
                 		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
@@ -5536,6 +5566,25 @@ Pharmit.Viewer = (function() {
 						radiodiv.buttonset("refresh");
 					});
 			radiodiv.buttonset();
+			//autozoom 
+			var azdiv = $('<div>').addClass('pharmit_autozoomdiv').appendTo(vizgroup);
+			$('<label for="autozoom">Auto-Zoom Results:</label>').appendTo(azdiv);
+			var azradiodiv = $('<div id="autozoom">').appendTo(azdiv);
+			$('<input type="radio" id="autozoomTrue" name="autozoom"><label for="autozoomTrue">On</label>').appendTo(azradiodiv)
+				.change(function() {
+					if($(this).prop("checked")) {
+						autozoom = true;
+					}
+					azradiodiv.buttonset("refresh");
+				}).prop("checked",true);
+			$('<input type="radio" id="autozoomFalse" name="autozoom"><label for="autozoomFalse">Off</label>').appendTo(azradiodiv)
+				.change(function() {
+						if($(this).prop("checked")) {
+							autozoom = false;
+						}
+						azradiodiv.buttonset("refresh");
+					});
+			azradiodiv.buttonset();			
 		};
 		
 		//amount to offset viewer position by based on morgins
@@ -5611,7 +5660,9 @@ Pharmit.Viewer = (function() {
 				mol = viewer.addModel(molstr, "sdf");
 				modelsAndStyles.Results.model = mol;
 				updateStyle("Results");
-				viewer.zoomTo({model: mol});
+				if(autozoom) {
+					viewer.zoomTo({model: mol});
+				}
 			}
 			else
 				viewer.render();

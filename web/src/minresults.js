@@ -289,6 +289,8 @@ Pharmit.MinResults = (function() {
             $('.pharmit_minname span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
         });
 
+        results.registerKeyEvents(table);
+
         $('tbody',table).on( 'click', 'tr', function () {
             var mid = table.DataTable().row(this).data()[0];
             var r = this;

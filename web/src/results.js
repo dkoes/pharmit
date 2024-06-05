@@ -72,6 +72,30 @@ Pharmit.Results = (function() {
             viewer.setRight(0);
         };
 
+        //code to install key handlers for a provided table
+        this.registerKeyEvents = function(table) {
+            $('body').on('keyup', function(event) {
+                let selected = table.find('tr.selected');            
+                if(event.key == "ArrowUp") { 
+                    if(selected.length == 1) {
+                        selected.prev().click();        
+                    } else {
+                        table.find('tbody tr:last').click();
+                    }
+                } else if(event.key == "ArrowDown") { 
+                    if(selected.length == 1) {
+                        selected.next().click();
+                    } else {
+                        table.find('tbody tr:first').click();
+                    }
+                } else if(event.key == "ArrowLeft") {
+                    table.parent().find('.paginate_button.previous').click();
+                } else if(event.key == "ArrowRight") {
+                    table.parent().find('.paginate_button.next').click();
+                }
+            });
+        };
+
         //if a compound name can be mapped to a url, return it
         var getNameURL = function(name) {
             var m = null;

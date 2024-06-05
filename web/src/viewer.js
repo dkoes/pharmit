@@ -40,6 +40,7 @@ Pharmit.Viewer = (function() {
         var surfaceStyle = {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-0.8,0.8)}, opacity:0.8};
         var viewer = null;
         var shapes = [];
+		var autozoom = true;
                 		
 		var modelsAndStyles = {
 				'Ligand': {model: null,
@@ -333,6 +334,25 @@ Pharmit.Viewer = (function() {
 						radiodiv.buttonset("refresh");
 					});
 			radiodiv.buttonset();
+			//autozoom 
+			var azdiv = $('<div>').addClass('pharmit_autozoomdiv').appendTo(vizgroup);
+			$('<label for="autozoom">Auto-Zoom Results:</label>').appendTo(azdiv);
+			var azradiodiv = $('<div id="autozoom">').appendTo(azdiv);
+			$('<input type="radio" id="autozoomTrue" name="autozoom"><label for="autozoomTrue">On</label>').appendTo(azradiodiv)
+				.change(function() {
+					if($(this).prop("checked")) {
+						autozoom = true;
+					}
+					azradiodiv.buttonset("refresh");
+				}).prop("checked",true);
+			$('<input type="radio" id="autozoomFalse" name="autozoom"><label for="autozoomFalse">Off</label>').appendTo(azradiodiv)
+				.change(function() {
+						if($(this).prop("checked")) {
+							autozoom = false;
+						}
+						azradiodiv.buttonset("refresh");
+					});
+			azradiodiv.buttonset();			
 		};
 		
 		//amount to offset viewer position by based on morgins
@@ -408,7 +428,9 @@ Pharmit.Viewer = (function() {
 				mol = viewer.addModel(molstr, "sdf");
 				modelsAndStyles.Results.model = mol;
 				updateStyle("Results");
-				viewer.zoomTo({model: mol});
+				if(autozoom) {
+					viewer.zoomTo({model: mol});
+				}
 			}
 			else
 				viewer.render();

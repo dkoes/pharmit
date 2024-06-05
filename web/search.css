@@ -564,6 +564,28 @@ body {
 	font-weight: normal;
 }
 
+.pharmit_autozoomdiv  {
+	padding-top: 1em;
+}
+
+.pharmit_autozoomdiv  .ui-buttonset {
+	padding-top: 0.5em;
+	padding-left: 0.25em;
+	display: inline-block;
+}
+
+.pharmit_autozoomdiv .ui-state-default {
+	color: #555555;
+	font-weight: normal;
+
+}
+
+.pharmit_autozoomdiv .ui-state-active {
+	color: black;
+	font-weight: normal;
+}
+
+
 .pharmit_backbonediv  {
     padding-top: 1em;
 }

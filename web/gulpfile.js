@@ -20,7 +20,7 @@ psrc = ['src/feature.js',
 // Lint JS
 gulp.task('lint', function() {
   return gulp.src(psrc)
-    .pipe(jshint({'latedef':'nofunc'}))
+    .pipe(jshint({'latedef':'nofunc',"esversion":6}))
     .pipe(jshint.reporter('default'));
 });
  
@@ -39,5 +39,5 @@ gulp.task('default', series('lint','minify') );
 
 // Watch Our Files
 gulp.task('watch', function() {
-  gulp.watch('src/*.js', ['lint', 'minify']);
+  gulp.watch('src/*.js', series('lint', 'minify'));
 });

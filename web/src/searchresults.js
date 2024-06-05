@@ -101,6 +101,7 @@ Pharmit.SearchResults = (function() {
                         pageLength: numrows,
                         destroy: true, //replace any existing table
                         lengthChange: false,
+                        drawCallback: function() {viewer.setResult();}, //clear any selection
                         order: type == 'shape' ? [[ 1, "desc" ]] : [[ 1, "asc" ]],
                                 orderMulti: false,
                                 columnDefs: [
@@ -295,6 +296,8 @@ Pharmit.SearchResults = (function() {
             $('.pharmit_namecol span').powerTip({mouseOnToPopup:true,placement:'s',smartPlacement:true});
         });
 
+        results.registerKeyEvents(table);
+        
         $('tbody',table).on( 'click', 'tr', function () {
             var r = this;
             var mid = table.DataTable().row(r).data()[4];
