@@ -252,6 +252,7 @@ else if(isset($_REQUEST["op"])) //operation
 					while($stmt->fetch()) {
 						if($status != "REMOVE") {
 							echo('<div class="librarystatus"><span class="font-4">');
+							$name = htmlspecialchars($name);
 							echo("<b>$name</b>");
 							echo(": $message <br>");
 							if($isprivate) {
