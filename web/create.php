@@ -163,6 +163,8 @@ else if(isset($_REQUEST["op"])) //operation
 			<input type="text" name="name" size="60" class="input"><br><br>
 			<span class="font-2">institution:</span>
 			<input type="text" name="place" size="60" class="input"><br><br>
+			<span class="font-2">2+3=</span>
+			<input type="text" name="math" size="60" class="input"><br><br>            
 			<input type="submit" value="submit registration" class="submit">
 			</form>
 			</div>
@@ -178,9 +180,13 @@ else if(isset($_REQUEST["op"])) //operation
 			$email = $_POST['email'];
 			$name = $_POST['name'];
 			$place = $_POST['place'];
+			$math = $_POST['math'];
 
 			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 				failhtml("Invalid email: $email");
+			}
+			if ($math != 5 ) {
+				failhtml("Failed to answer anti-spam math question.  Please review basic arithmatic.");
 			}
 			//generate a password - we assign a password and don't let the
 			//user change since this way we (well, I) don't feel bad about
@@ -200,7 +206,7 @@ else if(isset($_REQUEST["op"])) //operation
 			else {
 				mail( $email, "Pharmit Password" ,
 				"Your password is:\n$pass\n\nIf you lose this password you can simply re-register with the same email.",
-						"From: do-not-reply@pharmit.csb.pitt.edu");
+						"From: dkoes@pitt.edu","-f dkoes@pitt.edu");
 				echo("Your password has been mailed to $email.  Please check your spam filters. ");
 				echo("<a href='create.php'>Continue</a>");
 			}
