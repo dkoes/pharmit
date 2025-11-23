@@ -937,7 +937,7 @@ Pharmit.MinResults = (function() {
             // setup
             // start provided query
             $.post(Pharmit.server, postData, null, 'json').done(function(ret) {
-                if(ret.status) { // success
+                if(ret.status && ret.sminaid > 0) { // success
                     // setup table
                     sminaid = ret.sminaid;
                     var numrows = Math.floor((body.height()-100)/29); // magic
@@ -996,6 +996,10 @@ Pharmit.MinResults = (function() {
                     });
                     table.show();
                     $('.pharmit_mincontainer .pharmit_resbody').css({opacity: 100}); 
+                } else if(ret.sminaid == 0) {
+                    cancel();
+                    if(onclose) onclose();
+                    alert("Error initializing minimization. Check validity of receptor structure.");                    
                 } else {
                     cancel();
                     if(onclose) onclose();
