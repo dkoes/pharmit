@@ -37,7 +37,7 @@ if(isset($_REQUEST["login"]))
 	</head>
 	<body id="body">
 		<div id="notice"> <div class=closebutton style="float:right"></div>
-		<font color="red"> We are currently experiencing server issues (11/26). There is no ETA on a resolution. <font>
+		<font color="red"> We are currently experiencing intermittent server issues. <font>
 		</div>
 		<div class="cont">
 			<div class="section">
