@@ -168,6 +168,18 @@ else
 				</div>
 			</div>
 		</div>
+
+		<div class="cont-51">
+			<div class="section-4">
+				<div class="cont-52a">
+					<div class="cont-53"><p class="para-19">
+					<div class="cont-19"><p class="para-6"><span class="font-6">elucidate<sup><span class="beta" style="font-size: 14pt">(experimental)</span></sup></span></p></div><p class="para-20">
+					<span class="font-10"><a href="forge">Derive</a></span><span class="font-11" style="color: rgb(64,64,64)"> pharmacophores from receptor structure with <a href="https://www.frontiersin.org/journals/bioinformatics/articles/10.3389/fbinf.2025.1628800/full">PharmacoForge</a>.</span>
+					</p></div>
+				</div>
+			</div>
+		</div>
+
 		<div class="cont-51">
 			<div class="section-4">
 				<div class="cont-52">
