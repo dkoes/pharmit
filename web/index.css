@@ -1091,7 +1091,6 @@ a {
 	vertical-align: top;
 	min-width: 960px;
 	max-width: 960px;
-	min-height: 200px;
 	position: relative;
 	z-index: 25;
 	margin-top: 40px;
@@ -1123,6 +1122,20 @@ a {
 	margin-top: 0px;
 	overflow: visible;
 }
+.cont-52a {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 920px;
+	width: 920px;
+	min-height: 85px;
+	position: relative;
+	z-index: 26;
+	left: 15px;
+	margin-left: 8px;
+	margin-top: 12px;
+	margin-bottom: 12px;
+	overflow: visible;
+}
 .para-19 {
 	text-indent: 0;
 	padding-top: 6pt;
@@ -1144,7 +1157,7 @@ a {
 	text-indent: 0;
 	padding-top: 4pt;
 	margin-top: 0pt;
-	margin-bottom: -4pt;
+	margin-bottom: 0pt;
 	text-align: left;
 }
 .font-22 {
@@ -1662,3 +1675,8 @@ span.beta {
  margin-left: auto;
  margin-right: auto;
 }
+
+
+
+
+
